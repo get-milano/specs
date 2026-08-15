@@ -9,8 +9,12 @@ vector is a defect in one of them, to be resolved by a human.
 
 Scope: parse, version, limits, vocabulary validation, expression parsing and
 type checking, cross-checks, and evaluation of the resolved tree for vectors
-without steps. Vectors with steps exercise the runtime's dispatch machinery
-and are skipped (listed in the output); the engines' own suites cover them.
+without steps. Vectors with steps exercise the runtime's dispatch machinery;
+executing their steps is the engines' territory, but they are statically
+linted here: the build must succeed, action lists must be well-formed and
+type-correct (with the event root bound to the declared payload type), each
+step must be structurally valid, and an invalid or unbound emission must be
+matched by the occurrence the vector expects.
 
 Pure stdlib. Integer arithmetic is emulated at 64 bits; doubles are Python
 floats, which are IEEE 754 binary64.
@@ -275,12 +279,15 @@ class Parser:
 
 
 class Checker:
-    """Static typing per spec 03; raises ExprError on any violation."""
+    """Static typing per spec 03; raises ExprError on any violation.
+
+    `event`, when given, is the Ty of the enclosing event binding's declared
+    payload: within action expressions the bare `event` root has that type.
+    """
 
     def __init__(self, state, context, event=None):
         self.roots = {"state": state, "context": context}
-        if event is not None:
-            self.roots["event"] = event
+        self.event_ty = event
 
     def check(self, node):
         op = node[0]
@@ -290,11 +297,21 @@ class Checker:
                 raise ExprError("int literal out of 64-bit range")
             return Ty(kind, optional=(kind == "null"))
         if op == "ref":
+            if node[1] == "event" and self.event_ty is not None:
+                return self.event_ty
             raise ExprError(f"bare identifier {node[1]!r} is not a reserved root")
         if op == "field":
             _, base, name = node
             if base[0] == "ref":
                 root = base[1]
+                if root == "event" and self.event_ty is not None:
+                    ty = self.event_ty
+                    if ty.kind != "record" or ty.optional:
+                        raise ExprError(
+                            "field access requires a non-optional record")
+                    if name not in ty.fields:
+                        raise ExprError(f"event.{name} is not declared")
+                    return ty.fields[name]
                 if root not in self.roots:
                     raise ExprError(f"{root!r} is not a reserved root")
                 decls = self.roots[root]
@@ -797,6 +814,286 @@ class ReferenceGate:
 
 
 # ---------------------------------------------------------------------------
+# Static lint for step vectors, per spec 05. Steps are never executed; the
+# lint verifies what can be known without running dispatch: the build, the
+# action lists (spec 01's encoding, expression typing with the event root),
+# the shape of each step, and that a deliberately invalid emission is matched
+# by the occurrence the vector expects.
+# ---------------------------------------------------------------------------
+
+
+STEP_KINDS = {"event", "contextUpdate", "complete", "teardown"}
+
+
+class StepLinter:
+    def __init__(self, vector, vocabulary):
+        self.vector = vector
+        self.vocabulary = vocabulary
+        self.problems = []
+        self.has_custom_action = False
+
+    def problem(self, text):
+        self.problems.append(text)
+
+    def lint(self):
+        vector, expect = self.vector, self.vector["expect"]
+        if "error" in expect:
+            self.problem("a step vector cannot expect a gate error: "
+                         "steps run only after a successful build")
+            return self.problems
+
+        policy = vector.get("config", {}).get("unknownTypePolicy", "skip")
+        self.gate = ReferenceGate(self.vocabulary, policy)
+        try:
+            self.gate.build(vector)
+        except GateError as error:
+            self.problem(f"build failed before steps: {error.fields}")
+            return self.problems
+
+        document = json.loads(vector["documentText"]) \
+            if "documentText" in vector else vector["document"]
+        self.state_decls = {k: parse_type(v)
+                            for k, v in document.get("state", {}).items()}
+        self.context_decls = {k: parse_type(v)
+                              for k, v in document.get("context", {}).items()}
+        self.collect_actions(document)
+        self.nodes = {}
+        self.lint_node(document["root"], "root")
+        self.lint_steps(vector["steps"])
+        for entry in expect.get("dispatched", []):
+            name = entry.get("action") if isinstance(entry, dict) else None
+            if name not in self.action_decls:
+                self.problem(f"expect.dispatched names undeclared "
+                             f"action {name!r}")
+        return self.problems
+
+    def collect_actions(self, document):
+        """Merge vocabulary and document-local custom action declarations."""
+        self.action_decls = dict(self.vocabulary.get("actions", {}))
+        for name, declaration in document.get("actions", {}).items():
+            if name in self.action_decls:
+                self.problem(f"document-local action {name!r} collides "
+                             f"with a vocabulary action")
+            self.action_decls[name] = declaration
+        for name, declaration in self.action_decls.items():
+            if not isinstance(declaration, dict):
+                self.problem(f"action declaration {name!r} must be an object")
+                self.action_decls[name] = {}
+                continue
+            try:
+                self.parameter_types(declaration)
+            except (KeyError, TypeError, AttributeError):
+                self.problem(f"action declaration {name!r} has an invalid "
+                             f"parameter type descriptor")
+                self.action_decls[name] = {}
+
+    def parameter_types(self, declaration):
+        return {name: parse_type(descriptor) for name, descriptor
+                in (declaration.get("parameters") or {}).items()}
+
+    # -- document walk, mirroring the gate's unknown-type opacity ----------
+
+    def lint_node(self, node, path):
+        ref = node.get("id") or path
+        self.nodes[ref] = node
+        self.nodes[path] = node
+        declaration = self.vocabulary["components"].get(node["type"])
+        if declaration is None:
+            return  # Opaque subtree, same as validation.
+        events = declaration.get("events") or {}
+        for event_name, bound in node.get("on", {}).items():
+            descriptor = events.get(event_name)
+            event_ty = parse_type(descriptor) if descriptor is not None \
+                else None
+            self.lint_action_list(bound, ref, event_ty)
+        for index, child in enumerate(node.get("children", [])):
+            self.lint_node(child, f"{path}/children[{index}]")
+
+    # -- action encoding, per spec 01 --------------------------------------
+
+    def lint_action_list(self, actions, ref, event_ty):
+        if isinstance(actions, dict):
+            actions = [actions]
+        if not isinstance(actions, list):
+            self.problem(f"{ref}: an event binds one action or a list")
+            return
+        for action in actions:
+            self.lint_action(action, ref, event_ty)
+
+    def lint_action(self, action, ref, event_ty):
+        if not isinstance(action, dict) \
+                or not isinstance(action.get("action"), str):
+            self.problem(f"{ref}: an action is an object with a "
+                         f"string 'action' key")
+            return
+        name = action["action"]
+        if name == "$set":
+            self.expect_keys(action, ref, "$set", {"key", "value"})
+            key = action.get("key")
+            if key not in self.state_decls:
+                self.problem(f"{ref}: $set targets undeclared "
+                             f"state key {key!r}")
+            elif "value" not in action:
+                self.problem(f"{ref}: $set is missing 'value'")
+            else:
+                self.lint_value(action["value"], self.state_decls[key],
+                                ref, event_ty, "$set value")
+        elif name == "$sequence":
+            self.expect_keys(action, ref, "$sequence", {"actions"})
+            self.lint_action_list(action.get("actions", []), ref, event_ty)
+        elif name == "$when":
+            self.expect_keys(action, ref, "$when",
+                             {"condition", "then", "else"})
+            if "condition" not in action:
+                self.problem(f"{ref}: $when is missing 'condition'")
+            else:
+                self.lint_value(action["condition"], Ty("bool"),
+                                ref, event_ty, "$when condition")
+            if "then" not in action:
+                self.problem(f"{ref}: $when is missing 'then'")
+            for branch in ("then", "else"):
+                if branch in action:
+                    self.lint_action_list(action[branch], ref, event_ty)
+        elif name.startswith("$"):
+            self.problem(f"{ref}: unknown built-in action {name!r}")
+        else:
+            self.lint_custom(action, name, ref, event_ty)
+
+    def expect_keys(self, action, ref, name, allowed):
+        for key in action:
+            if key != "action" and key not in allowed:
+                self.problem(f"{ref}: {name} does not take {key!r}")
+
+    def lint_custom(self, action, name, ref, event_ty):
+        self.has_custom_action = True
+        declaration = self.action_decls.get(name)
+        if declaration is None:
+            self.problem(f"{ref}: custom action {name!r} is not declared")
+        else:
+            declared = self.parameter_types(declaration)
+            supplied = {k: v for k, v in action.items()
+                        if k not in ("action", "onSuccess", "onFailure")}
+            for parameter, ty in declared.items():
+                if parameter not in supplied:
+                    if not ty.optional:
+                        self.problem(f"{ref}: {name} is missing required "
+                                     f"parameter {parameter!r}")
+                    continue
+                self.lint_value(supplied[parameter], ty, ref, event_ty,
+                                f"{name}.{parameter}")
+            for parameter in supplied:
+                if parameter not in declared:
+                    self.problem(f"{ref}: {name} does not declare "
+                                 f"parameter {parameter!r}")
+        for follow_up in ("onSuccess", "onFailure"):
+            if follow_up in action:
+                self.lint_action_list(action[follow_up], ref, event_ty)
+
+    def lint_value(self, value, ty, ref, event_ty, what):
+        if isinstance(value, dict) and "$expr" in value:
+            checker = Checker(self.state_decls, self.context_decls,
+                              event=event_ty)
+            try:
+                self.gate.check_expression(value["$expr"], ty, ref, checker)
+            except GateError:
+                self.problem(f"{ref}: {what} expression "
+                             f"{value['$expr']!r} does not produce {ty!r}")
+            return
+        try:
+            validate_value(value, ty, what)
+        except GateError:
+            self.problem(f"{ref}: {what} literal {json.dumps(value)} "
+                         f"does not match {ty!r}")
+
+    # -- steps -------------------------------------------------------------
+
+    def lint_steps(self, steps):
+        expected_kinds = {occurrence.get("kind")
+                          for occurrence in
+                          self.vector["expect"].get("occurrences", [])
+                          if isinstance(occurrence, dict)}
+        torn_down = False
+        for index, step in enumerate(steps):
+            label = f"steps[{index}]"
+            if not isinstance(step, dict) or len(step) != 1 \
+                    or next(iter(step)) not in STEP_KINDS:
+                self.problem(f"{label}: a step holds exactly one of "
+                             f"event/contextUpdate/complete/teardown")
+                continue
+            kind, body = next(iter(step.items()))
+            if kind == "teardown":
+                if body is not True:
+                    self.problem(f"{label}: teardown must be true")
+                torn_down = True
+            elif kind == "contextUpdate":
+                if not isinstance(body, dict):
+                    self.problem(f"{label}: contextUpdate holds an object "
+                                 f"of values")
+            elif kind == "complete":
+                self.lint_complete(body, label)
+            else:
+                self.lint_event(body, label, torn_down, expected_kinds)
+
+    def lint_complete(self, body, label):
+        if not isinstance(body, dict) \
+                or not isinstance(body.get("dispatch"), int) \
+                or isinstance(body.get("dispatch"), bool) \
+                or body["dispatch"] < 0 \
+                or body.get("outcome") not in ("success", "failure"):
+            self.problem(f"{label}: complete takes a non-negative 'dispatch' "
+                         f"index and an outcome of success or failure")
+            return
+        if not self.has_custom_action:
+            self.problem(f"{label}: complete without any custom action "
+                         f"in the document")
+
+    def lint_event(self, body, label, torn_down, expected_kinds):
+        if not isinstance(body, dict) \
+                or not isinstance(body.get("node"), str) \
+                or not isinstance(body.get("name"), str):
+            self.problem(f"{label}: event takes a string 'node' and 'name'")
+            return
+        node = self.nodes.get(body["node"])
+        if node is None:
+            self.problem(f"{label}: event node {body['node']!r} does not "
+                         f"exist in the document")
+            return
+        # After teardown any emission is silently ignored; nothing to check.
+        if torn_down:
+            return
+        declaration = self.vocabulary["components"].get(node["type"])
+        if declaration is None:
+            return  # Unknown type: no event declarations to lint against.
+        events = declaration.get("events") or {}
+        if body["name"] not in events \
+                or not self.payload_valid("payload" in body,
+                                          body.get("payload"),
+                                          events[body["name"]]):
+            if "invalidEmission" not in expected_kinds:
+                self.problem(f"{label}: emission {body['name']!r} on "
+                             f"{body['node']!r} is invalid, but the vector "
+                             f"does not expect an invalidEmission occurrence")
+        elif body["name"] not in node.get("on", {}):
+            if "droppedEvent" not in expected_kinds:
+                self.problem(f"{label}: event {body['name']!r} on "
+                             f"{body['node']!r} has no binding, but the "
+                             f"vector does not expect a droppedEvent "
+                             f"occurrence")
+
+    def payload_valid(self, present, payload, descriptor):
+        if descriptor is None:
+            return not present
+        ty = parse_type(descriptor)
+        if not present:
+            return ty.optional
+        try:
+            validate_value(payload, ty, "emission")
+        except GateError:
+            return False
+        return True
+
+
+# ---------------------------------------------------------------------------
 # Comparison and runner.
 # ---------------------------------------------------------------------------
 
@@ -860,7 +1157,7 @@ def run_vector(vector, vocabulary):
 
 def main():
     root = Path(__file__).resolve().parent.parent
-    checked, skipped, failures = 0, [], []
+    checked, linted, failures = 0, [], []
     for suite in sorted((root / "conformance").iterdir()):
         if not suite.is_dir():
             continue
@@ -870,16 +1167,19 @@ def main():
                 continue
             vector = json.loads(path.read_text())
             if "steps" in vector:
-                skipped.append(vector["name"])
+                linted.append(vector["name"])
+                for problem in StepLinter(vector, vocabulary).lint():
+                    failures.append(f"{path.relative_to(root)}: {problem}")
                 continue
             checked += 1
             for problem in run_vector(vector, vocabulary):
                 failures.append(f"{path.relative_to(root)}: {problem}")
 
     print(f"reference check: {checked} vectors checked, "
-          f"{len(skipped)} skipped (steps are engine territory)")
-    for name in skipped:
-        print(f"  skipped: {name}")
+          f"{len(linted)} step vectors linted "
+          f"(step execution is engine territory)")
+    for name in linted:
+        print(f"  linted: {name}")
     if failures:
         print()
         print("\n".join(failures))
