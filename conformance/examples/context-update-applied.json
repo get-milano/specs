@@ -1,0 +1,39 @@
+{
+  "name": "context-update-applied",
+  "description": "A valid context update applies atomically and dependent expressions re-evaluate",
+  "document": {
+    "version": "0.1.0",
+    "context": {
+      "greeting": "string"
+    },
+    "root": {
+      "type": "Text",
+      "id": "t",
+      "properties": {
+        "text": {
+          "$expr": "context.greeting"
+        }
+      }
+    }
+  },
+  "context": {
+    "greeting": "hello"
+  },
+  "steps": [
+    {
+      "contextUpdate": {
+        "greeting": "ciao"
+      }
+    }
+  ],
+  "expect": {
+    "view": {
+      "type": "Text",
+      "reference": "t",
+      "properties": {
+        "text": "ciao"
+      }
+    },
+    "occurrences": []
+  }
+}

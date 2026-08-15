@@ -1,0 +1,31 @@
+{
+  "name": "expr-if-evaluates-both-branches",
+  "description": "if evaluates both branches; the untaken branch's division by zero still reports",
+  "document": {
+    "version": "0.1.0",
+    "root": {
+      "type": "Text",
+      "id": "result",
+      "properties": {
+        "text": {
+          "$expr": "str(if(true, 1, 1 / 0))"
+        }
+      }
+    }
+  },
+  "expect": {
+    "view": {
+      "type": "Text",
+      "reference": "result",
+      "properties": {
+        "text": "1"
+      }
+    },
+    "occurrences": [
+      {
+        "kind": "divisionByZero",
+        "node": "result"
+      }
+    ]
+  }
+}

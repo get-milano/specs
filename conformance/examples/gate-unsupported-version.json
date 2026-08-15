@@ -1,0 +1,20 @@
+{
+  "name": "gate-unsupported-version",
+  "description": "A document targeting an unsupported major fails with UnsupportedVersion",
+  "document": {
+    "version": "99.0.0",
+    "root": {
+      "type": "Text",
+      "id": "t",
+      "properties": {
+        "text": "hi"
+      }
+    }
+  },
+  "expect": {
+    "error": {
+      "type": "UnsupportedVersion",
+      "declared": "99.0.0"
+    }
+  }
+}

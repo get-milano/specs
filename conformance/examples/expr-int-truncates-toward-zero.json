@@ -1,0 +1,26 @@
+{
+  "name": "expr-int-truncates-toward-zero",
+  "description": "int() truncates toward zero on both signs, without a report",
+  "document": {
+    "version": "0.1.0",
+    "root": {
+      "type": "Text",
+      "id": "result",
+      "properties": {
+        "text": {
+          "$expr": "str(int(-3.9)) + ' ' + str(int(3.9))"
+        }
+      }
+    }
+  },
+  "expect": {
+    "view": {
+      "type": "Text",
+      "reference": "result",
+      "properties": {
+        "text": "-3 3"
+      }
+    },
+    "occurrences": []
+  }
+}

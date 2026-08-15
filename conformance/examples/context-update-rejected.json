@@ -1,0 +1,43 @@
+{
+  "name": "context-update-rejected",
+  "description": "A context update with a wrong-typed value is rejected whole; previous values stay; reported",
+  "document": {
+    "version": "0.1.0",
+    "context": {
+      "greeting": "string"
+    },
+    "root": {
+      "type": "Text",
+      "id": "t",
+      "properties": {
+        "text": {
+          "$expr": "context.greeting"
+        }
+      }
+    }
+  },
+  "context": {
+    "greeting": "hello"
+  },
+  "steps": [
+    {
+      "contextUpdate": {
+        "greeting": 5
+      }
+    }
+  ],
+  "expect": {
+    "view": {
+      "type": "Text",
+      "reference": "t",
+      "properties": {
+        "text": "hello"
+      }
+    },
+    "occurrences": [
+      {
+        "kind": "rejectedContextUpdate"
+      }
+    ]
+  }
+}

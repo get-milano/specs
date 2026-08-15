@@ -1,0 +1,15 @@
+title: Milano SDK Specifications
+description: Specifications for Milano, a client-only, design-system-agnostic Document-Driven UI framework for iOS and Android.
+logo: "/assets/img/get-milano.png"
+favicon_ico: "/favicon.ico"
+remote_theme: just-the-docs/just-the-docs
+plugins:
+  - jekyll-remote-theme
+search_enabled: true
+heading_anchors: true
+mermaid:
+  version: "10.9.1"
+exclude:
+  - README.md
+  - CONTRIBUTING.md
+  - LICENSE

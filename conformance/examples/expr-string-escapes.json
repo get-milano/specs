@@ -1,0 +1,26 @@
+{
+  "name": "expr-string-escapes",
+  "description": "String literals support escaped quotes and backslashes",
+  "document": {
+    "version": "0.1.0",
+    "root": {
+      "type": "Text",
+      "id": "result",
+      "properties": {
+        "text": {
+          "$expr": "'it\\'s' + ' ' + 'a\\\\b'"
+        }
+      }
+    }
+  },
+  "expect": {
+    "view": {
+      "type": "Text",
+      "reference": "result",
+      "properties": {
+        "text": "it's a\\b"
+      }
+    },
+    "occurrences": []
+  }
+}

@@ -1,0 +1,44 @@
+{
+  "name": "policy-unknown-fail",
+  "description": "Unknown component type under the fail policy: building throws UnknownComponentType",
+  "config": {
+    "unknownTypePolicy": "fail"
+  },
+  "document": {
+    "version": "0.1.0",
+    "root": {
+      "type": "Column",
+      "id": "list",
+      "children": [
+        {
+          "type": "Text",
+          "id": "hello",
+          "properties": {
+            "text": "Welcome"
+          }
+        },
+        {
+          "type": "Carousel",
+          "id": "promo",
+          "properties": {
+            "itemCount": 3
+          }
+        },
+        {
+          "type": "Text",
+          "id": "bye",
+          "properties": {
+            "text": "See you"
+          }
+        }
+      ]
+    }
+  },
+  "expect": {
+    "error": {
+      "type": "UnknownComponentType",
+      "node": "promo",
+      "unknownType": "Carousel"
+    }
+  }
+}

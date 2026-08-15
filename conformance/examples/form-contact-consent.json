@@ -1,0 +1,267 @@
+{
+  "name": "form-contact-consent",
+  "description": "End-to-end contact form: state provider, unidirectional flow via events and $set, $when consent gating, document-local action, async submit completion, onSuccess",
+  "document": {
+    "version": "0.1.0",
+    "state": {
+      "name": "string",
+      "surname": "string",
+      "email": "string",
+      "phone": "string?",
+      "consent": "bool",
+      "submitted": "bool"
+    },
+    "actions": {
+      "submitContact": {
+        "parameters": {
+          "name": "string",
+          "surname": "string",
+          "email": "string",
+          "phone": "string?"
+        }
+      }
+    },
+    "root": {
+      "type": "Column",
+      "id": "form",
+      "children": [
+        {
+          "type": "TextField",
+          "id": "name",
+          "properties": {
+            "label": "Name",
+            "value": {
+              "$expr": "state.name"
+            }
+          },
+          "on": {
+            "change": [
+              {
+                "action": "$set",
+                "key": "name",
+                "value": {
+                  "$expr": "event"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "TextField",
+          "id": "surname",
+          "properties": {
+            "label": "Surname",
+            "value": {
+              "$expr": "state.surname"
+            }
+          },
+          "on": {
+            "change": [
+              {
+                "action": "$set",
+                "key": "surname",
+                "value": {
+                  "$expr": "event"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "TextField",
+          "id": "email",
+          "properties": {
+            "label": "Email",
+            "value": {
+              "$expr": "state.email"
+            }
+          },
+          "on": {
+            "change": [
+              {
+                "action": "$set",
+                "key": "email",
+                "value": {
+                  "$expr": "event"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "TextField",
+          "id": "phone",
+          "properties": {
+            "label": "Phone (optional)",
+            "value": {
+              "$expr": "state.phone ?? ''"
+            }
+          },
+          "on": {
+            "change": [
+              {
+                "action": "$set",
+                "key": "phone",
+                "value": {
+                  "$expr": "event"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "Checkbox",
+          "id": "consent",
+          "properties": {
+            "label": "I agree to be contacted",
+            "checked": {
+              "$expr": "state.consent"
+            }
+          },
+          "on": {
+            "change": [
+              {
+                "action": "$set",
+                "key": "consent",
+                "value": {
+                  "$expr": "event"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "Button",
+          "id": "submit",
+          "properties": {
+            "label": "Send",
+            "enabled": {
+              "$expr": "state.consent && !isEmpty(trim(state.name)) && !isEmpty(trim(state.surname)) && !isEmpty(trim(state.email)) && !state.submitted"
+            }
+          },
+          "on": {
+            "tap": [
+              {
+                "action": "$when",
+                "condition": {
+                  "$expr": "state.consent && !isEmpty(trim(state.name)) && !isEmpty(trim(state.surname)) && !isEmpty(trim(state.email)) && !state.submitted"
+                },
+                "then": [
+                  {
+                    "action": "submitContact",
+                    "name": {
+                      "$expr": "trim(state.name)"
+                    },
+                    "surname": {
+                      "$expr": "trim(state.surname)"
+                    },
+                    "email": {
+                      "$expr": "trim(state.email)"
+                    },
+                    "phone": {
+                      "$expr": "state.phone"
+                    },
+                    "onSuccess": [
+                      {
+                        "action": "$set",
+                        "key": "submitted",
+                        "value": true
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "Text",
+          "id": "thanks",
+          "properties": {
+            "text": {
+              "$expr": "if(state.submitted, 'Thanks! We will be in touch.', '')"
+            }
+          }
+        }
+      ]
+    }
+  },
+  "state": {
+    "name": "",
+    "surname": "",
+    "email": "",
+    "phone": null,
+    "consent": false,
+    "submitted": false
+  },
+  "steps": [
+    {
+      "event": {
+        "node": "name",
+        "name": "change",
+        "payload": "Ada"
+      }
+    },
+    {
+      "event": {
+        "node": "surname",
+        "name": "change",
+        "payload": "Lovelace"
+      }
+    },
+    {
+      "event": {
+        "node": "email",
+        "name": "change",
+        "payload": "ada@example.com"
+      }
+    },
+    {
+      "event": {
+        "node": "submit",
+        "name": "tap"
+      }
+    },
+    {
+      "event": {
+        "node": "consent",
+        "name": "change",
+        "payload": true
+      }
+    },
+    {
+      "event": {
+        "node": "submit",
+        "name": "tap"
+      }
+    },
+    {
+      "complete": {
+        "dispatch": 0,
+        "outcome": "success"
+      }
+    }
+  ],
+  "expect": {
+    "state": {
+      "name": "Ada",
+      "surname": "Lovelace",
+      "email": "ada@example.com",
+      "phone": null,
+      "consent": true,
+      "submitted": true
+    },
+    "dispatched": [
+      {
+        "action": "submitContact",
+        "parameters": {
+          "name": "Ada",
+          "surname": "Lovelace",
+          "email": "ada@example.com",
+          "phone": null
+        }
+      }
+    ],
+    "occurrences": []
+  }
+}

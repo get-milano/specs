@@ -1,0 +1,28 @@
+{
+  "name": "policy-unknown-root-skip",
+  "description": "An unknown root type under the skip policy builds a valid empty view; the occurrence is reported",
+  "config": {
+    "unknownTypePolicy": "skip"
+  },
+  "document": {
+    "version": "0.1.0",
+    "root": {
+      "type": "Carousel",
+      "properties": {
+        "itemCount": 3
+      }
+    }
+  },
+  "expect": {
+    "view": {
+      "type": "Carousel",
+      "reference": "root"
+    },
+    "occurrences": [
+      {
+        "kind": "unknownTypeSkipped",
+        "node": "root"
+      }
+    ]
+  }
+}

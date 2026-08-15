@@ -1,0 +1,27 @@
+{
+  "name": "gate-missing-context-value",
+  "description": "A declared context key with no supplied value fails with SchemaViolation",
+  "document": {
+    "version": "0.1.0",
+    "context": {
+      "userName": "string"
+    },
+    "root": {
+      "type": "Text",
+      "id": "t",
+      "properties": {
+        "text": {
+          "$expr": "context.userName"
+        }
+      }
+    }
+  },
+  "context": {},
+  "expect": {
+    "error": {
+      "type": "SchemaViolation",
+      "rule": "context-declaration",
+      "expected": "userName"
+    }
+  }
+}

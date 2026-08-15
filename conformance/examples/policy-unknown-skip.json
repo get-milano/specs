@@ -1,0 +1,65 @@
+{
+  "name": "policy-unknown-skip",
+  "description": "Unknown component type under the skip policy: subtree dropped, siblings kept, occurrence reported",
+  "config": {
+    "unknownTypePolicy": "skip"
+  },
+  "document": {
+    "version": "0.1.0",
+    "root": {
+      "type": "Column",
+      "id": "list",
+      "children": [
+        {
+          "type": "Text",
+          "id": "hello",
+          "properties": {
+            "text": "Welcome"
+          }
+        },
+        {
+          "type": "Carousel",
+          "id": "promo",
+          "properties": {
+            "itemCount": 3
+          }
+        },
+        {
+          "type": "Text",
+          "id": "bye",
+          "properties": {
+            "text": "See you"
+          }
+        }
+      ]
+    }
+  },
+  "expect": {
+    "view": {
+      "type": "Column",
+      "reference": "list",
+      "children": [
+        {
+          "type": "Text",
+          "reference": "hello",
+          "properties": {
+            "text": "Welcome"
+          }
+        },
+        {
+          "type": "Text",
+          "reference": "bye",
+          "properties": {
+            "text": "See you"
+          }
+        }
+      ]
+    },
+    "occurrences": [
+      {
+        "kind": "unknownTypeSkipped",
+        "node": "promo"
+      }
+    ]
+  }
+}

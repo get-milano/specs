@@ -1,0 +1,65 @@
+{
+  "name": "dispatch-invalid-emission",
+  "description": "An undeclared event or a mis-typed payload never reaches dispatch; dropped and reported",
+  "document": {
+    "version": "0.1.0",
+    "state": {
+      "name": "string"
+    },
+    "root": {
+      "type": "TextField",
+      "id": "f",
+      "properties": {
+        "label": "Name",
+        "value": {
+          "$expr": "state.name"
+        }
+      },
+      "on": {
+        "change": [
+          {
+            "action": "$set",
+            "key": "name",
+            "value": {
+              "$expr": "event"
+            }
+          }
+        ]
+      }
+    }
+  },
+  "state": {
+    "name": ""
+  },
+  "steps": [
+    {
+      "event": {
+        "node": "f",
+        "name": "focus"
+      }
+    },
+    {
+      "event": {
+        "node": "f",
+        "name": "change",
+        "payload": 5
+      }
+    }
+  ],
+  "expect": {
+    "state": {
+      "name": ""
+    },
+    "dispatched": [],
+    "occurrences": [
+      {
+        "kind": "invalidEmission",
+        "node": "f"
+      },
+      {
+        "kind": "invalidEmission",
+        "node": "f"
+      }
+    ]
+  }
+}

@@ -1,0 +1,104 @@
+{
+  "name": "banner-open-url",
+  "description": "End-to-end banner: context injection, expression evaluation, event dispatch, custom action with captured parameters",
+  "document": {
+    "version": "0.1.0",
+    "context": {
+      "userName": "string"
+    },
+    "root": {
+      "type": "Banner",
+      "id": "banner",
+      "properties": {
+        "backgroundImageUrl": "https://cdn.example.com/promo.jpg"
+      },
+      "children": [
+        {
+          "type": "Text",
+          "id": "title",
+          "properties": {
+            "text": {
+              "$expr": "concat('Hello, ', context.userName)"
+            }
+          }
+        },
+        {
+          "type": "Text",
+          "id": "subtitle",
+          "properties": {
+            "text": "A summer of savings starts today."
+          }
+        },
+        {
+          "type": "Button",
+          "id": "cta",
+          "properties": {
+            "label": "Learn more",
+            "enabled": true
+          },
+          "on": {
+            "tap": [
+              {
+                "action": "openUrl",
+                "url": "https://example.com/promo"
+              }
+            ]
+          }
+        }
+      ]
+    }
+  },
+  "context": {
+    "userName": "Ada"
+  },
+  "steps": [
+    {
+      "event": {
+        "node": "cta",
+        "name": "tap"
+      }
+    }
+  ],
+  "expect": {
+    "view": {
+      "type": "Banner",
+      "reference": "banner",
+      "properties": {
+        "backgroundImageUrl": "https://cdn.example.com/promo.jpg"
+      },
+      "children": [
+        {
+          "type": "Text",
+          "reference": "title",
+          "properties": {
+            "text": "Hello, Ada"
+          }
+        },
+        {
+          "type": "Text",
+          "reference": "subtitle",
+          "properties": {
+            "text": "A summer of savings starts today."
+          }
+        },
+        {
+          "type": "Button",
+          "reference": "cta",
+          "properties": {
+            "label": "Learn more",
+            "enabled": true
+          }
+        }
+      ]
+    },
+    "dispatched": [
+      {
+        "action": "openUrl",
+        "parameters": {
+          "url": "https://example.com/promo"
+        }
+      }
+    ],
+    "occurrences": []
+  }
+}

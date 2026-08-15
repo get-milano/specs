@@ -1,0 +1,26 @@
+{
+  "name": "expr-double-modulo",
+  "description": "Double % is the truncating remainder; the sign follows the dividend",
+  "document": {
+    "version": "0.1.0",
+    "root": {
+      "type": "Text",
+      "id": "result",
+      "properties": {
+        "text": {
+          "$expr": "str(-7.5 % 2.0) + ' ' + str(7.5 % 2.0)"
+        }
+      }
+    }
+  },
+  "expect": {
+    "view": {
+      "type": "Text",
+      "reference": "result",
+      "properties": {
+        "text": "-1.5 1.5"
+      }
+    },
+    "occurrences": []
+  }
+}

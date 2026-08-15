@@ -1,0 +1,115 @@
+---
+title: "Expression language"
+nav_order: 4
+---
+
+# Milano Expression Language
+
+**Status:** Beta v0.1.0 · 2026-08-15
+
+Defines the grammar and semantics of the expression strings carried by the `$expr` wrapper. Expressions are pure, statically typed, and total: after the gate accepts a document, evaluation can never fail. Both runtimes implement this spec independently; the conformance suite is the arbiter of identical behavior.
+
+## Grammar
+
+The complete grammar, EBNF. Whitespace (spaces and tabs) may appear between any two tokens and is insignificant; there are no comments.
+
+```ebnf
+expression     = coalesce ;
+coalesce       = or , [ "??" , coalesce ] ;                    (* right-associative *)
+or             = and , { "||" , and } ;
+and            = equality , { "&&" , equality } ;
+equality       = comparison , { ( "==" | "!=" ) , comparison } ;
+comparison     = additive , { ( "<" | "<=" | ">" | ">=" ) , additive } ;
+additive       = multiplicative , { ( "+" | "-" ) , multiplicative } ;
+multiplicative = unary , { ( "*" | "/" | "%" ) , unary } ;
+unary          = ( "!" | "-" ) , unary | postfix ;
+postfix        = primary , { "." , identifier } ;
+primary        = literal | call | reference | "(" , expression , ")" ;
+call           = identifier , "(" , [ expression , { "," , expression } ] , ")" ;
+reference      = identifier ;                                  (* must be a reserved root *)
+literal        = number | string | "true" | "false" | "null" ;
+number         = digit , { digit } , [ "." , digit , { digit } ] ;  (* no leading dot, no exponent *)
+string         = "'" , { character | "\'" | "\\" } , "'" ;
+identifier     = letter , { letter | digit | "_" } ;
+```
+
+Notes:
+
+- A bare `identifier` in `primary` position must be one of the reserved roots (`state`, `context`, `event`); anything else is a `SchemaViolation` at the gate. Function names appear only in `call` position.
+- Negative literals are the unary `-` operator applied to a number.
+- A `number` without a decimal point is an `int` literal; with one, a `double` literal.
+
+## References
+
+- Reserved roots: `state`, `context`, and `event` (the last only inside `on` bindings of events declaring a payload).
+- Record fields are accessed with `.` (dot). Field access requires a non-optional record type; an optional must be resolved with `??` first. This rule is checked at the gate, which is what makes null dereference impossible at runtime.
+- There is no array indexing in v0.1.
+
+## Literals
+
+- `int`: decimal digits, optionally negated. A literal outside the 64-bit range is a `SchemaViolation` at the gate: what the producer wrote is rejected, never silently changed.
+- `double`: decimal digits with a decimal point, optionally negated.
+- `string`: single-quoted, with `\'` and `\\` escapes.
+- `bool`: `true`, `false`.
+- `null`: valid only where the expected type is optional.
+
+## Operators
+
+In precedence order, tightest first. Parentheses group.
+
+| Level | Operators | Operands |
+|---|---|---|
+| 1 | `!` `-` (unary) | bool; int or double |
+| 2 | `*` `/` `%` | numeric |
+| 3 | `+` `-` | numeric; `+` also concatenates when both operands are strings |
+| 4 | `<` `<=` `>` `>=` | numeric only |
+| 5 | `==` `!=` | scalars of the same type after numeric promotion; optionals comparable to `null`. Arrays and records are not comparable in v0.1: comparing them is a `SchemaViolation` at the gate |
+| 6 | `&&` | bool, short-circuit |
+| 7 | `||` | bool, short-circuit |
+| 8 | `??` | optional T on the left, T on the right; result T; right-associative |
+
+Binary operators associate left except `??`, which associates right.
+
+## Numeric semantics
+
+Fixed exactly, because two independent runtimes must agree to the bit:
+
+- **Promotion.** When `int` and `double` meet in an arithmetic or comparison operator, the `int` converts to `double` (IEEE 754 round-to-nearest) and the operation is a double operation. `int` with `int` stays `int`.
+- **Integer arithmetic.** 64-bit two's complement, wrapping on overflow. Division truncates toward zero; the sign of `%` follows the dividend.
+- **Division and modulo by zero (int).** The result is `0`, and the occurrence is reported to the engine observer. Evaluation does not fail.
+- **Double arithmetic.** IEEE 754 binary64 throughout: division by zero yields infinities, `0.0/0.0` yields NaN, and NaN compares unequal to everything including itself.
+- **Conversions.** `double(x)` converts an int exactly when representable, otherwise round-to-nearest. `int(x)` truncates toward zero and saturates at the int64 bounds; saturation is reported to the observer.
+
+## Strings
+
+- `+` concatenates two strings. There is no implicit stringification: mixing a string with a number in `+` is a `SchemaViolation` at the gate.
+- `str(x)` converts scalars to strings, locale-independently: ints in decimal; bools as `true` / `false`. Doubles use a Milano-defined format, never the platform default: non-finite values are `nan`, `inf`, `-inf`; finite values use the shortest round-trip digits, rendered as plain decimal (integral values keep one fractional digit: `5.0`) while the normalized exponent is within [-4, 15], otherwise as scientific notation `d[.ddd]e[-]NN` with a lowercase `e`, no plus sign, no zero padding.
+- Ordering operators do not apply to strings; equality does.
+- Substring functions (`contains`, `startsWith`, `endsWith`) compare Unicode scalar sequences literally: no normalization, no grapheme clustering.
+- `trim` removes exactly the characters with the Unicode White_Space property, from an explicit table both runtimes share; platform whitespace helpers are not used.
+
+## Functions
+
+The complete v0.1 set. All functions are pure and total; all arguments are evaluated.
+
+| Function | Signature | Notes |
+|---|---|---|
+| `str` | scalar to string | Locale-independent formats above |
+| `int` | double to int | Truncates toward zero, saturates, reports saturation |
+| `double` | int to double | Round-to-nearest |
+| `concat` | strings... to string | Two or more arguments |
+| `length` | string or array to int | Strings: Unicode scalar count |
+| `isEmpty` | string or array to bool | |
+| `contains` | string, string to bool | |
+| `startsWith` | string, string to bool | |
+| `endsWith` | string, string to bool | |
+| `trim` | string to string | Removes leading and trailing Unicode whitespace |
+| `if` | bool, T, T to T | Both branches type-check to the same T; both are evaluated (evaluation is pure, so this is observable only through cost) |
+
+There are no regular expressions in v0.1: string validation beyond these functions belongs to the producer or the host. There are no case-mapping functions in v0.1: case rules are locale-sensitive and belong to renderers.
+
+## Typing and totality
+
+- Every expression has a static type, determined at the gate from literals, declared state and context types, event payload types, operator rules, and function signatures. A property expression must type-check to the property's declared type; mismatches are a `SchemaViolation` at the gate.
+- A non-optional `T` is accepted wherever an optional `T` is expected; the reverse never holds.
+- After the gate: no type errors (static), no null dereference (the `??` rule), no division failures (defined results), no overflow traps (wrapping and saturation). Evaluation is total. The conformance suite includes vectors for every boundary in this section.

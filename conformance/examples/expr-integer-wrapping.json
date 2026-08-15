@@ -1,0 +1,26 @@
+{
+  "name": "expr-integer-wrapping",
+  "description": "64-bit integer addition wraps on overflow",
+  "document": {
+    "version": "0.1.0",
+    "root": {
+      "type": "Text",
+      "id": "result",
+      "properties": {
+        "text": {
+          "$expr": "str(9223372036854775807 + 1)"
+        }
+      }
+    }
+  },
+  "expect": {
+    "view": {
+      "type": "Text",
+      "reference": "result",
+      "properties": {
+        "text": "-9223372036854775808"
+      }
+    },
+    "occurrences": []
+  }
+}

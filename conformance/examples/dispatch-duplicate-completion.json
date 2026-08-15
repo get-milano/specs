@@ -1,0 +1,74 @@
+{
+  "name": "dispatch-duplicate-completion",
+  "description": "A handler completing twice: the second completion is ignored and reported; onSuccess runs once",
+  "document": {
+    "version": "0.1.0",
+    "state": {
+      "done": "bool"
+    },
+    "actions": {
+      "ping": {}
+    },
+    "root": {
+      "type": "Button",
+      "id": "b",
+      "properties": {
+        "label": "Go",
+        "enabled": true
+      },
+      "on": {
+        "tap": [
+          {
+            "action": "ping",
+            "onSuccess": [
+              {
+                "action": "$set",
+                "key": "done",
+                "value": true
+              }
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "state": {
+    "done": false
+  },
+  "steps": [
+    {
+      "event": {
+        "node": "b",
+        "name": "tap"
+      }
+    },
+    {
+      "complete": {
+        "dispatch": 0,
+        "outcome": "success"
+      }
+    },
+    {
+      "complete": {
+        "dispatch": 0,
+        "outcome": "success"
+      }
+    }
+  ],
+  "expect": {
+    "state": {
+      "done": true
+    },
+    "dispatched": [
+      {
+        "action": "ping",
+        "parameters": {}
+      }
+    ],
+    "occurrences": [
+      {
+        "kind": "duplicateCompletion"
+      }
+    ]
+  }
+}

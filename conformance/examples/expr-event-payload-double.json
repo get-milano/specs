@@ -1,0 +1,49 @@
+{
+  "name": "expr-event-payload-double",
+  "description": "A double event payload binds to the event root and is usable in $set arithmetic",
+  "document": {
+    "version": "0.1.0",
+    "state": {
+      "total": "double"
+    },
+    "root": {
+      "type": "NumberField",
+      "id": "field",
+      "properties": {
+        "label": "Amount",
+        "value": {
+          "$expr": "state.total"
+        }
+      },
+      "on": {
+        "change": [
+          {
+            "action": "$set",
+            "key": "total",
+            "value": {
+              "$expr": "event * 2.0"
+            }
+          }
+        ]
+      }
+    }
+  },
+  "state": {
+    "total": 0.5
+  },
+  "steps": [
+    {
+      "event": {
+        "node": "field",
+        "name": "change",
+        "payload": 3.25
+      }
+    }
+  ],
+  "expect": {
+    "state": {
+      "total": 6.5
+    },
+    "occurrences": []
+  }
+}

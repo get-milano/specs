@@ -1,0 +1,26 @@
+{
+  "name": "expr-string-functions",
+  "description": "trim, length (unicode scalars), and contains compose",
+  "document": {
+    "version": "0.1.0",
+    "root": {
+      "type": "Text",
+      "id": "result",
+      "properties": {
+        "text": {
+          "$expr": "trim('  x  ') + str(length('héllo')) + if(contains('milano', 'lan'), '!', '?')"
+        }
+      }
+    }
+  },
+  "expect": {
+    "view": {
+      "type": "Text",
+      "reference": "result",
+      "properties": {
+        "text": "x5!"
+      }
+    },
+    "occurrences": []
+  }
+}

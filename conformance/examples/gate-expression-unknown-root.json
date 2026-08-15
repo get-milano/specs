@@ -1,0 +1,24 @@
+{
+  "name": "gate-expression-unknown-root",
+  "description": "A bare identifier that is not a reserved root is a SchemaViolation at the gate",
+  "document": {
+    "version": "0.1.0",
+    "root": {
+      "type": "Text",
+      "id": "result",
+      "properties": {
+        "text": {
+          "$expr": "stuff.x"
+        }
+      }
+    }
+  },
+  "expect": {
+    "error": {
+      "type": "SchemaViolation",
+      "rule": "expression",
+      "node": "result",
+      "expected": "string"
+    }
+  }
+}

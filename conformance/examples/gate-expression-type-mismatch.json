@@ -1,0 +1,24 @@
+{
+  "name": "gate-expression-type-mismatch",
+  "description": "Mixing a string and a number in + is a SchemaViolation at the gate",
+  "document": {
+    "version": "0.1.0",
+    "root": {
+      "type": "Text",
+      "id": "result",
+      "properties": {
+        "text": {
+          "$expr": "'a' + 1"
+        }
+      }
+    }
+  },
+  "expect": {
+    "error": {
+      "type": "SchemaViolation",
+      "rule": "expression",
+      "node": "result",
+      "expected": "string"
+    }
+  }
+}

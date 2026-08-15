@@ -1,0 +1,105 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "vocabulary.schema.json",
+  "title": "Milano Vocabulary Artifact",
+  "description": "Validates Milano vocabulary artifacts per the vocabulary schema spec. Unknown top-level and declaration-level fields are permitted, matching the contract's tolerance rules; runtimes apply their own contract-version handling.",
+  "type": "object",
+  "required": ["milano", "name", "version", "components"],
+  "properties": {
+    "milano": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+    },
+    "name": {
+      "$ref": "#/$defs/identifier"
+    },
+    "version": {
+      "type": "string",
+      "minLength": 1
+    },
+    "components": {
+      "type": "object",
+      "propertyNames": { "$ref": "#/$defs/identifier" },
+      "additionalProperties": { "$ref": "#/$defs/component" }
+    },
+    "actions": {
+      "type": "object",
+      "propertyNames": { "$ref": "#/$defs/identifier" },
+      "additionalProperties": { "$ref": "#/$defs/action" }
+    }
+  },
+  "$defs": {
+    "identifier": {
+      "type": "string",
+      "pattern": "^[A-Za-z][A-Za-z0-9_]*$"
+    },
+    "component": {
+      "type": "object",
+      "properties": {
+        "properties": {
+          "type": "object",
+          "propertyNames": { "$ref": "#/$defs/identifier" },
+          "additionalProperties": { "$ref": "#/$defs/type" }
+        },
+        "events": {
+          "type": "object",
+          "propertyNames": { "$ref": "#/$defs/identifier" },
+          "additionalProperties": {
+            "anyOf": [
+              { "$ref": "#/$defs/type" },
+              { "type": "null" }
+            ]
+          }
+        },
+        "children": {
+          "type": "boolean",
+          "default": false
+        },
+        "strict": {
+          "type": "boolean",
+          "default": false
+        }
+      }
+    },
+    "action": {
+      "type": "object",
+      "properties": {
+        "parameters": {
+          "type": "object",
+          "propertyNames": { "$ref": "#/$defs/identifier" },
+          "additionalProperties": { "$ref": "#/$defs/type" }
+        }
+      }
+    },
+    "type": {
+      "oneOf": [
+        {
+          "type": "string",
+          "pattern": "^(bool|int|double|string)\\??$"
+        },
+        {
+          "type": "object",
+          "required": ["array"],
+          "properties": {
+            "array": { "$ref": "#/$defs/type" },
+            "optional": { "type": "boolean" }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": ["record"],
+          "properties": {
+            "record": {
+              "type": "object",
+              "propertyNames": { "$ref": "#/$defs/identifier" },
+              "additionalProperties": { "$ref": "#/$defs/type" }
+            },
+            "optional": { "type": "boolean" }
+          },
+          "additionalProperties": false
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,48 @@
+{
+  "name": "dispatch-emission-after-teardown",
+  "description": "An emission arriving after teardown is silently ignored: no state change, no dispatch, no occurrence",
+  "document": {
+    "version": "0.1.0",
+    "state": {
+      "tapped": "bool"
+    },
+    "root": {
+      "type": "Button",
+      "id": "b",
+      "properties": {
+        "label": "Go",
+        "enabled": true
+      },
+      "on": {
+        "tap": [
+          {
+            "action": "$set",
+            "key": "tapped",
+            "value": true
+          }
+        ]
+      }
+    }
+  },
+  "state": {
+    "tapped": false
+  },
+  "steps": [
+    {
+      "teardown": true
+    },
+    {
+      "event": {
+        "node": "b",
+        "name": "tap"
+      }
+    }
+  ],
+  "expect": {
+    "state": {
+      "tapped": false
+    },
+    "dispatched": [],
+    "occurrences": []
+  }
+}

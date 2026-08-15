@@ -1,0 +1,40 @@
+{
+  "name": "gate-extra-data-keys",
+  "description": "Supplied context and provider values with undeclared keys build cleanly; extras are ignored, nothing is reported",
+  "document": {
+    "version": "0.1.0",
+    "context": {
+      "greeting": "string"
+    },
+    "state": {
+      "flag": "bool"
+    },
+    "root": {
+      "type": "Text",
+      "id": "t",
+      "properties": {
+        "text": {
+          "$expr": "if(state.flag, 'on', context.greeting)"
+        }
+      }
+    }
+  },
+  "context": {
+    "greeting": "hello",
+    "extraContext": 5
+  },
+  "state": {
+    "flag": false,
+    "extraState": "ignored"
+  },
+  "expect": {
+    "view": {
+      "type": "Text",
+      "reference": "t",
+      "properties": {
+        "text": "hello"
+      }
+    },
+    "occurrences": []
+  }
+}

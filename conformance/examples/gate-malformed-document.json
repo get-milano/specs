@@ -1,0 +1,10 @@
+{
+  "name": "gate-malformed-document",
+  "description": "Input that is not well-formed JSON fails at parse with MalformedDocument",
+  "documentText": "{ this is not json",
+  "expect": {
+    "error": {
+      "type": "MalformedDocument"
+    }
+  }
+}

@@ -1,0 +1,262 @@
+{
+  "name": "gate-limit-tree-depth",
+  "description": "A tree deeper than the default depth limit fails with LimitExceeded",
+  "document": {
+    "version": "0.1.0",
+    "root": {
+      "type": "Column",
+      "id": "c1",
+      "children": [
+        {
+          "type": "Column",
+          "id": "c2",
+          "children": [
+            {
+              "type": "Column",
+              "id": "c3",
+              "children": [
+                {
+                  "type": "Column",
+                  "id": "c4",
+                  "children": [
+                    {
+                      "type": "Column",
+                      "id": "c5",
+                      "children": [
+                        {
+                          "type": "Column",
+                          "id": "c6",
+                          "children": [
+                            {
+                              "type": "Column",
+                              "id": "c7",
+                              "children": [
+                                {
+                                  "type": "Column",
+                                  "id": "c8",
+                                  "children": [
+                                    {
+                                      "type": "Column",
+                                      "id": "c9",
+                                      "children": [
+                                        {
+                                          "type": "Column",
+                                          "id": "c10",
+                                          "children": [
+                                            {
+                                              "type": "Column",
+                                              "id": "c11",
+                                              "children": [
+                                                {
+                                                  "type": "Column",
+                                                  "id": "c12",
+                                                  "children": [
+                                                    {
+                                                      "type": "Column",
+                                                      "id": "c13",
+                                                      "children": [
+                                                        {
+                                                          "type": "Column",
+                                                          "id": "c14",
+                                                          "children": [
+                                                            {
+                                                              "type": "Column",
+                                                              "id": "c15",
+                                                              "children": [
+                                                                {
+                                                                  "type": "Column",
+                                                                  "id": "c16",
+                                                                  "children": [
+                                                                    {
+                                                                      "type": "Column",
+                                                                      "id": "c17",
+                                                                      "children": [
+                                                                        {
+                                                                          "type": "Column",
+                                                                          "id": "c18",
+                                                                          "children": [
+                                                                            {
+                                                                              "type": "Column",
+                                                                              "id": "c19",
+                                                                              "children": [
+                                                                                {
+                                                                                  "type": "Column",
+                                                                                  "id": "c20",
+                                                                                  "children": [
+                                                                                    {
+                                                                                      "type": "Column",
+                                                                                      "id": "c21",
+                                                                                      "children": [
+                                                                                        {
+                                                                                          "type": "Column",
+                                                                                          "id": "c22",
+                                                                                          "children": [
+                                                                                            {
+                                                                                              "type": "Column",
+                                                                                              "id": "c23",
+                                                                                              "children": [
+                                                                                                {
+                                                                                                  "type": "Column",
+                                                                                                  "id": "c24",
+                                                                                                  "children": [
+                                                                                                    {
+                                                                                                      "type": "Column",
+                                                                                                      "id": "c25",
+                                                                                                      "children": [
+                                                                                                        {
+                                                                                                          "type": "Column",
+                                                                                                          "id": "c26",
+                                                                                                          "children": [
+                                                                                                            {
+                                                                                                              "type": "Column",
+                                                                                                              "id": "c27",
+                                                                                                              "children": [
+                                                                                                                {
+                                                                                                                  "type": "Column",
+                                                                                                                  "id": "c28",
+                                                                                                                  "children": [
+                                                                                                                    {
+                                                                                                                      "type": "Column",
+                                                                                                                      "id": "c29",
+                                                                                                                      "children": [
+                                                                                                                        {
+                                                                                                                          "type": "Column",
+                                                                                                                          "id": "c30",
+                                                                                                                          "children": [
+                                                                                                                            {
+                                                                                                                              "type": "Column",
+                                                                                                                              "id": "c31",
+                                                                                                                              "children": [
+                                                                                                                                {
+                                                                                                                                  "type": "Column",
+                                                                                                                                  "id": "c32",
+                                                                                                                                  "children": [
+                                                                                                                                    {
+                                                                                                                                      "type": "Column",
+                                                                                                                                      "id": "c33",
+                                                                                                                                      "children": [
+                                                                                                                                        {
+                                                                                                                                          "type": "Column",
+                                                                                                                                          "id": "c34",
+                                                                                                                                          "children": [
+                                                                                                                                            {
+                                                                                                                                              "type": "Column",
+                                                                                                                                              "id": "c35",
+                                                                                                                                              "children": [
+                                                                                                                                                {
+                                                                                                                                                  "type": "Column",
+                                                                                                                                                  "id": "c36",
+                                                                                                                                                  "children": [
+                                                                                                                                                    {
+                                                                                                                                                      "type": "Column",
+                                                                                                                                                      "id": "c37",
+                                                                                                                                                      "children": [
+                                                                                                                                                        {
+                                                                                                                                                          "type": "Column",
+                                                                                                                                                          "id": "c38",
+                                                                                                                                                          "children": [
+                                                                                                                                                            {
+                                                                                                                                                              "type": "Column",
+                                                                                                                                                              "id": "c39",
+                                                                                                                                                              "children": [
+                                                                                                                                                                {
+                                                                                                                                                                  "type": "Column",
+                                                                                                                                                                  "id": "c40",
+                                                                                                                                                                  "children": [
+                                                                                                                                                                    {
+                                                                                                                                                                      "type": "Text",
+                                                                                                                                                                      "id": "leaf",
+                                                                                                                                                                      "properties": {
+                                                                                                                                                                        "text": "bottom"
+                                                                                                                                                                      }
+                                                                                                                                                                    }
+                                                                                                                                                                  ]
+                                                                                                                                                                }
+                                                                                                                                                              ]
+                                                                                                                                                            }
+                                                                                                                                                          ]
+                                                                                                                                                        }
+                                                                                                                                                      ]
+                                                                                                                                                    }
+                                                                                                                                                  ]
+                                                                                                                                                }
+                                                                                                                                              ]
+                                                                                                                                            }
+                                                                                                                                          ]
+                                                                                                                                        }
+                                                                                                                                      ]
+                                                                                                                                    }
+                                                                                                                                  ]
+                                                                                                                                }
+                                                                                                                              ]
+                                                                                                                            }
+                                                                                                                          ]
+                                                                                                                        }
+                                                                                                                      ]
+                                                                                                                    }
+                                                                                                                  ]
+                                                                                                                }
+                                                                                                              ]
+                                                                                                            }
+                                                                                                          ]
+                                                                                                        }
+                                                                                                      ]
+                                                                                                    }
+                                                                                                  ]
+                                                                                                }
+                                                                                              ]
+                                                                                            }
+                                                                                          ]
+                                                                                        }
+                                                                                      ]
+                                                                                    }
+                                                                                  ]
+                                                                                }
+                                                                              ]
+                                                                            }
+                                                                          ]
+                                                                        }
+                                                                      ]
+                                                                    }
+                                                                  ]
+                                                                }
+                                                              ]
+                                                            }
+                                                          ]
+                                                        }
+                                                      ]
+                                                    }
+                                                  ]
+                                                }
+                                              ]
+                                            }
+                                          ]
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "expect": {
+    "error": {
+      "type": "LimitExceeded",
+      "limit": "maxTreeDepth",
+      "value": 32,
+      "actual": 41
+    }
+  }
+}

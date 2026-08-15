@@ -1,0 +1,52 @@
+{
+  "name": "dispatch-set-visibility",
+  "description": "Within one dispatch, a $set is visible to the expressions of subsequent actions",
+  "document": {
+    "version": "0.1.0",
+    "state": {
+      "text": "string"
+    },
+    "root": {
+      "type": "Button",
+      "id": "b",
+      "properties": {
+        "label": "Go",
+        "enabled": true
+      },
+      "on": {
+        "tap": [
+          {
+            "action": "$set",
+            "key": "text",
+            "value": "a"
+          },
+          {
+            "action": "$set",
+            "key": "text",
+            "value": {
+              "$expr": "state.text + 'b'"
+            }
+          }
+        ]
+      }
+    }
+  },
+  "state": {
+    "text": ""
+  },
+  "steps": [
+    {
+      "event": {
+        "node": "b",
+        "name": "tap"
+      }
+    }
+  ],
+  "expect": {
+    "state": {
+      "text": "ab"
+    },
+    "dispatched": [],
+    "occurrences": []
+  }
+}

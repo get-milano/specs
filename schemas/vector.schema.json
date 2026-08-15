@@ -1,0 +1,178 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "vector.schema.json",
+  "title": "Milano Conformance Vector",
+  "description": "Validates a conformance vector's envelope per the conformance suite spec: identity, exactly one document form, optional data and interaction steps, and the expectation block. A structurally invalid document must be carried as documentText, so every embedded document object satisfies the document schema. The envelope is strict: unknown keys fail, since runners would silently ignore them.",
+  "type": "object",
+  "required": ["name", "expect"],
+  "properties": {
+    "name": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
+    },
+    "description": {
+      "type": "string",
+      "minLength": 1
+    },
+    "document": { "$ref": "document.schema.json" },
+    "documentText": {
+      "type": "string",
+      "minLength": 1
+    },
+    "state": {
+      "type": "object",
+      "propertyNames": { "$ref": "#/$defs/identifier" }
+    },
+    "context": {
+      "type": "object",
+      "propertyNames": { "$ref": "#/$defs/identifier" }
+    },
+    "config": {
+      "type": "object",
+      "properties": {
+        "unknownTypePolicy": {
+          "enum": ["skip", "placeholder", "fail"]
+        }
+      },
+      "additionalProperties": false
+    },
+    "steps": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/step" }
+    },
+    "expect": { "$ref": "#/$defs/expect" }
+  },
+  "oneOf": [
+    { "required": ["document"], "not": { "required": ["documentText"] } },
+    { "required": ["documentText"], "not": { "required": ["document"] } }
+  ],
+  "additionalProperties": false,
+  "$defs": {
+    "identifier": {
+      "type": "string",
+      "pattern": "^[A-Za-z][A-Za-z0-9_]*$"
+    },
+    "step": {
+      "type": "object",
+      "minProperties": 1,
+      "maxProperties": 1,
+      "properties": {
+        "event": {
+          "type": "object",
+          "required": ["node", "name"],
+          "properties": {
+            "node": { "type": "string", "minLength": 1 },
+            "name": { "$ref": "#/$defs/identifier" },
+            "payload": {}
+          },
+          "additionalProperties": false
+        },
+        "contextUpdate": {
+          "type": "object",
+          "propertyNames": { "$ref": "#/$defs/identifier" }
+        },
+        "teardown": { "const": true },
+        "complete": {
+          "type": "object",
+          "required": ["dispatch", "outcome"],
+          "properties": {
+            "dispatch": { "type": "integer", "minimum": 0 },
+            "outcome": { "enum": ["success", "failure"] }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "expect": {
+      "type": "object",
+      "minProperties": 1,
+      "properties": {
+        "view": { "$ref": "#/$defs/resolvedNode" },
+        "state": {
+          "type": "object",
+          "propertyNames": { "$ref": "#/$defs/identifier" }
+        },
+        "dispatched": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["action"],
+            "properties": {
+              "action": { "$ref": "#/$defs/identifier" },
+              "parameters": {
+                "type": "object",
+                "propertyNames": { "$ref": "#/$defs/identifier" }
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "occurrences": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["kind"],
+            "properties": {
+              "kind": {
+                "enum": [
+                  "unknownTypeSkipped",
+                  "unknownTypePlaceholder",
+                  "undeclaredProperty",
+                  "droppedEvent",
+                  "invalidEmission",
+                  "duplicateCompletion",
+                  "completionAfterTeardown",
+                  "rejectedContextUpdate",
+                  "overLimitRejected",
+                  "divisionByZero",
+                  "saturation"
+                ]
+              },
+              "node": { "type": "string", "minLength": 1 }
+            },
+            "additionalProperties": false
+          }
+        },
+        "error": {
+          "type": "object",
+          "required": ["type"],
+          "properties": {
+            "type": {
+              "enum": [
+                "MalformedDocument",
+                "UnsupportedVersion",
+                "SchemaViolation",
+                "UnknownComponentType",
+                "LimitExceeded"
+              ]
+            }
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "resolvedNode": {
+      "type": "object",
+      "required": ["type", "reference"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "pattern": "^\\$?[A-Za-z][A-Za-z0-9_]*$"
+        },
+        "reference": { "type": "string", "minLength": 1 },
+        "placeholder": { "const": true },
+        "properties": {
+          "type": "object",
+          "propertyNames": { "$ref": "#/$defs/identifier" }
+        },
+        "children": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/resolvedNode" }
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

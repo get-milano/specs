@@ -1,0 +1,23 @@
+{
+  "name": "gate-property-type-mismatch",
+  "description": "A literal of the wrong type for a declared property fails with SchemaViolation",
+  "document": {
+    "version": "0.1.0",
+    "root": {
+      "type": "Text",
+      "id": "title",
+      "properties": {
+        "text": 5
+      }
+    }
+  },
+  "expect": {
+    "error": {
+      "type": "SchemaViolation",
+      "rule": "property-type",
+      "node": "title",
+      "expected": "string",
+      "found": "int"
+    }
+  }
+}

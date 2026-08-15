@@ -1,0 +1,26 @@
+{
+  "name": "expr-str-format-boundaries",
+  "description": "str() double formatting: normalized exponent 15 stays plain decimal, -4 stays plain, -5 flips to scientific",
+  "document": {
+    "version": "0.1.0",
+    "root": {
+      "type": "Text",
+      "id": "result",
+      "properties": {
+        "text": {
+          "$expr": "str(1000000000000000.0) + ' ' + str(0.0001) + ' ' + str(0.00001)"
+        }
+      }
+    }
+  },
+  "expect": {
+    "view": {
+      "type": "Text",
+      "reference": "result",
+      "properties": {
+        "text": "1000000000000000.0 0.0001 1e-5"
+      }
+    },
+    "occurrences": []
+  }
+}

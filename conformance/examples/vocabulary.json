@@ -1,0 +1,64 @@
+{
+  "milano": "0.1.0",
+  "name": "examples",
+  "version": "0.1.0",
+  "components": {
+    "Banner": {
+      "properties": {
+        "backgroundImageUrl": "string"
+      },
+      "children": true
+    },
+    "Column": {
+      "children": true
+    },
+    "Text": {
+      "properties": {
+        "text": "string"
+      }
+    },
+    "Button": {
+      "properties": {
+        "label": "string",
+        "enabled": "bool"
+      },
+      "events": {
+        "tap": null
+      }
+    },
+    "TextField": {
+      "properties": {
+        "label": "string",
+        "value": "string"
+      },
+      "events": {
+        "change": "string"
+      }
+    },
+    "NumberField": {
+      "properties": {
+        "label": "string",
+        "value": "double"
+      },
+      "events": {
+        "change": "double"
+      }
+    },
+    "Checkbox": {
+      "properties": {
+        "label": "string",
+        "checked": "bool"
+      },
+      "events": {
+        "change": "bool"
+      }
+    }
+  },
+  "actions": {
+    "openUrl": {
+      "parameters": {
+        "url": "string"
+      }
+    }
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "name": "gate-expression-parse-error",
+  "description": "An expression that does not parse is a SchemaViolation at the gate",
+  "document": {
+    "version": "0.1.0",
+    "root": {
+      "type": "Text",
+      "id": "result",
+      "properties": {
+        "text": {
+          "$expr": "1 +"
+        }
+      }
+    }
+  },
+  "expect": {
+    "error": {
+      "type": "SchemaViolation",
+      "rule": "expression",
+      "node": "result",
+      "expected": "string"
+    }
+  }
+}

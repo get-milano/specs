@@ -1,0 +1,34 @@
+{
+  "name": "expr-coalesce-chain",
+  "description": "?? is right-associative: a chain of nulls falls through to the final default",
+  "document": {
+    "version": "0.1.0",
+    "state": {
+      "a": "string?",
+      "b": "string?"
+    },
+    "root": {
+      "type": "Text",
+      "id": "result",
+      "properties": {
+        "text": {
+          "$expr": "state.a ?? state.b ?? 'z'"
+        }
+      }
+    }
+  },
+  "state": {
+    "a": null,
+    "b": null
+  },
+  "expect": {
+    "view": {
+      "type": "Text",
+      "reference": "result",
+      "properties": {
+        "text": "z"
+      }
+    },
+    "occurrences": []
+  }
+}
