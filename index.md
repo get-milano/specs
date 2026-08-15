@@ -13,6 +13,8 @@ Milano is **not** server-driven UI (it never talks to a server), **not** a SaaS 
 
 Version 0.1 targets two capabilities: banners and interstitials, and simple document-defined forms.
 
+Try the contract in the browser: the [Milano Playground](https://get-milano.github.io/playground/) validates vocabularies and documents against these schemas and the reference checker, live.
+
 ## Specifications
 
 | # | Spec | Status |

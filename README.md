@@ -4,6 +4,8 @@
 
 Canonical repository: `github.com/get-milano/specs`. The engines and sample apps live in `github.com/get-milano/sdk`.
 
+Try the contract in the browser: the [Milano Playground](https://get-milano.github.io/playground/) validates vocabularies and documents against these schemas and the reference checker, live.
+
 Milano is a client-only, design-system-agnostic Document-Driven UI (DDUI) framework for SwiftUI and Compose. Document-driven rather than server-driven: Milano is agnostic of how the document is obtained. Milano targets UI toolkits, not operating systems: it is usable wherever SwiftUI runs (iPhone, iPad, macOS, watchOS) and wherever Compose runs (Android, desktop). The first sample apps target iOS and Android.
 
 Milano consumes UI documents and defines the mechanics of document-driven UI: the document model, its expression language, its state and action models, and the runtimes that materialize documents into native UI (SwiftUI, Compose). The consumer defines everything else: the component vocabulary and its visual rendering. Documents carry structure and declarations only, never data values.
