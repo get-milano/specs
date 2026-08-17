@@ -2,7 +2,7 @@
   "name": "expr-int-of-nan-saturates",
   "description": "int(NaN) is 0 and reports saturation",
   "document": {
-    "version": "0.1.0",
+    "version": "1.0.0",
     "root": {
       "type": "Text",
       "id": "result",

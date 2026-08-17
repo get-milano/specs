@@ -1,0 +1,12 @@
+{
+  "name": "gate-state-key-invalid",
+  "description": "Document state keys follow the identifier grammar: a key starting with a digit is a SchemaViolation",
+  "documentText": "{\"version\": \"1.0.0\", \"state\": {\"1bad\": \"int\"}, \"root\": {\"type\": \"Text\", \"properties\": {\"text\": \"x\"}}}",
+  "expect": {
+    "error": {
+      "type": "SchemaViolation",
+      "rule": "state-declaration",
+      "found": "1bad"
+    }
+  }
+}

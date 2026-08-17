@@ -1,0 +1,32 @@
+{
+  "name": "expr-if-guard",
+  "description": "The guard idiom works: a condition guarding a division suppresses the report when it takes the safe branch",
+  "document": {
+    "version": "1.0.0",
+    "state": {
+      "count": "int"
+    },
+    "root": {
+      "type": "Text",
+      "id": "result",
+      "properties": {
+        "text": {
+          "$expr": "str(if(state.count != 0, 100 / state.count, 0))"
+        }
+      }
+    }
+  },
+  "state": {
+    "count": 0
+  },
+  "expect": {
+    "view": {
+      "type": "Text",
+      "reference": "result",
+      "properties": {
+        "text": "0"
+      }
+    },
+    "occurrences": []
+  }
+}

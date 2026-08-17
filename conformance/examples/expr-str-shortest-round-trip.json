@@ -1,0 +1,26 @@
+{
+  "name": "expr-str-shortest-round-trip",
+  "description": "str() uses the shortest round-trip digits, never the platform default: repeating decimals and near-int64 magnitudes",
+  "document": {
+    "version": "1.0.0",
+    "root": {
+      "type": "Text",
+      "id": "r",
+      "properties": {
+        "text": {
+          "$expr": "str(1.0 / 3.0) + ' ' + str(2.0 / 3.0) + ' ' + str(9223372036854775807.0 / 10.0)"
+        }
+      }
+    }
+  },
+  "expect": {
+    "view": {
+      "type": "Text",
+      "reference": "r",
+      "properties": {
+        "text": "0.3333333333333333 0.6666666666666666 9.223372036854776e17"
+      }
+    },
+    "occurrences": []
+  }
+}

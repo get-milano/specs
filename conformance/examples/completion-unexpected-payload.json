@@ -1,0 +1,73 @@
+{
+  "name": "completion-unexpected-payload",
+  "description": "A success value for an action declaring no result is an invalid completion",
+  "document": {
+    "version": "1.0.0",
+    "state": {
+      "done": "bool"
+    },
+    "root": {
+      "type": "Button",
+      "id": "b",
+      "properties": {
+        "label": "Go",
+        "enabled": true
+      },
+      "on": {
+        "tap": [
+          {
+            "action": "ping",
+            "onSuccess": [
+              {
+                "action": "$set",
+                "key": "done",
+                "value": true
+              }
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "state": {
+    "done": false
+  },
+  "steps": [
+    {
+      "event": {
+        "node": "b",
+        "name": "tap"
+      }
+    },
+    {
+      "complete": {
+        "dispatch": 0,
+        "outcome": "success",
+        "payload": "x"
+      }
+    }
+  ],
+  "expect": {
+    "state": {
+      "done": false
+    },
+    "dispatched": [
+      {
+        "action": "ping",
+        "parameters": {}
+      }
+    ],
+    "occurrences": [
+      {
+        "kind": "invalidCompletion"
+      }
+    ]
+  },
+  "config": {
+    "actions": {
+      "declare": {
+        "ping": {}
+      }
+    }
+  }
+}

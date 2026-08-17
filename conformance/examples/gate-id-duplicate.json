@@ -1,0 +1,34 @@
+{
+  "name": "gate-id-duplicate",
+  "description": "Node ids are document-unique: a duplicate id is a SchemaViolation with rule id-uniqueness",
+  "document": {
+    "version": "1.0.0",
+    "root": {
+      "type": "Column",
+      "id": "c",
+      "children": [
+        {
+          "type": "Text",
+          "id": "dup",
+          "properties": {
+            "text": "a"
+          }
+        },
+        {
+          "type": "Text",
+          "id": "dup",
+          "properties": {
+            "text": "b"
+          }
+        }
+      ]
+    }
+  },
+  "expect": {
+    "error": {
+      "type": "SchemaViolation",
+      "rule": "id-uniqueness",
+      "found": "dup"
+    }
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "name": "gate-children-not-accepted",
+  "description": "children are allowed only on component types the vocabulary declares as accepting them",
+  "document": {
+    "version": "1.0.0",
+    "root": {
+      "type": "Text",
+      "id": "t",
+      "properties": {
+        "text": "x"
+      },
+      "children": [
+        {
+          "type": "Text",
+          "properties": {
+            "text": "nested"
+          }
+        }
+      ]
+    }
+  },
+  "expect": {
+    "error": {
+      "type": "SchemaViolation",
+      "rule": "children",
+      "node": "t"
+    }
+  }
+}

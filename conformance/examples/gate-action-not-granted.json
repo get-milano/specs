@@ -1,0 +1,38 @@
+{
+  "name": "gate-action-not-granted",
+  "description": "Binding a custom action outside the surface's allowlist fails with SchemaViolation",
+  "config": {
+    "actions": {
+      "allow": ["openUrl"]
+    }
+  },
+  "document": {
+    "version": "1.0.0",
+    "root": {
+      "type": "Button",
+      "id": "send",
+      "properties": {
+        "label": "Send",
+        "enabled": true
+      },
+      "on": {
+        "tap": [
+          {
+            "action": "submitContact",
+            "name": "Ada",
+            "surname": "L",
+            "email": "a@b.c"
+          }
+        ]
+      }
+    }
+  },
+  "expect": {
+    "error": {
+      "type": "SchemaViolation",
+      "rule": "action-capability",
+      "node": "send",
+      "found": "submitContact"
+    }
+  }
+}

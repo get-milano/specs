@@ -2,12 +2,9 @@
   "name": "dispatch-completion-after-teardown",
   "description": "A completion arriving after the view is torn down drops its follow-ups and reports",
   "document": {
-    "version": "0.1.0",
+    "version": "1.0.0",
     "state": {
       "done": "bool"
-    },
-    "actions": {
-      "ping": {}
     },
     "root": {
       "type": "Button",
@@ -64,5 +61,12 @@
         "kind": "completionAfterTeardown"
       }
     ]
+  },
+  "config": {
+    "actions": {
+      "declare": {
+        "ping": {}
+      }
+    }
   }
 }

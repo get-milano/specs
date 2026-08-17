@@ -1,0 +1,53 @@
+{
+  "name": "builder-declared-action",
+  "description": "A builder-declared action absent from the vocabulary is granted for this surface; its parameters validate against the builder's signature and dispatch as data",
+  "config": {
+    "actions": {
+      "declare": {
+        "dismiss": {
+          "parameters": {
+            "reason": "string"
+          }
+        }
+      }
+    }
+  },
+  "document": {
+    "version": "1.0.0",
+    "root": {
+      "type": "Button",
+      "id": "close",
+      "properties": {
+        "label": "Close",
+        "enabled": true
+      },
+      "on": {
+        "tap": [
+          {
+            "action": "dismiss",
+            "reason": "user"
+          }
+        ]
+      }
+    }
+  },
+  "steps": [
+    {
+      "event": {
+        "node": "close",
+        "name": "tap"
+      }
+    }
+  ],
+  "expect": {
+    "dispatched": [
+      {
+        "action": "dismiss",
+        "parameters": {
+          "reason": "user"
+        }
+      }
+    ],
+    "occurrences": []
+  }
+}

@@ -1,0 +1,34 @@
+{
+  "name": "expr-if-optional-branches",
+  "description": "if() branches type-check to the same T where T may be optional: a null branch makes the result optional, feeding an optional property",
+  "document": {
+    "version": "1.0.0",
+    "state": {
+      "flag": "bool"
+    },
+    "root": {
+      "type": "Text",
+      "id": "t",
+      "properties": {
+        "text": "x",
+        "visible": {
+          "$expr": "if(state.flag, null, false)"
+        }
+      }
+    }
+  },
+  "state": {
+    "flag": false
+  },
+  "expect": {
+    "view": {
+      "type": "Text",
+      "reference": "t",
+      "properties": {
+        "text": "x",
+        "visible": false
+      }
+    },
+    "occurrences": []
+  }
+}

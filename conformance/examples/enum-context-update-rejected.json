@@ -1,0 +1,51 @@
+{
+  "name": "enum-context-update-rejected",
+  "description": "A context update with a non-member value for an enum declaration is rejected atomically and reported",
+  "document": {
+    "version": "1.0.0",
+    "context": {
+      "tone": {
+        "enum": [
+          "info",
+          "warning",
+          "danger"
+        ]
+      }
+    },
+    "root": {
+      "type": "Badge",
+      "id": "b",
+      "properties": {
+        "label": "Sev",
+        "tone": {
+          "$expr": "context.tone"
+        }
+      }
+    }
+  },
+  "context": {
+    "tone": "info"
+  },
+  "steps": [
+    {
+      "contextUpdate": {
+        "tone": "loud"
+      }
+    }
+  ],
+  "expect": {
+    "view": {
+      "type": "Badge",
+      "reference": "b",
+      "properties": {
+        "label": "Sev",
+        "tone": "info"
+      }
+    },
+    "occurrences": [
+      {
+        "kind": "rejectedContextUpdate"
+      }
+    ]
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "name": "gen-numeric-002",
+  "description": "Generated (seed 20260816): str(double((3 - 100)))",
+  "document": {
+    "version": "1.0.0",
+    "root": {
+      "type": "Text",
+      "id": "r",
+      "properties": {
+        "text": {
+          "$expr": "str(double((3 - 100)))"
+        }
+      }
+    }
+  },
+  "expect": {
+    "view": {
+      "type": "Text",
+      "reference": "r",
+      "properties": {
+        "text": "-97.0"
+      }
+    },
+    "occurrences": []
+  }
+}

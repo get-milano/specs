@@ -12,7 +12,7 @@ type checking, cross-checks, and evaluation of the resolved tree for vectors
 without steps. Vectors with steps exercise the runtime's dispatch machinery;
 executing their steps is the engines' territory, but they are statically
 linted here: the build must succeed, action lists must be well-formed and
-type-correct (with the event root bound to the declared payload type), each
+type-correct (with the event and result roots bound to their declared types), each
 step must be structurally valid, and an invalid or unbound emission must be
 matched by the occurrence the vector expects.
 
@@ -27,10 +27,11 @@ from pathlib import Path
 
 INT_MIN = -(2**63)
 INT_MAX = 2**63 - 1
-SUPPORTED_MAJORS = {0}
+SUPPORTED_MAJORS = {1}
 MAX_TREE_DEPTH = 32
 MAX_NODE_COUNT = 10_000
 MAX_EXPRESSION_LENGTH = 1_024
+MAX_DOCUMENT_BYTES = 1_048_576
 
 # The explicit Unicode White_Space table from the expression spec.
 WHITE_SPACE = set(
@@ -38,6 +39,20 @@ WHITE_SPACE = set(
     "\u2000\u2001\u2002\u2003\u2004\u2005\u2006\u2007\u2008"
     "\u2009\u200a\u2028\u2029\u202f\u205f\u3000"
 )
+
+def _identifier(name):
+    """The one identifier grammar: a letter, then letters/digits/underscores."""
+    return (isinstance(name, str) and len(name) > 0 and name[0].isalpha()
+            and all(c.isalnum() or c == "_" for c in name))
+
+
+def _semver(text):
+    """Parse x.y.z into a comparable tuple; malformed sorts lowest."""
+    parts = str(text).split(".")
+    if len(parts) == 3 and all(p.isdigit() for p in parts):
+        return tuple(int(p) for p in parts)
+    return (-1, -1, -1)
+
 
 class GateError(Exception):
     """A typed gate error; fields mirror the error taxonomy's detail."""
@@ -48,16 +63,18 @@ class GateError(Exception):
 
 
 # ---------------------------------------------------------------------------
-# Types. Kind is one of bool/int/double/string/array/record/null.
+# Types. Kind is one of bool/int/double/string/enum/array/record/null.
 # ---------------------------------------------------------------------------
 
 
 class Ty:
-    def __init__(self, kind, optional=False, elem=None, fields=None):
+    def __init__(self, kind, optional=False, elem=None, fields=None,
+                 members=None):
         self.kind = kind
         self.optional = optional
         self.elem = elem
         self.fields = fields
+        self.members = members
 
     def __repr__(self):
         return self.kind + ("?" if self.optional else "")
@@ -67,11 +84,32 @@ def parse_type(descriptor):
     if isinstance(descriptor, str):
         optional = descriptor.endswith("?")
         return Ty(descriptor.rstrip("?"), optional)
+    if "enum" in descriptor:
+        return Ty("enum", bool(descriptor.get("optional")),
+                  members=list(descriptor["enum"]))
     if "array" in descriptor:
         return Ty("array", bool(descriptor.get("optional")),
                   elem=parse_type(descriptor["array"]))
     return Ty("record", bool(descriptor.get("optional")),
               fields={k: parse_type(v) for k, v in descriptor["record"].items()})
+
+
+def same_type(left, right):
+    """Kind equality, member-aware for enums: two enum types are the same
+    exactly when their member sets are equal (structural, like records)."""
+    if left.kind != right.kind:
+        return False
+    if left.kind == "enum":
+        return set(left.members) == set(right.members)
+    return True
+
+
+def type_accepts(declared, actual):
+    """Whether a value of static type `actual` may appear where `declared`
+    is expected: same type, or an enum widening to string."""
+    if same_type(declared, actual):
+        return True
+    return declared.kind == "string" and actual.kind == "enum"
 
 
 def json_kind(value):
@@ -98,6 +136,11 @@ def validate_value(value, ty, rule, **detail):
                             expected=repr(ty), found="null", **detail)
         return None
     kind = json_kind(value)
+    if ty.kind == "enum":
+        if kind != "string" or value not in ty.members:
+            raise GateError("SchemaViolation", rule=rule,
+                            expected="enum member", found=value, **detail)
+        return value
     if ty.kind == "double" and kind == "int":
         return float(value)
     if ty.kind == "array" and kind == "array":
@@ -132,6 +175,15 @@ class ExprError(Exception):
     pass
 
 
+def _ascii_letter(c):
+    """The grammar's letter: ASCII only, per the expression spec."""
+    return "a" <= c <= "z" or "A" <= c <= "Z"
+
+
+def _ascii_digit(c):
+    return "0" <= c <= "9"
+
+
 def tokenize(text):
     tokens = []
     i, n = 0, len(text)
@@ -145,13 +197,13 @@ def tokenize(text):
         if text[i:i + 2] in two:
             tokens.append(("op", text[i:i + 2]))
             i += 2
-        elif c.isdigit():
+        elif _ascii_digit(c):
             j = i
-            while j < n and text[j].isdigit():
+            while j < n and _ascii_digit(text[j]):
                 j += 1
-            if j < n and text[j] == "." and j + 1 < n and text[j + 1].isdigit():
+            if j < n and text[j] == "." and j + 1 < n and _ascii_digit(text[j + 1]):
                 j += 1
-                while j < n and text[j].isdigit():
+                while j < n and _ascii_digit(text[j]):
                     j += 1
                 tokens.append(("double", float(text[i:j])))
             else:
@@ -174,9 +226,10 @@ def tokenize(text):
                 raise ExprError("unterminated string")
             tokens.append(("string", "".join(out)))
             i = j + 1
-        elif c.isalpha():
+        elif _ascii_letter(c):
             j = i
-            while j < n and (text[j].isalnum() or text[j] == "_"):
+            while j < n and (_ascii_letter(text[j]) or _ascii_digit(text[j])
+                             or text[j] == "_"):
                 j += 1
             tokens.append(("ident", text[i:j]))
             i = j
@@ -285,32 +338,41 @@ class Checker:
     payload: within action expressions the bare `event` root has that type.
     """
 
-    def __init__(self, state, context, event=None):
+    def __init__(self, state, context, event=None, result=None):
         self.roots = {"state": state, "context": context}
-        self.event_ty = event
+        self.scalar_roots = {"event": event, "result": result}
 
-    def check(self, node):
+    def check(self, node, expecting=None):
         op = node[0]
         if op == "lit":
             _, kind, value = node
             if kind == "int" and not INT_MIN <= value <= INT_MAX:
                 raise ExprError("int literal out of 64-bit range")
+            # A string literal in an enum position is refined to the enum:
+            # membership is checked here, at the gate.
+            if kind == "string" and expecting is not None \
+                    and expecting.kind == "enum":
+                if value not in expecting.members:
+                    raise ExprError(
+                        f"{value!r} is not a member of the declared enum")
+                return Ty("enum", members=expecting.members)
             return Ty(kind, optional=(kind == "null"))
         if op == "ref":
-            if node[1] == "event" and self.event_ty is not None:
-                return self.event_ty
+            scalar = self.scalar_roots.get(node[1])
+            if scalar is not None:
+                return scalar
             raise ExprError(f"bare identifier {node[1]!r} is not a reserved root")
         if op == "field":
             _, base, name = node
             if base[0] == "ref":
                 root = base[1]
-                if root == "event" and self.event_ty is not None:
-                    ty = self.event_ty
+                if self.scalar_roots.get(root) is not None:
+                    ty = self.scalar_roots[root]
                     if ty.kind != "record" or ty.optional:
                         raise ExprError(
                             "field access requires a non-optional record")
                     if name not in ty.fields:
-                        raise ExprError(f"event.{name} is not declared")
+                        raise ExprError(f"{root}.{name} is not declared")
                     return ty.fields[name]
                 if root not in self.roots:
                     raise ExprError(f"{root!r} is not a reserved root")
@@ -333,12 +395,13 @@ class Checker:
                 raise ExprError("unary - requires int or double")
             return Ty(ty.kind)
         if op == "??":
-            left, right = self.check(node[1]), self.check(node[2])
+            left = self.check(node[1], expecting)
+            right = self.check(node[2], expecting)
             if not left.optional:
                 raise ExprError("?? requires an optional left side")
             if right.optional:
                 raise ExprError("?? requires a non-optional right side")
-            if left.kind != "null" and left.kind != right.kind:
+            if left.kind != "null" and not same_type(left, right):
                 raise ExprError("?? sides must share a type")
             return right
         if op in ("&&", "||"):
@@ -358,6 +421,11 @@ class Checker:
                 raise ExprError("optionals compare only to null")
             if {left.kind, right.kind} <= {"int", "double"}:
                 return Ty("bool")
+            # Enums: a string-literal operand must be a member; two enums
+            # must be the same enum; a non-literal string compares as a
+            # string (the enum widens).
+            if "enum" in (left.kind, right.kind):
+                return self.check_enum_comparison(node, left, right)
             if left.kind != right.kind:
                 raise ExprError("== requires matching scalar types")
             return Ty("bool")
@@ -369,7 +437,8 @@ class Checker:
             return Ty("bool")
         if op in ("+", "-", "*", "/", "%"):
             left, right = self.scalar(node[1]), self.scalar(node[2])
-            if op == "+" and left.kind == "string" and right.kind == "string":
+            if op == "+" and left.kind in ("string", "enum") \
+                    and right.kind in ("string", "enum"):
                 return Ty("string")
             if left.kind not in ("int", "double") or right.kind not in ("int", "double"):
                 raise ExprError(f"{op} requires numeric operands")
@@ -377,8 +446,24 @@ class Checker:
                 return Ty("double")
             return Ty("int")
         if op == "call":
-            return self.call(node[1], node[2])
+            return self.call(node[1], node[2], expecting)
         raise ExprError(f"unhandled node {op}")
+
+    def check_enum_comparison(self, node, left, right):
+        if left.kind == "enum" and right.kind == "enum":
+            if not same_type(left, right):
+                raise ExprError("distinct enum types are not comparable")
+            return Ty("bool")
+        enum_ty = left if left.kind == "enum" else right
+        other_node = node[2] if left.kind == "enum" else node[1]
+        if other_node[0] == "lit" and other_node[1] == "string" \
+                and other_node[2] not in enum_ty.members:
+            raise ExprError(
+                f"{other_node[2]!r} is not a member of the declared enum")
+        other = right if left.kind == "enum" else left
+        if other.kind != "string":
+            raise ExprError("== requires matching scalar types")
+        return Ty("bool")
 
     def scalar(self, node):
         ty = self.check(node)
@@ -388,18 +473,19 @@ class Checker:
 
     def expect(self, node, kind):
         ty = self.scalar(node)
-        if ty.kind != kind:
+        if ty.kind != kind and not (kind == "string" and ty.kind == "enum"):
             raise ExprError(f"expected {kind}, found {ty.kind}")
         return ty
 
-    def call(self, name, args):
+    def call(self, name, args, expecting=None):
         def arity(count):
             if len(args) != count:
                 raise ExprError(f"{name} takes {count} argument(s)")
 
         if name == "str":
             arity(1)
-            if self.scalar(args[0]).kind not in ("bool", "int", "double", "string"):
+            if self.scalar(args[0]).kind not in (
+                    "bool", "int", "double", "string", "enum"):
                 raise ExprError("str takes a scalar")
             return Ty("string")
         if name == "int":
@@ -418,7 +504,7 @@ class Checker:
             return Ty("string")
         if name in ("length", "isEmpty"):
             arity(1)
-            if self.scalar(args[0]).kind not in ("string", "array"):
+            if self.scalar(args[0]).kind not in ("string", "enum", "array"):
                 raise ExprError(f"{name} takes a string or array")
             return Ty("int" if name == "length" else "bool")
         if name in ("contains", "startsWith", "endsWith"):
@@ -433,10 +519,22 @@ class Checker:
         if name == "if":
             arity(3)
             self.expect(args[0], "bool")
-            left, right = self.scalar(args[1]), self.scalar(args[2])
-            if left.kind != right.kind:
+            # Both branches type-check to the same T, and T may itself be
+            # optional: a null branch makes the result optional. The
+            # expected type propagates into the branches, so enum member
+            # literals refine.
+            left = self.check(args[1], expecting)
+            right = self.check(args[2], expecting)
+            if left.kind == "null" and right.kind == "null":
+                raise ExprError("if branches cannot both be null")
+            if left.kind == "null":
+                return Ty(right.kind, optional=True, members=right.members)
+            if right.kind == "null":
+                return Ty(left.kind, optional=True, members=left.members)
+            if not same_type(left, right):
                 raise ExprError("if branches must share a type")
-            return Ty(left.kind)
+            return Ty(left.kind, optional=left.optional or right.optional,
+                      members=left.members)
         raise ExprError(f"unknown function {name!r}")
 
 
@@ -496,6 +594,11 @@ class Evaluator:
         if op in ("+", "-", "*", "/", "%"):
             return self.arithmetic(op, self.eval(node[1]), self.eval(node[2]))
         if op == "call":
+            if node[1] == "if":
+                # Lazy conditional: only the taken branch evaluates, like
+                # && || and ??, so guards suppress the reports they guard.
+                taken = 1 if self.eval(node[2][0]) else 2
+                return self.eval(node[2][taken])
             return self.call(node[1], [self.eval(arg) for arg in node[2]])
         raise AssertionError(f"unhandled node {op}")
 
@@ -572,8 +675,6 @@ class Evaluator:
             while end > start and text[end - 1] in WHITE_SPACE:
                 end -= 1
             return text[start:end]
-        if name == "if":
-            return args[1] if args[0] else args[2]
         raise AssertionError(f"unknown function {name}")
 
 
@@ -606,14 +707,29 @@ def format_scalar(value):
 
 
 class ReferenceGate:
-    def __init__(self, vocabulary, policy):
+    def __init__(self, vocabulary, policy, actions_config=None):
         self.vocabulary = vocabulary
         self.policy = policy
         self.occurrences = []
+        # The surface's granted action set: the vocabulary's declarations,
+        # overridden by builder declarations, narrowed by the allowlist.
+        # Built-in $ actions are contract, not capabilities.
+        actions_config = actions_config or {}
+        granted = dict(vocabulary.get("actions", {}))
+        granted.update(actions_config.get("declare", {}))
+        allow = actions_config.get("allow")
+        if allow is not None:
+            granted = {name: declaration for name, declaration in granted.items()
+                       if name in allow}
+        self.granted_actions = granted
 
     def build(self, vector):
-        # 1. Parse.
+        # 1. Parse; document size is checked on the raw bytes first.
         if "documentText" in vector:
+            raw = vector["documentText"].encode("utf-8")
+            if len(raw) > MAX_DOCUMENT_BYTES:
+                raise GateError("LimitExceeded", limit="maxDocumentBytes",
+                                value=MAX_DOCUMENT_BYTES, actual=len(raw))
             try:
                 document = json.loads(vector["documentText"])
             except ValueError:
@@ -630,6 +746,29 @@ class ReferenceGate:
             raise GateError("UnsupportedVersion", declared=version,
                             supported=sorted(SUPPORTED_MAJORS))
 
+        # Vocabulary requirement: when the document declares one, the
+        # engine's vocabulary must match by name and be at least the
+        # required version. Semantics per the document model spec.
+        requirement = document.get("vocabulary")
+        if isinstance(requirement, dict):
+            name = requirement.get("name")
+            if not isinstance(name, str) or not name:
+                raise GateError("MalformedDocument")
+            minimum_text = requirement.get("min")
+            if minimum_text is not None and _semver(minimum_text) == (-1, -1, -1):
+                raise GateError("MalformedDocument")
+            held_name = self.vocabulary.get("name")
+            if requirement.get("name") != held_name:
+                raise GateError("SchemaViolation", rule="vocabulary-requirement",
+                                expected=requirement.get("name"), found=held_name)
+            minimum = requirement.get("min")
+            if minimum is not None:
+                held_version = self.vocabulary.get("version", "")
+                if _semver(held_version) < _semver(minimum):
+                    raise GateError("SchemaViolation",
+                                    rule="vocabulary-requirement",
+                                    expected=f">={minimum}", found=held_version)
+
         # Resource limits.
         depth, count = self.measure(document["root"], 1)
         if depth > MAX_TREE_DEPTH:
@@ -639,6 +778,15 @@ class ReferenceGate:
             raise GateError("LimitExceeded", limit="maxNodeCount",
                             value=MAX_NODE_COUNT, actual=count)
 
+        # Declaration keys follow the identifier grammar (vocabulary
+        # schema spec, Naming): a letter, then letters, digits, or
+        # underscores; never a $ prefix.
+        for section, rule in (("state", "state-declaration"),
+                              ("context", "context-declaration")):
+            for key in document.get(section, {}):
+                if not _identifier(key):
+                    raise GateError("SchemaViolation", rule=rule,
+                                    expected="identifier", found=key)
         state_decls = {k: parse_type(v)
                        for k, v in document.get("state", {}).items()}
         context_decls = {k: parse_type(v)
@@ -647,11 +795,12 @@ class ReferenceGate:
         # 3-4. Vocabulary and expressions, walking in document order.
         # Unknown subtrees are opaque: no vocabulary or expression checks
         # inside, and no evaluation later.
+        self.state_decls = state_decls
+        self.context_decls = context_decls
         checker = Checker(state_decls, context_decls)
         self.validate_node(document["root"], "root", checker)
 
-        # 5. Cross-checks.
-        self.check_ids(document["root"], set())
+        # 6. Data checks.
         context_values = self.check_supplied(
             vector.get("context", {}), context_decls, "context-declaration")
         state_values = self.check_supplied(
@@ -689,8 +838,22 @@ class ReferenceGate:
     def reference(self, node, path):
         return node.get("id") or path
 
-    def validate_node(self, node, path, checker):
+    def validate_node(self, node, path, checker, seen_ids=None):
+        if seen_ids is None:
+            seen_ids = set()
         ref = self.reference(node, path)
+        # Per-node checks in document order, id uniqueness first: the walk
+        # is one pass, so the first defect in document order wins.
+        node_id = node.get("id")
+        if node_id is not None:
+            if node_id in seen_ids:
+                raise GateError("SchemaViolation", rule="id-uniqueness",
+                                node=node_id, found=node_id)
+            seen_ids.add(node_id)
+        # v1 documents contain no construct nodes: the $ prefix is reserved.
+        if node["type"].startswith("$"):
+            raise GateError("SchemaViolation", rule="construct", node=ref,
+                            expected="component type", found=node["type"])
         declaration = self.vocabulary["components"].get(node["type"])
         if declaration is None:
             if self.policy == "fail":
@@ -714,6 +877,12 @@ class ReferenceGate:
             ty = declared[name]
             if isinstance(value, dict) and "$expr" in value:
                 self.check_expression(value["$expr"], ty, ref, checker)
+            elif ty.kind == "enum":
+                if not (value in ty.members
+                        or (value is None and ty.optional)):
+                    raise GateError("SchemaViolation", rule="property-type",
+                                    node=ref, expected="enum member",
+                                    found=value)
             else:
                 kind = json_kind(value)
                 if not (kind == ty.kind or (kind == "int" and ty.kind == "double")
@@ -726,12 +895,85 @@ class ReferenceGate:
             raise GateError("SchemaViolation", rule="children", node=ref,
                             expected="no children", found="children")
         declared_events = declaration.get("events", {})
-        for event in node.get("on", {}):
+        for event, bound in node.get("on", {}).items():
             if event not in declared_events:
                 raise GateError("SchemaViolation", rule="event-binding",
                                 node=ref, expected=node["type"], found=event)
+            descriptor = declared_events[event]
+            event_ty = parse_type(descriptor) if descriptor is not None else None
+            self.validate_actions(bound, ref, event_ty)
         for index, child in enumerate(node.get("children", [])):
-            self.validate_node(child, f"{path}/children[{index}]", checker)
+            self.validate_node(child, f"{path}/children[{index}]", checker,
+                               seen_ids)
+
+    def validate_actions(self, bound, ref, event_ty=None, result_ty=None):
+        """Custom action bindings must resolve against the surface's granted
+        action set; built-in $ actions are always available. Expressions in
+        action values are typed with the `event` and `result` roots in
+        scope; `result` rebinds inside each custom action's onSuccess."""
+        actions = bound if isinstance(bound, list) else [bound]
+        for action in actions:
+            if not isinstance(action, dict):
+                continue
+            name = action.get("action")
+            checker = Checker(self.state_decls, self.context_decls,
+                              event=event_ty, result=result_ty)
+            custom = isinstance(name, str) and not name.startswith("$")
+            if name == "$set":
+                key = action.get("key")
+                declared_ty = self.state_decls.get(key)
+                if declared_ty is None:
+                    raise GateError("SchemaViolation", rule="action-encoding",
+                                    node=ref, expected="declared state key",
+                                    found=key)
+                self.check_action_value(action.get("value"), declared_ty,
+                                        ref, checker)
+            elif name == "$when":
+                self.check_action_value(action.get("condition"),
+                                        parse_type("bool"), ref, checker)
+            elif custom:
+                if name not in self.granted_actions:
+                    raise GateError("SchemaViolation", rule="action-capability",
+                                    node=ref, expected="granted action", found=name)
+                declaration = self.granted_actions[name]
+                declared = declaration.get("parameters", {})
+                for parameter in action:
+                    if parameter in ("action", "onSuccess", "onFailure"):
+                        continue
+                    if parameter not in declared:
+                        raise GateError("SchemaViolation", rule="action-encoding",
+                                        node=ref, expected="declared parameter",
+                                        found=parameter)
+                    self.check_action_value(action[parameter],
+                                            parse_type(declared[parameter]),
+                                            ref, checker)
+                for parameter, descriptor in declared.items():
+                    if parameter not in action and not parse_type(descriptor).optional:
+                        raise GateError("SchemaViolation", rule="action-encoding",
+                                        node=ref, expected=parameter)
+            for nested in ("actions", "then", "else"):
+                if nested in action:
+                    self.validate_actions(action[nested], ref, event_ty, result_ty)
+            if custom:
+                descriptor = self.granted_actions[name].get("result")
+                success_ty = parse_type(descriptor) if descriptor is not None \
+                    else None
+                for follow_up, scoped in (("onSuccess", success_ty),
+                                          ("onFailure", None)):
+                    if follow_up in action:
+                        self.validate_actions(action[follow_up], ref,
+                                              event_ty, scoped)
+            else:
+                for nested in ("onSuccess", "onFailure"):
+                    if nested in action:
+                        self.validate_actions(action[nested], ref,
+                                              event_ty, result_ty)
+
+    def check_action_value(self, value, declared_ty, ref, checker):
+        if isinstance(value, dict) and set(value) == {"$expr"}:
+            self.check_expression(value["$expr"], declared_ty, ref, checker)
+        else:
+            validate_value(value, declared_ty, "action-encoding", node=ref)
 
     def check_expression(self, text, declared_ty, ref, checker):
         error = GateError("SchemaViolation", rule="expression", node=ref,
@@ -741,27 +983,18 @@ class ReferenceGate:
                             value=MAX_EXPRESSION_LENGTH, actual=len(text))
         try:
             ast = Parser(tokenize(text)).parse()
-            result = checker.check(ast)
+            result = checker.check(ast, expecting=declared_ty)
         except ExprError:
             raise error
-        # A non-optional T is accepted where optional T is expected.
+        # A non-optional T is accepted where optional T is expected; an
+        # enum is accepted where a string is expected (widening).
         if result.kind == "null":
             if not declared_ty.optional:
                 raise error
-        elif result.kind != declared_ty.kind \
+        elif not type_accepts(declared_ty, result) \
                 or (result.optional and not declared_ty.optional):
             raise error
         return ast
-
-    def check_ids(self, node, seen):
-        node_id = node.get("id")
-        if node_id is not None:
-            if node_id in seen:
-                raise GateError("SchemaViolation", rule="id-uniqueness",
-                                found=node_id)
-            seen.add(node_id)
-        for child in node.get("children", []):
-            self.check_ids(child, seen)
 
     def check_supplied(self, supplied, declarations, rule):
         values = {}
@@ -842,8 +1075,9 @@ class StepLinter:
                          "steps run only after a successful build")
             return self.problems
 
-        policy = vector.get("config", {}).get("unknownTypePolicy", "skip")
-        self.gate = ReferenceGate(self.vocabulary, policy)
+        config = vector.get("config", {})
+        policy = config.get("unknownTypePolicy", "fail")
+        self.gate = ReferenceGate(self.vocabulary, policy, config.get("actions"))
         try:
             self.gate.build(vector)
         except GateError as error:
@@ -856,7 +1090,7 @@ class StepLinter:
                             for k, v in document.get("state", {}).items()}
         self.context_decls = {k: parse_type(v)
                               for k, v in document.get("context", {}).items()}
-        self.collect_actions(document)
+        self.collect_actions(vector)
         self.nodes = {}
         self.lint_node(document["root"], "root")
         self.lint_steps(vector["steps"])
@@ -867,14 +1101,18 @@ class StepLinter:
                              f"action {name!r}")
         return self.problems
 
-    def collect_actions(self, document):
-        """Merge vocabulary and document-local custom action declarations."""
+    def collect_actions(self, vector):
+        """The surface's granted action set: the vocabulary's declarations,
+        overridden by builder declarations, narrowed by the allowlist.
+        Documents never declare actions."""
+        actions_config = vector.get("config", {}).get("actions", {})
         self.action_decls = dict(self.vocabulary.get("actions", {}))
-        for name, declaration in document.get("actions", {}).items():
-            if name in self.action_decls:
-                self.problem(f"document-local action {name!r} collides "
-                             f"with a vocabulary action")
-            self.action_decls[name] = declaration
+        self.action_decls.update(actions_config.get("declare", {}))
+        allow = actions_config.get("allow")
+        if allow is not None:
+            self.action_decls = {name: declaration
+                                 for name, declaration in self.action_decls.items()
+                                 if name in allow}
         for name, declaration in self.action_decls.items():
             if not isinstance(declaration, dict):
                 self.problem(f"action declaration {name!r} must be an object")
@@ -882,9 +1120,11 @@ class StepLinter:
                 continue
             try:
                 self.parameter_types(declaration)
+                if declaration.get("result") is not None:
+                    parse_type(declaration["result"])
             except (KeyError, TypeError, AttributeError):
                 self.problem(f"action declaration {name!r} has an invalid "
-                             f"parameter type descriptor")
+                             f"type descriptor")
                 self.action_decls[name] = {}
 
     def parameter_types(self, declaration):
@@ -911,16 +1151,16 @@ class StepLinter:
 
     # -- action encoding, per spec 01 --------------------------------------
 
-    def lint_action_list(self, actions, ref, event_ty):
+    def lint_action_list(self, actions, ref, event_ty, result_ty=None):
         if isinstance(actions, dict):
             actions = [actions]
         if not isinstance(actions, list):
             self.problem(f"{ref}: an event binds one action or a list")
             return
         for action in actions:
-            self.lint_action(action, ref, event_ty)
+            self.lint_action(action, ref, event_ty, result_ty)
 
-    def lint_action(self, action, ref, event_ty):
+    def lint_action(self, action, ref, event_ty, result_ty=None):
         if not isinstance(action, dict) \
                 or not isinstance(action.get("action"), str):
             self.problem(f"{ref}: an action is an object with a "
@@ -937,10 +1177,11 @@ class StepLinter:
                 self.problem(f"{ref}: $set is missing 'value'")
             else:
                 self.lint_value(action["value"], self.state_decls[key],
-                                ref, event_ty, "$set value")
+                                ref, event_ty, "$set value", result_ty)
         elif name == "$sequence":
             self.expect_keys(action, ref, "$sequence", {"actions"})
-            self.lint_action_list(action.get("actions", []), ref, event_ty)
+            self.lint_action_list(action.get("actions", []), ref,
+                                  event_ty, result_ty)
         elif name == "$when":
             self.expect_keys(action, ref, "$when",
                              {"condition", "then", "else"})
@@ -948,23 +1189,22 @@ class StepLinter:
                 self.problem(f"{ref}: $when is missing 'condition'")
             else:
                 self.lint_value(action["condition"], Ty("bool"),
-                                ref, event_ty, "$when condition")
-            if "then" not in action:
-                self.problem(f"{ref}: $when is missing 'then'")
+                                ref, event_ty, "$when condition", result_ty)
             for branch in ("then", "else"):
                 if branch in action:
-                    self.lint_action_list(action[branch], ref, event_ty)
+                    self.lint_action_list(action[branch], ref,
+                                          event_ty, result_ty)
         elif name.startswith("$"):
             self.problem(f"{ref}: unknown built-in action {name!r}")
         else:
-            self.lint_custom(action, name, ref, event_ty)
+            self.lint_custom(action, name, ref, event_ty, result_ty)
 
     def expect_keys(self, action, ref, name, allowed):
         for key in action:
             if key != "action" and key not in allowed:
                 self.problem(f"{ref}: {name} does not take {key!r}")
 
-    def lint_custom(self, action, name, ref, event_ty):
+    def lint_custom(self, action, name, ref, event_ty, result_ty=None):
         self.has_custom_action = True
         declaration = self.action_decls.get(name)
         if declaration is None:
@@ -980,19 +1220,23 @@ class StepLinter:
                                      f"parameter {parameter!r}")
                     continue
                 self.lint_value(supplied[parameter], ty, ref, event_ty,
-                                f"{name}.{parameter}")
+                                f"{name}.{parameter}", result_ty)
             for parameter in supplied:
                 if parameter not in declared:
                     self.problem(f"{ref}: {name} does not declare "
                                  f"parameter {parameter!r}")
-        for follow_up in ("onSuccess", "onFailure"):
+        descriptor = (declaration or {}).get("result")
+        success_ty = parse_type(descriptor) if descriptor is not None else None
+        for follow_up, scoped in (("onSuccess", success_ty),
+                                  ("onFailure", None)):
             if follow_up in action:
-                self.lint_action_list(action[follow_up], ref, event_ty)
+                self.lint_action_list(action[follow_up], ref,
+                                      event_ty, scoped)
 
-    def lint_value(self, value, ty, ref, event_ty, what):
+    def lint_value(self, value, ty, ref, event_ty, what, result_ty=None):
         if isinstance(value, dict) and "$expr" in value:
             checker = Checker(self.state_decls, self.context_decls,
-                              event=event_ty)
+                              event=event_ty, result=result_ty)
             try:
                 self.gate.check_expression(value["$expr"], ty, ref, checker)
             except GateError:
@@ -1123,8 +1367,9 @@ def subset_match(produced, expected):
 
 def run_vector(vector, vocabulary):
     """Returns a list of mismatch strings, empty when the vector agrees."""
-    policy = vector.get("config", {}).get("unknownTypePolicy", "skip")
-    gate = ReferenceGate(vocabulary, policy)
+    config = vector.get("config", {})
+    policy = config.get("unknownTypePolicy", "fail")
+    gate = ReferenceGate(vocabulary, policy, config.get("actions"))
     expect = vector["expect"]
     try:
         resolved, state = gate.build(vector)
@@ -1155,7 +1400,75 @@ def run_vector(vector, vocabulary):
     return problems
 
 
+def synthesized_values(declarations):
+    """Zero-values per declaration, the shape a state data provider would
+    supply: false, 0, 0.0, empty string; null for optionals; recursing into
+    arrays (empty) and records."""
+    values = {}
+    for name, descriptor in declarations.items():
+        ty = parse_type(descriptor)
+        if ty.optional:
+            values[name] = None
+        elif ty.kind == "bool":
+            values[name] = False
+        elif ty.kind == "int":
+            values[name] = 0
+        elif ty.kind == "double":
+            values[name] = 0.0
+        elif ty.kind == "string":
+            values[name] = ""
+        elif ty.kind == "array":
+            values[name] = []
+        else:
+            values[name] = synthesized_values(descriptor.get("record", {}))
+    return values
+
+
+def validate_document(document_path, vocabulary_path, context_path, state_path):
+    """Producer CLI: run one document through the full gate. Undeclared
+    context and state values are synthesized as zero-values so validation
+    is one command; supplied files override per key."""
+    vocabulary = json.loads(Path(vocabulary_path).read_text())
+    document = json.loads(Path(document_path).read_text())
+
+    context = synthesized_values(document.get("context", {}))
+    if context_path:
+        context.update(json.loads(Path(context_path).read_text()))
+    state = synthesized_values(document.get("state", {}))
+    if state_path:
+        state.update(json.loads(Path(state_path).read_text()))
+
+    gate = ReferenceGate(vocabulary, "fail")
+    try:
+        gate.build({"name": "cli", "document": document,
+                    "context": context, "state": state})
+    except GateError as error:
+        detail = " · ".join(f"{key}: {value}" for key, value in error.fields.items())
+        print(f"{document_path}: REJECTED · {detail}")
+        return 1
+    occurrences = ", ".join(
+        f"{entry['kind']}({entry.get('node', '-')})" for entry in gate.occurrences)
+    suffix = f" · occurrences: {occurrences}" if occurrences else ""
+    print(f"{document_path}: valid against "
+          f"{vocabulary.get('name')}@{vocabulary.get('version')}{suffix}")
+    return 0
+
+
 def main():
+    if "--document" in sys.argv:
+        import argparse
+        parser = argparse.ArgumentParser(
+            description="Validate one document through the full gate.")
+        parser.add_argument("--document", required=True)
+        parser.add_argument("--vocabulary", required=True)
+        parser.add_argument("--context", help="JSON file of context values; "
+                            "unsupplied declared keys are synthesized")
+        parser.add_argument("--state", help="JSON file of state values; "
+                            "unsupplied declared keys are synthesized")
+        args = parser.parse_args()
+        sys.exit(validate_document(args.document, args.vocabulary,
+                                   args.context, args.state))
+
     root = Path(__file__).resolve().parent.parent
     checked, linted, failures = 0, [], []
     for suite in sorted((root / "conformance").iterdir()):

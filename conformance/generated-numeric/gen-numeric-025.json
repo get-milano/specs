@@ -1,0 +1,26 @@
+{
+  "name": "gen-numeric-025",
+  "description": "Generated (seed 20260816): str(0.00001 - 0.1)",
+  "document": {
+    "version": "1.0.0",
+    "root": {
+      "type": "Text",
+      "id": "r",
+      "properties": {
+        "text": {
+          "$expr": "str(0.00001 - 0.1)"
+        }
+      }
+    }
+  },
+  "expect": {
+    "view": {
+      "type": "Text",
+      "reference": "r",
+      "properties": {
+        "text": "-0.09999000000000001"
+      }
+    },
+    "occurrences": []
+  }
+}

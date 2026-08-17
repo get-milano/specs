@@ -1,0 +1,36 @@
+{
+  "name": "expr-str-extreme-doubles",
+  "description": "str() shortest round-trip at the double extremes, carried through state: the smallest subnormal, the largest finite, and a carry-on-round value",
+  "document": {
+    "version": "1.0.0",
+    "state": {
+      "tiny": "double",
+      "huge": "double",
+      "carry": "double"
+    },
+    "root": {
+      "type": "Text",
+      "id": "t",
+      "properties": {
+        "text": {
+          "$expr": "str(state.tiny) + ' ' + str(state.huge) + ' ' + str(state.carry)"
+        }
+      }
+    }
+  },
+  "state": {
+    "tiny": 5e-324,
+    "huge": 1.7976931348623157e+308,
+    "carry": 1e+23
+  },
+  "expect": {
+    "view": {
+      "type": "Text",
+      "reference": "t",
+      "properties": {
+        "text": "5e-324 1.7976931348623157e308 1e23"
+      }
+    },
+    "occurrences": []
+  }
+}

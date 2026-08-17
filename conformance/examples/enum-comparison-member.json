@@ -1,0 +1,39 @@
+{
+  "name": "enum-comparison-member",
+  "description": "Comparing an enum to a member literal is a bool; the comparison is by string value",
+  "document": {
+    "version": "1.0.0",
+    "state": {
+      "tone": {
+        "enum": [
+          "info",
+          "warning",
+          "danger"
+        ]
+      }
+    },
+    "root": {
+      "type": "Text",
+      "id": "t",
+      "properties": {
+        "text": "alert",
+        "visible": {
+          "$expr": "state.tone == 'danger'"
+        }
+      }
+    }
+  },
+  "state": {
+    "tone": "danger"
+  },
+  "expect": {
+    "view": {
+      "type": "Text",
+      "reference": "t",
+      "properties": {
+        "text": "alert",
+        "visible": true
+      }
+    }
+  }
+}

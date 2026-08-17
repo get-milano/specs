@@ -1,0 +1,30 @@
+{
+  "name": "occurrence-undeclared-property",
+  "description": "On a non-strict component an undeclared property is ignored and reported, and the node still resolves",
+  "document": {
+    "version": "1.0.0",
+    "root": {
+      "type": "Text",
+      "id": "t",
+      "properties": {
+        "text": "hello",
+        "colour": "red"
+      }
+    }
+  },
+  "expect": {
+    "view": {
+      "type": "Text",
+      "reference": "t",
+      "properties": {
+        "text": "hello"
+      }
+    },
+    "occurrences": [
+      {
+        "kind": "undeclaredProperty",
+        "node": "t"
+      }
+    ]
+  }
+}

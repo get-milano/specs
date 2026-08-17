@@ -1,0 +1,61 @@
+{
+  "name": "enum-action-parameter",
+  "description": "An enum-typed action parameter carries the member string to the handler",
+  "document": {
+    "version": "1.0.0",
+    "root": {
+      "type": "Badge",
+      "id": "b",
+      "properties": {
+        "label": "Sev",
+        "tone": "info"
+      },
+      "on": {
+        "select": [
+          {
+            "action": "setTone",
+            "tone": {
+              "$expr": "event"
+            }
+          }
+        ]
+      }
+    }
+  },
+  "steps": [
+    {
+      "event": {
+        "node": "b",
+        "name": "select",
+        "payload": "danger"
+      }
+    }
+  ],
+  "expect": {
+    "dispatched": [
+      {
+        "action": "setTone",
+        "parameters": {
+          "tone": "danger"
+        }
+      }
+    ]
+  },
+  "config": {
+    "actions": {
+      "declare": {
+        "setTone": {
+          "parameters": {
+            "tone": {
+              "enum": [
+                "info",
+                "warning",
+                "danger"
+              ]
+            }
+          }
+        }
+      }
+    }
+  }
+}

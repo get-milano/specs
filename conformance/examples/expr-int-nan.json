@@ -1,0 +1,31 @@
+{
+  "name": "expr-int-nan",
+  "description": "int(NaN) is 0 and reports saturation, like the finite saturating conversions",
+  "document": {
+    "version": "1.0.0",
+    "root": {
+      "type": "Text",
+      "id": "t",
+      "properties": {
+        "text": {
+          "$expr": "str(int(0.0 / 0.0))"
+        }
+      }
+    }
+  },
+  "expect": {
+    "view": {
+      "type": "Text",
+      "reference": "t",
+      "properties": {
+        "text": "0"
+      }
+    },
+    "occurrences": [
+      {
+        "kind": "saturation",
+        "node": "t"
+      }
+    ]
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "name": "enum-property-literal",
+  "description": "A string literal in an enum-typed property must be a member; a member resolves as its string value",
+  "document": {
+    "version": "1.0.0",
+    "root": {
+      "type": "Badge",
+      "id": "b",
+      "properties": {
+        "label": "Sev",
+        "tone": "warning"
+      }
+    }
+  },
+  "expect": {
+    "view": {
+      "type": "Badge",
+      "reference": "b",
+      "properties": {
+        "label": "Sev",
+        "tone": "warning"
+      }
+    }
+  }
+}

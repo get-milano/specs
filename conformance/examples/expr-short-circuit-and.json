@@ -2,7 +2,7 @@
   "name": "expr-short-circuit-and",
   "description": "&& short-circuits: a false left side skips the right, observable as the absence of a division report",
   "document": {
-    "version": "0.1.0",
+    "version": "1.0.0",
     "root": {
       "type": "Text",
       "id": "result",

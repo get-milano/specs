@@ -1,0 +1,10 @@
+{
+  "name": "gate-vocabulary-requirement-malformed",
+  "description": "A vocabulary requirement whose min is not major.minor.patch is a MalformedDocument",
+  "documentText": "{\"version\": \"1.0.0\", \"vocabulary\": {\"name\": \"examples\", \"min\": \"1.2\"}, \"root\": {\"type\": \"Text\", \"id\": \"t\", \"properties\": {\"text\": \"x\"}}}",
+  "expect": {
+    "error": {
+      "type": "MalformedDocument"
+    }
+  }
+}

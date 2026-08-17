@@ -2,12 +2,9 @@
   "name": "dispatch-duplicate-completion",
   "description": "A handler completing twice: the second completion is ignored and reported; onSuccess runs once",
   "document": {
-    "version": "0.1.0",
+    "version": "1.0.0",
     "state": {
       "done": "bool"
-    },
-    "actions": {
-      "ping": {}
     },
     "root": {
       "type": "Button",
@@ -70,5 +67,12 @@
         "kind": "duplicateCompletion"
       }
     ]
+  },
+  "config": {
+    "actions": {
+      "declare": {
+        "ping": {}
+      }
+    }
   }
 }
