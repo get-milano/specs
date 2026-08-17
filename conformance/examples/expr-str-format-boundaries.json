@@ -2,7 +2,7 @@
   "name": "expr-str-format-boundaries",
   "description": "str() double formatting: normalized exponent 15 stays plain decimal, -4 stays plain, -5 flips to scientific",
   "document": {
-    "version": "0.1.0",
+    "version": "1.0.0",
     "root": {
       "type": "Text",
       "id": "result",

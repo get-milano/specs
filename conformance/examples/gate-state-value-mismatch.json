@@ -2,7 +2,7 @@
   "name": "gate-state-value-mismatch",
   "description": "A provider value not matching the state declaration fails with SchemaViolation",
   "document": {
-    "version": "0.1.0",
+    "version": "1.0.0",
     "state": {
       "consent": "bool"
     },

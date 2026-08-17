@@ -1,0 +1,30 @@
+{
+  "name": "gate-action-param-missing",
+  "description": "A missing non-optional custom action parameter fails at the gate",
+  "document": {
+    "version": "1.0.0",
+    "root": {
+      "type": "Button",
+      "id": "go",
+      "properties": {
+        "label": "Go",
+        "enabled": true
+      },
+      "on": {
+        "tap": [
+          {
+            "action": "openUrl"
+          }
+        ]
+      }
+    }
+  },
+  "expect": {
+    "error": {
+      "type": "SchemaViolation",
+      "rule": "action-encoding",
+      "node": "go",
+      "expected": "url"
+    }
+  }
+}

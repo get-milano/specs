@@ -1,0 +1,53 @@
+{
+  "name": "builder-action-override",
+  "description": "A builder declaration overrides a vocabulary action's signature for this surface; the overridden shape validates and dispatches",
+  "config": {
+    "actions": {
+      "declare": {
+        "openUrl": {
+          "parameters": {
+            "path": "string"
+          }
+        }
+      }
+    }
+  },
+  "document": {
+    "version": "1.0.0",
+    "root": {
+      "type": "Button",
+      "id": "go",
+      "properties": {
+        "label": "Go",
+        "enabled": true
+      },
+      "on": {
+        "tap": [
+          {
+            "action": "openUrl",
+            "path": "/promo"
+          }
+        ]
+      }
+    }
+  },
+  "steps": [
+    {
+      "event": {
+        "node": "go",
+        "name": "tap"
+      }
+    }
+  ],
+  "expect": {
+    "dispatched": [
+      {
+        "action": "openUrl",
+        "parameters": {
+          "path": "/promo"
+        }
+      }
+    ],
+    "occurrences": []
+  }
+}

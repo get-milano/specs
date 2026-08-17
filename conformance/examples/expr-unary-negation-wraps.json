@@ -2,7 +2,7 @@
   "name": "expr-unary-negation-wraps",
   "description": "Unary negation of int min wraps back to int min",
   "document": {
-    "version": "0.1.0",
+    "version": "1.0.0",
     "root": {
       "type": "Text",
       "id": "result",

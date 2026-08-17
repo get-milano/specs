@@ -2,7 +2,7 @@
   "name": "expr-nan-comparison",
   "description": "NaN compares unequal to everything including itself",
   "document": {
-    "version": "0.1.0",
+    "version": "1.0.0",
     "root": {
       "type": "Text",
       "id": "result",

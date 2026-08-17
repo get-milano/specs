@@ -4,7 +4,12 @@
   "title": "Milano Vocabulary Artifact",
   "description": "Validates Milano vocabulary artifacts per the vocabulary schema spec. Unknown top-level and declaration-level fields are permitted, matching the contract's tolerance rules; runtimes apply their own contract-version handling.",
   "type": "object",
-  "required": ["milano", "name", "version", "components"],
+  "required": [
+    "milano",
+    "name",
+    "version",
+    "components"
+  ],
   "properties": {
     "milano": {
       "type": "string",
@@ -15,17 +20,25 @@
     },
     "version": {
       "type": "string",
-      "minLength": 1
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
     },
     "components": {
       "type": "object",
-      "propertyNames": { "$ref": "#/$defs/identifier" },
-      "additionalProperties": { "$ref": "#/$defs/component" }
+      "propertyNames": {
+        "$ref": "#/$defs/identifier"
+      },
+      "additionalProperties": {
+        "$ref": "#/$defs/component"
+      }
     },
     "actions": {
       "type": "object",
-      "propertyNames": { "$ref": "#/$defs/identifier" },
-      "additionalProperties": { "$ref": "#/$defs/action" }
+      "propertyNames": {
+        "$ref": "#/$defs/identifier"
+      },
+      "additionalProperties": {
+        "$ref": "#/$defs/action"
+      }
     }
   },
   "$defs": {
@@ -38,16 +51,26 @@
       "properties": {
         "properties": {
           "type": "object",
-          "propertyNames": { "$ref": "#/$defs/identifier" },
-          "additionalProperties": { "$ref": "#/$defs/type" }
+          "propertyNames": {
+            "$ref": "#/$defs/identifier"
+          },
+          "additionalProperties": {
+            "$ref": "#/$defs/type"
+          }
         },
         "events": {
           "type": "object",
-          "propertyNames": { "$ref": "#/$defs/identifier" },
+          "propertyNames": {
+            "$ref": "#/$defs/identifier"
+          },
           "additionalProperties": {
             "anyOf": [
-              { "$ref": "#/$defs/type" },
-              { "type": "null" }
+              {
+                "$ref": "#/$defs/type"
+              },
+              {
+                "type": "null"
+              }
             ]
           }
         },
@@ -66,8 +89,15 @@
       "properties": {
         "parameters": {
           "type": "object",
-          "propertyNames": { "$ref": "#/$defs/identifier" },
-          "additionalProperties": { "$ref": "#/$defs/type" }
+          "propertyNames": {
+            "$ref": "#/$defs/identifier"
+          },
+          "additionalProperties": {
+            "$ref": "#/$defs/type"
+          }
+        },
+        "result": {
+          "$ref": "#/$defs/type"
         }
       }
     },
@@ -79,23 +109,57 @@
         },
         {
           "type": "object",
-          "required": ["array"],
+          "required": [
+            "enum"
+          ],
           "properties": {
-            "array": { "$ref": "#/$defs/type" },
-            "optional": { "type": "boolean" }
+            "enum": {
+              "type": "array",
+              "minItems": 1,
+              "uniqueItems": true,
+              "items": {
+                "$ref": "#/$defs/identifier"
+              }
+            },
+            "optional": {
+              "type": "boolean"
+            }
           },
           "additionalProperties": false
         },
         {
           "type": "object",
-          "required": ["record"],
+          "required": [
+            "array"
+          ],
+          "properties": {
+            "array": {
+              "$ref": "#/$defs/type"
+            },
+            "optional": {
+              "type": "boolean"
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": [
+            "record"
+          ],
           "properties": {
             "record": {
               "type": "object",
-              "propertyNames": { "$ref": "#/$defs/identifier" },
-              "additionalProperties": { "$ref": "#/$defs/type" }
+              "propertyNames": {
+                "$ref": "#/$defs/identifier"
+              },
+              "additionalProperties": {
+                "$ref": "#/$defs/type"
+              }
             },
-            "optional": { "type": "boolean" }
+            "optional": {
+              "type": "boolean"
+            }
           },
           "additionalProperties": false
         }

@@ -15,11 +15,11 @@ Non-normative, but strongly recommended and followed by the sample apps: keep th
 
 The result: Milano never leaks into the components, the components never learn about documents, and replacing either side leaves the other untouched.
 
-The two v0.1 target capabilities, written end to end: a shared vocabulary, two documents, and the behavior each must produce. Both live as executable vectors in `conformance/`, in the format of the [conformance suite spec](05-conformance-suite.html). Together they exercise every v0.1 mechanic: context, expressions, state, events, built-in and custom actions, consent gating, and async completion.
+The two v1.0 target capabilities, written end to end: a shared vocabulary, two documents, and the behavior each must produce. Both live as executable vectors in `conformance/`, in the format of the [conformance suite spec](05-conformance-suite.html). Together they exercise every v1.0 mechanic: context, expressions, state, events, built-in and custom actions, consent gating, and async completion.
 
 ## The vocabulary
 
-A minimal consumer vocabulary, `examples 1.0.0`, with seven component types and two custom actions:
+A minimal consumer vocabulary, `examples 1.0.0`, with eight component types and two custom actions:
 
 | Component | Properties | Events | Children |
 |---|---|---|---|
@@ -30,11 +30,12 @@ A minimal consumer vocabulary, `examples 1.0.0`, with seven component types and 
 | `TextField` | `label: string`, `value: string` | `change: string` | |
 | `NumberField` | `label: string`, `value: double` | `change: double` | |
 | `Checkbox` | `label: string`, `checked: bool` | `change: bool` | |
+| `Badge` | `label: string`, `tone: enum(info, warning, danger)` | `select: enum(info, warning, danger)` | |
 
 | Action | Declared | Parameters |
 |---|---|---|
 | `openUrl` | Vocabulary (global) | `url: string` |
-| `submitContact` | Form document (local) | `name: string`, `surname: string`, `email: string`, `phone: string?` |
+| `submitContact` | Vocabulary (global) | `name: string`, `surname: string`, `email: string`, `phone: string?` |
 
 What these components look like is entirely the consumer's business: Milano only guarantees their properties arrive resolved and typed, and their declared events dispatch.
 
@@ -46,7 +47,7 @@ A background image, a personalized title, a subtitle, and a call-to-action butto
 
 ```json
 {
-  "version": "0.1.0",
+  "version": "1.0.0",
   "context": { "userName": "string" },
   "root": {
     "type": "Banner",
@@ -80,7 +81,7 @@ What it demonstrates:
 
 - **Structure without data**: the document declares that it reads `context.userName`; the host injects the value (`"Ada"`), and the title resolves to `Hello, Ada`. The same cached document greets every user.
 - **The action boundary**: tapping the button dispatches `openUrl` with its captured `url` parameter to the host's action handler. Milano does not open URLs; the host does.
-- Vector: `conformance/banner-open-url.json` expects the resolved tree, the dispatched action, and zero occurrences.
+- Vector: `conformance/examples/banner-open-url.json` expects the resolved tree, the dispatched action, and zero occurrences.
 
 ## The contact form
 
@@ -88,7 +89,7 @@ Name, surname, email, optional phone, and a consent checkbox that gates submissi
 
 ```json
 {
-  "version": "0.1.0",
+  "version": "1.0.0",
   "state": {
     "name": "string",
     "surname": "string",
@@ -96,16 +97,6 @@ Name, surname, email, optional phone, and a consent checkbox that gates submissi
     "phone": "string?",
     "consent": "bool",
     "submitted": "bool"
-  },
-  "actions": {
-    "submitContact": {
-      "parameters": {
-        "name": "string",
-        "surname": "string",
-        "email": "string",
-        "phone": "string?"
-      }
-    }
   },
   "root": {
     "type": "Column",
@@ -181,8 +172,8 @@ What it demonstrates:
 
 - **State shape in the document, values from outside**: the state data provider supplies the initial values (empty strings, `null` phone, `false` flags), awaited during the asynchronous build.
 - **The unidirectional loop**: each field renders `state.x` and its `change` event runs `$set` with the event payload. The renderer never writes state; the loop closes through dispatch.
-- **A document-local action**: `submitContact` is declared by the form document itself, not by the app's bundled vocabulary. When the producer adds a field, the document changes its declaration and its dispatch together; no app release involved. (`openUrl`, a generic capability, stays global.)
+- **Actions as capabilities**: `submitContact` is declared in the app's vocabulary; documents never declare actions, so nothing reaches a handler the app did not consciously grant. A surface can narrow the set (`allowActions`) or override a signature (builder `action(...)`) without touching the vocabulary; meaning stays with each surface's handler.
 - **Consent gating, twice**: the `enabled` expression handles presentation (the consumer's Button decides what disabled looks like), and the `$when` guard handles semantics: a `tap` emitted while the condition is false dispatches nothing. The gate is in the document, not in renderer logic.
 - **Async completion**: `submitContact` is delivered to the host's handler; the sequence does not wait. When the handler succeeds, `onSuccess` sets `submitted`, which disables the button and reveals the thank-you text through `if(...)`.
 - **Optionality**: `phone` is `string?` end to end: `null` from the provider, displayed via `?? ''`, passed as `null` to the handler when never edited.
-- Vector: `conformance/form-contact-consent.json` walks the full interaction: fill fields, tap while unconsented (nothing dispatches), consent, tap, complete with success; expects the final state store, the single dispatched action, and zero occurrences.
+- Vector: `conformance/examples/form-contact-consent.json` walks the full interaction: fill fields, tap while unconsented (nothing dispatches), consent, tap, complete with success; expects the final state store, the single dispatched action, and zero occurrences.

@@ -1,0 +1,77 @@
+{
+  "name": "completion-result-invalid-payload",
+  "description": "A success value that does not match the declared result type is an invalid completion: consumed, no branch runs, reported",
+  "document": {
+    "version": "1.0.0",
+    "state": {
+      "code": "string"
+    },
+    "root": {
+      "type": "Button",
+      "id": "b",
+      "properties": {
+        "label": "Go",
+        "enabled": true
+      },
+      "on": {
+        "tap": [
+          {
+            "action": "fetchCode",
+            "onSuccess": [
+              {
+                "action": "$set",
+                "key": "code",
+                "value": {
+                  "$expr": "result"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "state": {
+    "code": "start"
+  },
+  "steps": [
+    {
+      "event": {
+        "node": "b",
+        "name": "tap"
+      }
+    },
+    {
+      "complete": {
+        "dispatch": 0,
+        "outcome": "success",
+        "payload": 5
+      }
+    }
+  ],
+  "expect": {
+    "state": {
+      "code": "start"
+    },
+    "dispatched": [
+      {
+        "action": "fetchCode",
+        "parameters": {}
+      }
+    ],
+    "occurrences": [
+      {
+        "kind": "invalidCompletion"
+      }
+    ]
+  },
+  "config": {
+    "actions": {
+      "declare": {
+        "fetchCode": {
+          "result": "string"
+        }
+      }
+    }
+  }
+}

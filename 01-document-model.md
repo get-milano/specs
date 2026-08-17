@@ -5,11 +5,11 @@ nav_order: 2
 
 # Milano Document Model
 
-**Status:** Beta v0.1.0 · 2026-08-15
+**Status:** Stable v1.0.0 · 2026-08-16
 
 Defines the abstract document model and its canonical JSON encoding: the top-level structure, the node envelope, values and expressions, core constructs, identity, validation, the error taxonomy, and resource limits. Everything here operates within the guarantees fixed by [Foundations](00-foundations.html).
 
-**Version 0.1 scope.** Per Foundations, v0.1 targets banners, interstitials, and simple document-defined forms.
+**Version 1.0 scope.** Per Foundations, v1.0 targets banners, interstitials, and simple document-defined forms.
 
 ## Document structure
 
@@ -18,9 +18,9 @@ A document is a single JSON object, encoded in UTF-8, with reserved top-level se
 | Section | Required | Purpose |
 |---|---|---|
 | `version` | yes | The contract version the document targets (major.minor.patch) |
+| `vocabulary` | no | The vocabulary the document requires: a `name` and an optional `min` version (major.minor.patch) |
 | `context` | no | Declaration of the context keys the document reads: name and type |
 | `state` | no | Document-level state declarations: name and type |
-| `actions` | no | Document-local custom action declarations, in the vocabulary schema's declaration format |
 | `root` | yes | The single root node |
 | `metadata` | no | Free-form producer data; validated as JSON, never interpreted by Milano, passed through to the host |
 
@@ -31,15 +31,19 @@ Documents separate structure from data. The `context` and `state` sections decla
 Every declaration (state, context, component properties, action parameters, event payloads) uses one type language:
 
 - Primitives: `bool`, `int` (64-bit signed), `double` (IEEE 754 binary64), `string` (Unicode).
+- `enum`: a closed set of named string values. Members follow the identifier grammar and must be unique; the set must be non-empty. At runtime an enum value is its member string; only the static type knows the set.
 - `array` of any type.
 - `record` with named, typed fields.
 - Types are non-nullable by default. Any type may be marked optional; JSON `null` is valid only for optional types, and an omitted optional value is equivalent to `null`.
 
-In JSON, a type descriptor takes one of three forms:
+In JSON, a type descriptor takes one of four forms:
 
 - A primitive is its name string, with a trailing `?` for optional: `"int"`, `"string?"`.
+- An enum is an object with an `enum` key holding the member list, plus `"optional": true` when optional: `{"enum": ["info", "warning", "danger"]}`.
 - An array is an object with an `array` key holding the element's type descriptor, plus `"optional": true` when the array itself is optional.
 - A record is an object with a `record` key holding a map of field name to type descriptor, plus `"optional": true` when the record itself is optional.
+
+Two enum types are the same exactly when their member sets are equal: enum identity is structural, like records.
 
 Integer and floating-point behavior (ranges, overflow, coercion rules in expressions) is fixed by the expression language spec and conformance-tested; a JSON number with a fractional part never satisfies an `int` declaration.
 
@@ -47,6 +51,7 @@ Validation of data values (supplied context, provider state, literal properties 
 
 - An `int` value satisfies a `double` declaration and is canonicalized to `double`, mirroring expression promotion. A `double` value never satisfies an `int` declaration.
 - Record values are validated strictly against their declared shape: an undeclared field is a mismatch; a missing optional field canonicalizes to `null`; a missing non-optional field is a mismatch.
+- An `enum` declaration is satisfied only by one of its member strings. A non-member string is a mismatch at every boundary this rule reaches: literal properties and parameters at the gate, supplied state and context at build, context updates, event emissions, and completion results at runtime.
 
 ## Node envelope
 
@@ -71,20 +76,20 @@ Every property value is either a literal of the declared type or an expression.
 - An expression is written as a reserved single-key wrapper object; its key is the expression marker `$expr`, its value is an expression string in the grammar of the expression language spec. No other form of a value is ever dynamic: literal strings are always literal, no delimiters, no escaping rules.
 - Any declared property may be dynamic. The gate type-checks each expression's result type against the property's declared type.
 - Expressions read document state and host context.
-- References are namespaced by reserved roots: `state`, `context`, and `event` (only within `on` action bindings, giving access to the triggering event's payload).
+- References are namespaced by reserved roots: `state`, `context`, `event` (only within `on` action bindings, giving access to the triggering event's payload), and `result` (only within the `onSuccess` bindings of an action declaring a result type, giving access to the handler's returned value; see the vocabulary schema spec).
 
 ## Actions
 
-An action is a JSON object whose reserved `action` key names its type. Built-in actions live in the reserved `$` namespace; custom action types use consumer-defined names with typed parameters, declared either in the engine's vocabulary (global, shared by every document) or in the document's own `actions` section (local). Local declarations use the same format and are validated identically; a local name that collides with a vocabulary action is a `SchemaViolation`. Dispatch is identical for both: the host handler receives name and parameters as data either way. Parameters are sibling keys of `action`, and any parameter value may be a literal or an expression (including expressions over `event`).
+An action is a JSON object whose reserved `action` key names its type. Built-in actions live in the reserved `$` namespace and are always available. Custom action types use consumer-defined names with typed parameters, declared only by consumer code: globally in the engine's vocabulary, and per surface by the builder, which may grant a subset of the vocabulary's actions and declare or override signatures for its surface (see the vocabulary schema spec). Documents never declare actions. Binding a custom action outside the surface's granted set is a `SchemaViolation` with rule `action-capability`. Parameters are sibling keys of `action`, and any parameter value may be a literal or an expression (including expressions over `event`); the gate validates parameters against the granted declaration.
 
-Components have no local equivalent: a component type requires a registered renderer, which is code, so component types are global by nature.
+Like component types, action types require host code (a handler that interprets them), so declarations live with that code, never in documents. Declarations type the payload; meaning is assigned per surface by the builder's handler, so one action name may carry different behavior, and via builder overrides a different signature, on different surfaces.
 
 | Action | Parameters | Purpose |
 |---|---|---|
 | `$set` | `key`: a declared top-level state key; `value`: the new value, literal or expression | Mutate document state; field-level targets inside records are not supported, the whole key is assigned |
 | `$sequence` | `actions`: ordered list of actions | Run actions in order |
-| `$when` | `condition`: bool expression; `then`: action list; `else`: optional action list | Conditional dispatch |
-| custom | per its vocabulary declaration | Routed as data to the host's action handlers |
+| `$when` | `condition`: bool expression; `then`: optional action list; `else`: optional action list | Conditional dispatch |
+| custom | per its granted declaration | Routed as data to the host's action handlers |
 
 - A bare JSON array of actions is shorthand for `$sequence`.
 - Custom actions may carry `onSuccess` and `onFailure` keys, each an action or action list, bound to the handler's asynchronous completion. Built-ins complete synchronously and do not take them.
@@ -102,11 +107,12 @@ The gate validates in a fixed, conformance-tested order, so identical documents 
 
 1. Parse: well-formed JSON, correct envelope shapes.
 2. Version: declared major must be in the runtime's supported set.
-3. Vocabulary: every `type` resolved against the schema; properties and events validated per component type; action objects validated (built-in parameters against this spec, custom actions against their vocabulary or document-local declarations); unknown types trigger the unknown-type policy; undeclared properties follow the strict-mode rules from Foundations.
-4. Expressions: parse every expression, type-check results against declared property, state, and context types.
-5. Cross-checks: `id` uniqueness, event bindings against declared events, context declarations versus supplied values, state declarations versus the values returned by the state data provider.
+3. Vocabulary requirement: when the document declares one, the engine's vocabulary must carry the same `name`, and when `min` is present its `version` must be at least `min` (numeric comparison of major, minor, patch). A mismatch is a `SchemaViolation` with rule `vocabulary-requirement`, `expected` the document's demand, `found` what the engine holds. A document with no `vocabulary` section performs no check: binding stays positional, and the requirement is the producer's opt-in guard for staggered rollouts. The minimum-only form is sound because vocabulary evolution is additive within a major (see the vocabulary schema spec): any version at or above the minimum carries everything the document needs.
+4. Resource limits: document size (checked on the raw bytes before parsing, alongside step 1), tree depth, and node count against the limits below; expression length is checked per expression in step 5.
+5. Vocabulary walk: one pass over the tree, in document order. At each node, in order: `id` uniqueness, the reserved `$` type prefix, type resolution against the schema (unknown types trigger the unknown-type policy), properties (undeclared ones per the strict-mode rules from Foundations; declared ones type-checked, with expressions parsed and statically typed as they are encountered), children acceptance, then event bindings against the declared events and their action lists (built-in parameters against this spec, custom actions against the surface's granted action set: the vocabulary's declarations, narrowed and overridden by the builder). Because the walk is one pass, the first defect in document order wins when a document violates several rules.
+6. Data checks: context declarations versus supplied values, state declarations versus the values returned by the state data provider.
 
-Steps 1 through 4 need only the document and the engine. Building is asynchronous overall: the gate then awaits the state data provider and completes the cross-checks. A provider failure propagates to the caller unchanged; values that do not match the declarations are a `SchemaViolation`.
+Steps 1 through 5 need only the document and the engine. Building is asynchronous overall: the gate then awaits the state data provider and completes the cross-checks. A provider failure propagates to the caller unchanged; values that do not match the declarations are a `SchemaViolation`.
 
 Three rules complete the gate's behavior:
 
@@ -122,11 +128,29 @@ The closed set of typed errors the gate can throw, with the structured detail ea
 |---|---|---|
 | `MalformedDocument` | Input is not well-formed JSON or violates envelope structure | Location of the defect (path when determinable) |
 | `UnsupportedVersion` | Declared major is outside the runtime's supported set | Declared version; the runtime's supported majors |
-| `SchemaViolation` | Vocabulary, expression typing, action encoding, event, id, or namespace rules are violated; supplied context or initial-state values do not match declarations | Node reference (id or path); the rule violated; expected; found |
+| `SchemaViolation` | Vocabulary, expression typing, action encoding, event, id, or namespace rules are violated; supplied context or initial-state values do not match declarations | The rule violated; expected; found; and the node reference (id or path) when the violation is anchored to a node (document-level violations, such as a data value not matching its declaration, carry none) |
 | `UnknownComponentType` | A type not declared in the vocabulary is found and the effective policy is *fail* | Node reference; the unknown type name |
 | `LimitExceeded` | Any resource limit is exceeded at the gate | The limit's name; its configured value; the actual value |
 
-Runtime occurrences (rejected context updates, over-limit updates, dropped events, skipped or placeholder nodes) are not errors: they flow to the engine observer as defined in Foundations.
+The `rule` strings a `SchemaViolation` may carry are contract, pinned by the conformance suite:
+
+| Rule | Violation |
+|---|---|
+| `construct` | A node `type` begins with the reserved `$` prefix |
+| `id-uniqueness` | A node `id` appears more than once in the document |
+| `children` | A node carries `children` but its component type does not accept them |
+| `undeclared-property` | An undeclared property on a `strict` component type |
+| `property-type` | A literal property value does not match the declared type |
+| `event-binding` | An `on` entry names an event the component type does not declare |
+| `expression` | An expression fails to parse or type-check against the expected type |
+| `action-encoding` | A built-in or custom action violates its encoding: unknown or missing parameters, ill-typed values, an undeclared `$set` target |
+| `action-capability` | A custom action outside the surface's granted set |
+| `vocabulary-requirement` | The document's declared vocabulary requirement is not met by the engine's vocabulary |
+| `context-declaration` | A context declaration is malformed (non-identifier key, invalid descriptor) or a supplied context value does not match it |
+| `state-declaration` | A state declaration is malformed (non-identifier key, invalid descriptor), a provided state value does not match it, or the document declares state and the surface configured no state data provider |
+| `action-handler` | The document binds custom actions and the surface configured no action handler (raised by the builder at build, before dispatch exists) |
+
+Runtime occurrences (rejected context updates, dropped events, skipped or placeholder nodes) are not errors: they flow to the engine observer as defined in Foundations.
 
 ## Resource limits
 
@@ -137,9 +161,11 @@ Defaults, adjustable per engine.
 | Maximum tree depth | 32 |
 | Maximum node count | 10,000 |
 | Maximum document size | 1 MiB |
-| Maximum expression length | 1,024 characters |
+| Maximum expression length | 1,024 Unicode scalars |
 
-Gate limits bound the document; update-triggered evaluation is bounded at runtime, where an over-limit update is rejected atomically per Foundations.
+Gate limits bound the document; because the tree, its expressions, and their lengths are all fixed at the gate, no update can grow past them at runtime.
+
+Limits are denial-of-service bounds for untrusted input, not performance budgets: a document within every limit can still be a poor fit for an interactive surface. Measured guidance lives in the runtime documentation.
 
 ## Notes
 

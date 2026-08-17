@@ -1,0 +1,29 @@
+{
+  "name": "interaction-lifecycle",
+  "description": "The view's lifecycle brackets the stream: viewBuilt at build (carrying the document metadata), viewTornDown exactly once at teardown",
+  "document": {
+    "version": "1.0.0",
+    "root": {
+      "type": "Text",
+      "id": "t",
+      "properties": {
+        "text": "x"
+      }
+    }
+  },
+  "steps": [
+    {
+      "teardown": true
+    }
+  ],
+  "expect": {
+    "interactions": [
+      {
+        "kind": "viewBuilt"
+      },
+      {
+        "kind": "viewTornDown"
+      }
+    ]
+  }
+}

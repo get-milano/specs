@@ -2,7 +2,7 @@
   "name": "gate-expression-parse-error",
   "description": "An expression that does not parse is a SchemaViolation at the gate",
   "document": {
-    "version": "0.1.0",
+    "version": "1.0.0",
     "root": {
       "type": "Text",
       "id": "result",

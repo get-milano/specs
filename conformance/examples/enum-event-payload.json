@@ -1,0 +1,65 @@
+{
+  "name": "enum-event-payload",
+  "description": "An enum-typed event payload validates membership at emission: members bind the event root, non-members are invalid emissions",
+  "document": {
+    "version": "1.0.0",
+    "state": {
+      "picked": {
+        "enum": [
+          "info",
+          "warning",
+          "danger"
+        ]
+      }
+    },
+    "root": {
+      "type": "Badge",
+      "id": "b",
+      "properties": {
+        "label": "Sev",
+        "tone": "info"
+      },
+      "on": {
+        "select": [
+          {
+            "action": "$set",
+            "key": "picked",
+            "value": {
+              "$expr": "event"
+            }
+          }
+        ]
+      }
+    }
+  },
+  "state": {
+    "picked": "info"
+  },
+  "steps": [
+    {
+      "event": {
+        "node": "b",
+        "name": "select",
+        "payload": "warning"
+      }
+    },
+    {
+      "event": {
+        "node": "b",
+        "name": "select",
+        "payload": "loud"
+      }
+    }
+  ],
+  "expect": {
+    "state": {
+      "picked": "warning"
+    },
+    "occurrences": [
+      {
+        "kind": "invalidEmission",
+        "node": "b"
+      }
+    ]
+  }
+}

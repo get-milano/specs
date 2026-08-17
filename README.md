@@ -4,7 +4,7 @@
 
 Canonical repository: `github.com/get-milano/specs`. The engines and sample apps live in `github.com/get-milano/sdk`.
 
-Try the contract in the browser: the [Milano Playground](https://get-milano.github.io/playground/) validates vocabularies and documents against these schemas and the reference checker, live.
+Try the contract in the browser: the [Milano Playground](https://get-milano.dev/playground/) validates vocabularies and documents against these schemas and the reference checker, live.
 
 Milano is a client-only, design-system-agnostic Document-Driven UI (DDUI) framework for SwiftUI and Compose. Document-driven rather than server-driven: Milano is agnostic of how the document is obtained. Milano targets UI toolkits, not operating systems: it is usable wherever SwiftUI runs (iPhone, iPad, macOS, watchOS) and wherever Compose runs (Android, desktop). The first sample apps target iOS and Android.
 
@@ -12,21 +12,21 @@ Milano consumes UI documents and defines the mechanics of document-driven UI: th
 
 Milano is not server-driven UI (it never talks to a server), not a SaaS (there is nothing hosted, nothing to sign up for), and not a design system (it draws nothing).
 
-Version 0.1 targets two capabilities: banners and interstitials, and simple document-defined forms.
+Version 1.0 targets two capabilities: banners and interstitials, and simple document-defined forms. The same mechanics serve whole screens beyond those targets, such as user profile screens and intermediate screens like a catalog. Contract v1.0 is stable: the versioning and tolerance rules below are promises, relied on by the 1.0 SDK release, and changes ship as amendments that bump the contract version.
 
 ## Specifications
 
 | # | Spec | Status |
 |---|---|---|
-| 00 | [Foundations](00-foundations.md) | Beta |
-| 01 | [Document model](01-document-model.md) | Beta |
-| 02 | [Vocabulary schema](02-vocabulary-schema.md) | Beta |
-| 03 | [Expression language](03-expression-language.md) | Beta |
-| 04 | [State & actions](04-state-and-actions.md) | Beta |
-| 05 | [Conformance suite](05-conformance-suite.md) | Beta |
-| 06 | [Runtime API](06-runtime-api.md) | Beta |
+| 00 | [Foundations](00-foundations.md) | Stable |
+| 01 | [Document model](01-document-model.md) | Stable |
+| 02 | [Vocabulary schema](02-vocabulary-schema.md) | Stable |
+| 03 | [Expression language](03-expression-language.md) | Stable |
+| 04 | [State & actions](04-state-and-actions.md) | Stable |
+| 05 | [Conformance suite](05-conformance-suite.md) | Stable |
+| 06 | [Runtime API](06-runtime-api.md) | Stable |
 
-Worked examples for both v0.1 capabilities: [Examples](examples.md), with executable vectors in [`conformance/`](conformance/).
+Worked examples for both v1.0 capabilities: [Examples](examples.md), with executable vectors in [`conformance/`](conformance/).
 
 ## Spec process
 
@@ -40,4 +40,4 @@ This repository also renders as a website via GitHub Pages (Jekyll, just-the-doc
 
 ## License
 
-The specifications are licensed under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/): share and adapt freely, with credit to Ezequiel Aceto and the Milano project. The Milano name and logo are trademarks of Ezequiel Aceto: use them to refer to this project, not to brand derivatives.
+The specifications are licensed under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/): share and adapt freely, with credit to Ezequiel (Kimi) Aceto and the Milano project.

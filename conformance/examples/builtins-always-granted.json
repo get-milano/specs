@@ -1,0 +1,50 @@
+{
+  "name": "builtins-always-granted",
+  "description": "Built-in dollar actions are contract, not capabilities: an empty allowlist leaves them available",
+  "config": {
+    "actions": {
+      "allow": []
+    }
+  },
+  "document": {
+    "version": "1.0.0",
+    "state": {
+      "flag": "bool"
+    },
+    "root": {
+      "type": "Button",
+      "id": "b",
+      "properties": {
+        "label": "Tap",
+        "enabled": true
+      },
+      "on": {
+        "tap": [
+          {
+            "action": "$set",
+            "key": "flag",
+            "value": true
+          }
+        ]
+      }
+    }
+  },
+  "state": {
+    "flag": false
+  },
+  "steps": [
+    {
+      "event": {
+        "node": "b",
+        "name": "tap"
+      }
+    }
+  ],
+  "expect": {
+    "state": {
+      "flag": true
+    },
+    "dispatched": [],
+    "occurrences": []
+  }
+}

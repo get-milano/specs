@@ -2,7 +2,7 @@
   "name": "expr-tip-rounding",
   "description": "Two-decimal rounding built from int() truncation: the tip calculator expression",
   "document": {
-    "version": "0.1.0",
+    "version": "1.0.0",
     "state": {
       "amount": "double",
       "tipPercent": "double"
