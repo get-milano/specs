@@ -4,7 +4,10 @@
   "title": "Milano Conformance Vector",
   "description": "Validates a conformance vector's envelope per the conformance suite spec: identity, exactly one document form, optional data and interaction steps, and the expectation block. A structurally invalid document must be carried as documentText, so every embedded document object satisfies the document schema. The envelope is strict: unknown keys fail, since runners would silently ignore them.",
   "type": "object",
-  "required": ["name", "expect"],
+  "required": [
+    "name",
+    "expect"
+  ],
   "properties": {
     "name": {
       "type": "string",
@@ -14,24 +17,70 @@
       "type": "string",
       "minLength": 1
     },
-    "document": { "$ref": "document.schema.json" },
+    "document": {
+      "$ref": "document.schema.json"
+    },
     "documentText": {
       "type": "string",
       "minLength": 1
     },
     "state": {
       "type": "object",
-      "propertyNames": { "$ref": "#/$defs/identifier" }
+      "propertyNames": {
+        "$ref": "#/$defs/identifier"
+      }
     },
     "context": {
       "type": "object",
-      "propertyNames": { "$ref": "#/$defs/identifier" }
+      "propertyNames": {
+        "$ref": "#/$defs/identifier"
+      }
     },
     "config": {
       "type": "object",
       "properties": {
         "unknownTypePolicy": {
-          "enum": ["skip", "placeholder", "fail"]
+          "enum": [
+            "skip",
+            "placeholder",
+            "fail"
+          ]
+        },
+        "actions": {
+          "type": "object",
+          "properties": {
+            "allow": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/identifier"
+              }
+            },
+            "declare": {
+              "type": "object",
+              "propertyNames": {
+                "$ref": "#/$defs/identifier"
+              },
+              "additionalProperties": {
+                "type": "object",
+                "properties": {
+                  "parameters": {
+                    "type": "object",
+                    "propertyNames": {
+                      "$ref": "#/$defs/identifier"
+                    },
+                    "additionalProperties": {
+                      "$ref": "document.schema.json#/$defs/type"
+                    }
+                  },
+                  "result": {
+                    "$ref": "document.schema.json#/$defs/type"
+                  }
+                },
+                "additionalProperties": false
+              }
+            }
+          },
+          "additionalProperties": false
         }
       },
       "additionalProperties": false
@@ -39,13 +88,35 @@
     "steps": {
       "type": "array",
       "minItems": 1,
-      "items": { "$ref": "#/$defs/step" }
+      "items": {
+        "$ref": "#/$defs/step"
+      }
     },
-    "expect": { "$ref": "#/$defs/expect" }
+    "expect": {
+      "$ref": "#/$defs/expect"
+    }
   },
   "oneOf": [
-    { "required": ["document"], "not": { "required": ["documentText"] } },
-    { "required": ["documentText"], "not": { "required": ["document"] } }
+    {
+      "required": [
+        "document"
+      ],
+      "not": {
+        "required": [
+          "documentText"
+        ]
+      }
+    },
+    {
+      "required": [
+        "documentText"
+      ],
+      "not": {
+        "required": [
+          "document"
+        ]
+      }
+    }
   ],
   "additionalProperties": false,
   "$defs": {
@@ -60,25 +131,49 @@
       "properties": {
         "event": {
           "type": "object",
-          "required": ["node", "name"],
+          "required": [
+            "node",
+            "name"
+          ],
           "properties": {
-            "node": { "type": "string", "minLength": 1 },
-            "name": { "$ref": "#/$defs/identifier" },
+            "node": {
+              "type": "string",
+              "minLength": 1
+            },
+            "name": {
+              "$ref": "#/$defs/identifier"
+            },
             "payload": {}
           },
           "additionalProperties": false
         },
         "contextUpdate": {
           "type": "object",
-          "propertyNames": { "$ref": "#/$defs/identifier" }
+          "propertyNames": {
+            "$ref": "#/$defs/identifier"
+          }
         },
-        "teardown": { "const": true },
+        "teardown": {
+          "const": true
+        },
         "complete": {
           "type": "object",
-          "required": ["dispatch", "outcome"],
+          "required": [
+            "dispatch",
+            "outcome"
+          ],
           "properties": {
-            "dispatch": { "type": "integer", "minimum": 0 },
-            "outcome": { "enum": ["success", "failure"] }
+            "dispatch": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "outcome": {
+              "enum": [
+                "success",
+                "failure"
+              ]
+            },
+            "payload": {}
           },
           "additionalProperties": false
         }
@@ -89,21 +184,31 @@
       "type": "object",
       "minProperties": 1,
       "properties": {
-        "view": { "$ref": "#/$defs/resolvedNode" },
+        "view": {
+          "$ref": "#/$defs/resolvedNode"
+        },
         "state": {
           "type": "object",
-          "propertyNames": { "$ref": "#/$defs/identifier" }
+          "propertyNames": {
+            "$ref": "#/$defs/identifier"
+          }
         },
         "dispatched": {
           "type": "array",
           "items": {
             "type": "object",
-            "required": ["action"],
+            "required": [
+              "action"
+            ],
             "properties": {
-              "action": { "$ref": "#/$defs/identifier" },
+              "action": {
+                "$ref": "#/$defs/identifier"
+              },
               "parameters": {
                 "type": "object",
-                "propertyNames": { "$ref": "#/$defs/identifier" }
+                "propertyNames": {
+                  "$ref": "#/$defs/identifier"
+                }
               }
             },
             "additionalProperties": false
@@ -113,7 +218,9 @@
           "type": "array",
           "items": {
             "type": "object",
-            "required": ["kind"],
+            "required": [
+              "kind"
+            ],
             "properties": {
               "kind": {
                 "enum": [
@@ -122,22 +229,27 @@
                   "undeclaredProperty",
                   "droppedEvent",
                   "invalidEmission",
+                  "invalidCompletion",
                   "duplicateCompletion",
                   "completionAfterTeardown",
                   "rejectedContextUpdate",
-                  "overLimitRejected",
                   "divisionByZero",
                   "saturation"
                 ]
               },
-              "node": { "type": "string", "minLength": 1 }
+              "node": {
+                "type": "string",
+                "minLength": 1
+              }
             },
             "additionalProperties": false
           }
         },
         "error": {
           "type": "object",
-          "required": ["type"],
+          "required": [
+            "type"
+          ],
           "properties": {
             "type": {
               "enum": [
@@ -149,27 +261,82 @@
               ]
             }
           }
+        },
+        "interactions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "kind"
+            ],
+            "properties": {
+              "kind": {
+                "enum": [
+                  "viewBuilt",
+                  "viewTornDown",
+                  "event",
+                  "actionDispatched",
+                  "completionSucceeded",
+                  "completionFailed",
+                  "tap",
+                  "doubleTap",
+                  "longPress",
+                  "focusGained",
+                  "focusLost",
+                  "textChanged",
+                  "toggled",
+                  "selectionChanged",
+                  "valueChanged",
+                  "appeared",
+                  "disappeared",
+                  "scrolled"
+                ]
+              },
+              "node": {
+                "type": "string",
+                "minLength": 1
+              },
+              "name": {
+                "type": "string",
+                "minLength": 1
+              },
+              "value": {}
+            },
+            "additionalProperties": false
+          }
         }
       },
       "additionalProperties": false
     },
     "resolvedNode": {
       "type": "object",
-      "required": ["type", "reference"],
+      "required": [
+        "type",
+        "reference"
+      ],
       "properties": {
         "type": {
           "type": "string",
           "pattern": "^\\$?[A-Za-z][A-Za-z0-9_]*$"
         },
-        "reference": { "type": "string", "minLength": 1 },
-        "placeholder": { "const": true },
+        "reference": {
+          "type": "string",
+          "minLength": 1
+        },
+        "placeholder": {
+          "const": true
+        },
         "properties": {
           "type": "object",
-          "propertyNames": { "$ref": "#/$defs/identifier" }
+          "propertyNames": {
+            "$ref": "#/$defs/identifier"
+          }
         },
         "children": {
           "type": "array",
-          "items": { "$ref": "#/$defs/resolvedNode" }
+          "items": {
+            "$ref": "#/$defs/resolvedNode"
+          }
         }
       },
       "additionalProperties": false

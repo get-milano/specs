@@ -1,0 +1,41 @@
+{
+  "name": "interaction-unbound-event",
+  "description": "A declared-but-unbound emission reaches analytics before the binding lookup, while droppedEvent keeps its defect meaning on the observability stream",
+  "document": {
+    "version": "1.0.0",
+    "root": {
+      "type": "Button",
+      "id": "b",
+      "properties": {
+        "label": "Go",
+        "enabled": true
+      }
+    }
+  },
+  "steps": [
+    {
+      "event": {
+        "node": "b",
+        "name": "tap"
+      }
+    }
+  ],
+  "expect": {
+    "interactions": [
+      {
+        "kind": "viewBuilt"
+      },
+      {
+        "kind": "event",
+        "node": "b",
+        "name": "tap"
+      }
+    ],
+    "occurrences": [
+      {
+        "kind": "droppedEvent",
+        "node": "b"
+      }
+    ]
+  }
+}

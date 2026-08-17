@@ -1,0 +1,42 @@
+{
+  "name": "gate-action-allow-excludes-declared",
+  "description": "The allowlist filters builder-declared actions too: a declared but unallowed action stays ungranted",
+  "config": {
+    "actions": {
+      "allow": [
+        "openUrl"
+      ],
+      "declare": {
+        "dismiss": {
+          "parameters": {}
+        }
+      }
+    }
+  },
+  "document": {
+    "version": "1.0.0",
+    "root": {
+      "type": "Button",
+      "id": "close",
+      "properties": {
+        "label": "Close",
+        "enabled": true
+      },
+      "on": {
+        "tap": [
+          {
+            "action": "dismiss"
+          }
+        ]
+      }
+    }
+  },
+  "expect": {
+    "error": {
+      "type": "SchemaViolation",
+      "rule": "action-capability",
+      "node": "close",
+      "found": "dismiss"
+    }
+  }
+}

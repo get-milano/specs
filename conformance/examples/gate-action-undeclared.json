@@ -1,0 +1,31 @@
+{
+  "name": "gate-action-undeclared",
+  "description": "Binding a custom action declared nowhere fails with SchemaViolation; documents cannot mint action names",
+  "document": {
+    "version": "1.0.0",
+    "root": {
+      "type": "Button",
+      "id": "track",
+      "properties": {
+        "label": "Track",
+        "enabled": true
+      },
+      "on": {
+        "tap": [
+          {
+            "action": "trackTap",
+            "surface": "promo"
+          }
+        ]
+      }
+    }
+  },
+  "expect": {
+    "error": {
+      "type": "SchemaViolation",
+      "rule": "action-capability",
+      "node": "track",
+      "found": "trackTap"
+    }
+  }
+}

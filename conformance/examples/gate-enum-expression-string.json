@@ -1,0 +1,30 @@
+{
+  "name": "gate-enum-expression-string",
+  "description": "Enum positions accept member literals and same-enum expressions only: a plain string expression is a SchemaViolation",
+  "document": {
+    "version": "1.0.0",
+    "state": {
+      "raw": "string"
+    },
+    "root": {
+      "type": "Badge",
+      "id": "b",
+      "properties": {
+        "label": "Sev",
+        "tone": {
+          "$expr": "state.raw"
+        }
+      }
+    }
+  },
+  "state": {
+    "raw": "info"
+  },
+  "expect": {
+    "error": {
+      "type": "SchemaViolation",
+      "rule": "expression",
+      "node": "b"
+    }
+  }
+}

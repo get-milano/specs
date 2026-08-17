@@ -1,0 +1,47 @@
+{
+  "name": "gate-enum-action-parameter-nonmember",
+  "description": "A non-member literal in an enum-typed action parameter is a SchemaViolation at the gate",
+  "document": {
+    "version": "1.0.0",
+    "root": {
+      "type": "Badge",
+      "id": "b",
+      "properties": {
+        "label": "Sev",
+        "tone": "info"
+      },
+      "on": {
+        "select": [
+          {
+            "action": "setTone",
+            "tone": "sever"
+          }
+        ]
+      }
+    }
+  },
+  "expect": {
+    "error": {
+      "type": "SchemaViolation",
+      "rule": "action-encoding",
+      "node": "b"
+    }
+  },
+  "config": {
+    "actions": {
+      "declare": {
+        "setTone": {
+          "parameters": {
+            "tone": {
+              "enum": [
+                "info",
+                "warning",
+                "danger"
+              ]
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "name": "gate-expr-nonascii-digit",
+  "description": "The grammar's digits are ASCII: an Arabic-Indic digit fails to tokenize and is a SchemaViolation",
+  "document": {
+    "version": "1.0.0",
+    "root": {
+      "type": "Text",
+      "id": "t",
+      "properties": {
+        "text": {
+          "$expr": "str(٥)"
+        }
+      }
+    }
+  },
+  "expect": {
+    "error": {
+      "type": "SchemaViolation",
+      "rule": "expression",
+      "node": "t"
+    }
+  }
+}

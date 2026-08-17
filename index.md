@@ -11,23 +11,23 @@ Milano consumes **UI documents** and defines the **mechanics** of document-drive
 
 Milano is **not** server-driven UI (it never talks to a server), **not** a SaaS (there is nothing hosted, nothing to sign up for), and **not** a design system (it draws nothing).
 
-Version 0.1 targets two capabilities: banners and interstitials, and simple document-defined forms.
+Version 1.0 targets two capabilities: banners and interstitials, and simple document-defined forms. The same mechanics serve whole screens beyond those targets, such as user profile screens and intermediate screens like a catalog. Contract v1.0 is stable: the versioning and tolerance rules below are promises, relied on by the 1.0 SDK release, and changes ship as amendments that bump the contract version.
 
-Try the contract in the browser: the [Milano Playground](https://get-milano.github.io/playground/) validates vocabularies and documents against these schemas and the reference checker, live.
+Try the contract in the browser: the [Milano Playground](https://get-milano.dev/playground/) validates vocabularies and documents against these schemas and the reference checker, live.
 
 ## Specifications
 
 | # | Spec | Status |
 |---|---|---|
-| 00 | [Foundations](00-foundations.html) | Beta |
-| 01 | [Document model](01-document-model.html) | Beta |
-| 02 | [Vocabulary schema](02-vocabulary-schema.html) | Beta |
-| 03 | [Expression language](03-expression-language.html) | Beta |
-| 04 | [State & actions](04-state-and-actions.html) | Beta |
-| 05 | [Conformance suite](05-conformance-suite.html) | Beta |
-| 06 | [Runtime API](06-runtime-api.html) | Beta |
+| 00 | [Foundations](00-foundations.html) | Stable |
+| 01 | [Document model](01-document-model.html) | Stable |
+| 02 | [Vocabulary schema](02-vocabulary-schema.html) | Stable |
+| 03 | [Expression language](03-expression-language.html) | Stable |
+| 04 | [State & actions](04-state-and-actions.html) | Stable |
+| 05 | [Conformance suite](05-conformance-suite.html) | Stable |
+| 06 | [Runtime API](06-runtime-api.html) | Stable |
 
-Worked examples for both v0.1 capabilities, with their conformance vectors: [Examples](examples.html).
+Worked examples for both v1.0 capabilities, with their conformance vectors: [Examples](examples.html).
 
 ## Spec process
 

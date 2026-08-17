@@ -1,0 +1,35 @@
+{
+  "name": "gate-enum-state-nonmember",
+  "description": "Supplied state values validate membership against enum declarations, like every other declaration check",
+  "document": {
+    "version": "1.0.0",
+    "state": {
+      "tone": {
+        "enum": [
+          "info",
+          "warning",
+          "danger"
+        ]
+      }
+    },
+    "root": {
+      "type": "Badge",
+      "id": "b",
+      "properties": {
+        "label": "Sev",
+        "tone": {
+          "$expr": "state.tone"
+        }
+      }
+    }
+  },
+  "state": {
+    "tone": "severe"
+  },
+  "expect": {
+    "error": {
+      "type": "SchemaViolation",
+      "rule": "state-declaration"
+    }
+  }
+}

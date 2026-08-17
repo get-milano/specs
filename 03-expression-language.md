@@ -5,7 +5,7 @@ nav_order: 4
 
 # Milano Expression Language
 
-**Status:** Beta v0.1.0 · 2026-08-15
+**Status:** Stable v1.0.0 · 2026-08-16
 
 Defines the grammar and semantics of the expression strings carried by the `$expr` wrapper. Expressions are pure, statically typed, and total: after the gate accepts a document, evaluation can never fail. Both runtimes implement this spec independently; the conformance suite is the arbiter of identical behavior.
 
@@ -35,15 +35,16 @@ identifier     = letter , { letter | digit | "_" } ;
 
 Notes:
 
-- A bare `identifier` in `primary` position must be one of the reserved roots (`state`, `context`, `event`); anything else is a `SchemaViolation` at the gate. Function names appear only in `call` position.
+- `letter` is ASCII `A`-`Z` and `a`-`z`; `digit` is ASCII `0`-`9`. Non-ASCII letters and digits (including Unicode digit characters) are not part of the grammar and fail to tokenize.
+- A bare `identifier` in `primary` position must be a reserved root usable as a value: `event` or `result`, in their scopes. `state` and `context` are namespaces, valid only as the base of a field access; a bare `state` or `context`, and any other bare identifier, is a `SchemaViolation` at the gate. Function names appear only in `call` position.
 - Negative literals are the unary `-` operator applied to a number.
 - A `number` without a decimal point is an `int` literal; with one, a `double` literal.
 
 ## References
 
-- Reserved roots: `state`, `context`, and `event` (the last only inside `on` bindings of events declaring a payload).
+- Reserved roots: `state`, `context`, `event` (only inside `on` bindings of events declaring a payload), and `result` (only inside `onSuccess` bindings of actions declaring a result).
 - Record fields are accessed with `.` (dot). Field access requires a non-optional record type; an optional must be resolved with `??` first. This rule is checked at the gate, which is what makes null dereference impossible at runtime.
-- There is no array indexing in v0.1.
+- There is no array indexing in v1.0.
 
 ## Literals
 
@@ -63,7 +64,7 @@ In precedence order, tightest first. Parentheses group.
 | 2 | `*` `/` `%` | numeric |
 | 3 | `+` `-` | numeric; `+` also concatenates when both operands are strings |
 | 4 | `<` `<=` `>` `>=` | numeric only |
-| 5 | `==` `!=` | scalars of the same type after numeric promotion; optionals comparable to `null`. Arrays and records are not comparable in v0.1: comparing them is a `SchemaViolation` at the gate |
+| 5 | `==` `!=` | scalars of the same type after numeric promotion; optionals comparable to `null`. Arrays and records are not comparable in v1.0: comparing them is a `SchemaViolation` at the gate |
 | 6 | `&&` | bool, short-circuit |
 | 7 | `||` | bool, short-circuit |
 | 8 | `??` | optional T on the left, T on the right; result T; right-associative |
@@ -78,19 +79,19 @@ Fixed exactly, because two independent runtimes must agree to the bit:
 - **Integer arithmetic.** 64-bit two's complement, wrapping on overflow. Division truncates toward zero; the sign of `%` follows the dividend.
 - **Division and modulo by zero (int).** The result is `0`, and the occurrence is reported to the engine observer. Evaluation does not fail.
 - **Double arithmetic.** IEEE 754 binary64 throughout: division by zero yields infinities, `0.0/0.0` yields NaN, and NaN compares unequal to everything including itself.
-- **Conversions.** `double(x)` converts an int exactly when representable, otherwise round-to-nearest. `int(x)` truncates toward zero and saturates at the int64 bounds; saturation is reported to the observer.
+- **Conversions.** `double(x)` converts an int exactly when representable, otherwise round-to-nearest. `int(x)` truncates toward zero and saturates at the int64 bounds; saturation is reported to the observer. `int(NaN)` is `0`, reported as saturation.
 
 ## Strings
 
 - `+` concatenates two strings. There is no implicit stringification: mixing a string with a number in `+` is a `SchemaViolation` at the gate.
 - `str(x)` converts scalars to strings, locale-independently: ints in decimal; bools as `true` / `false`. Doubles use a Milano-defined format, never the platform default: non-finite values are `nan`, `inf`, `-inf`; finite values use the shortest round-trip digits, rendered as plain decimal (integral values keep one fractional digit: `5.0`) while the normalized exponent is within [-4, 15], otherwise as scientific notation `d[.ddd]e[-]NN` with a lowercase `e`, no plus sign, no zero padding.
 - Ordering operators do not apply to strings; equality does.
-- Substring functions (`contains`, `startsWith`, `endsWith`) compare Unicode scalar sequences literally: no normalization, no grapheme clustering.
+- Substring functions (`contains`, `startsWith`, `endsWith`) compare Unicode scalar sequences literally: no normalization, no grapheme clustering. String values are Unicode scalar sequences by definition; host-constructed values containing unpaired surrogates are outside the contract.
 - `trim` removes exactly the characters with the Unicode White_Space property, from an explicit table both runtimes share; platform whitespace helpers are not used.
 
 ## Functions
 
-The complete v0.1 set. All functions are pure and total; all arguments are evaluated.
+The complete v1.0 set. All functions are pure and total. Arguments are evaluated eagerly, with one exception: `if` evaluates only the taken branch, like `&&`, `||`, and `??`.
 
 | Function | Signature | Notes |
 |---|---|---|
@@ -104,12 +105,19 @@ The complete v0.1 set. All functions are pure and total; all arguments are evalu
 | `startsWith` | string, string to bool | |
 | `endsWith` | string, string to bool | |
 | `trim` | string to string | Removes leading and trailing Unicode whitespace |
-| `if` | bool, T, T to T | Both branches type-check to the same T; both are evaluated (evaluation is pure, so this is observable only through cost) |
+| `if` | bool, T, T to T | Both branches type-check to the same T, where a single `null` branch makes T optional and two `null` branches are rejected (no T to infer); only the taken branch is evaluated, observable as the absence of the untaken branch's arithmetic reports |
 
-There are no regular expressions in v0.1: string validation beyond these functions belongs to the producer or the host. There are no case-mapping functions in v0.1: case rules are locale-sensitive and belong to renderers.
+There are no regular expressions in v1.0: string validation beyond these functions belongs to the producer or the host. There are no case-mapping functions in v1.0: case rules are locale-sensitive and belong to renderers.
 
 ## Typing and totality
 
-- Every expression has a static type, determined at the gate from literals, declared state and context types, event payload types, operator rules, and function signatures. A property expression must type-check to the property's declared type; mismatches are a `SchemaViolation` at the gate.
+- Every expression has a static type, determined at the gate from literals, declared state and context types, event payload and action result types, operator rules, and function signatures. A property expression must type-check to the property's declared type; mismatches are a `SchemaViolation` at the gate.
 - A non-optional `T` is accepted wherever an optional `T` is expected; the reverse never holds.
+
+Enum types follow four rules, all enforced at the gate:
+
+- **Refinement.** The expected type propagates into `if` branches and both sides of `??`. A string literal in an enum position (a property value, `$set` value, action parameter, or a propagated branch of one) must be a member of that enum and takes the enum type; a non-member is a `SchemaViolation`. Everywhere else a string literal is a plain `string`.
+- **Strictness.** An enum position accepts member literals and expressions of the same enum type only; an expression of type `string` is a `SchemaViolation` there. Two enum types are the same exactly when their member sets are equal, and expressions over distinct enums never mix.
+- **Widening.** An enum value is accepted wherever a `string` is expected: string functions (`concat`, `str`, `length`, `isEmpty`, and the rest), `+` concatenation, and `string`-declared positions. Widening is one-way.
+- **Comparison.** `==` and `!=` between an enum and a string literal require the literal to be a member (the typo fails the gate instead of evaluating to a silently constant `false`); between two enums they require the same enum type; between an enum and a non-literal `string` expression they compare by string value. Ordering operators never accept enums.
 - After the gate: no type errors (static), no null dereference (the `??` rule), no division failures (defined results), no overflow traps (wrapping and saturation). Evaluation is total. The conformance suite includes vectors for every boundary in this section.

@@ -1,0 +1,78 @@
+{
+  "name": "interaction-event-and-dispatch",
+  "description": "The user-interaction stream carries the build impression, every valid emission with its payload, the action dispatch with captured parameters anchored to the source node, and the settled completion",
+  "document": {
+    "version": "1.0.0",
+    "metadata": {
+      "campaign": "spring"
+    },
+    "root": {
+      "type": "Button",
+      "id": "b",
+      "properties": {
+        "label": "Go",
+        "enabled": true
+      },
+      "on": {
+        "tap": [
+          {
+            "action": "ping"
+          }
+        ]
+      }
+    }
+  },
+  "steps": [
+    {
+      "event": {
+        "node": "b",
+        "name": "tap"
+      }
+    },
+    {
+      "complete": {
+        "dispatch": 0,
+        "outcome": "success"
+      }
+    }
+  ],
+  "expect": {
+    "dispatched": [
+      {
+        "action": "ping",
+        "parameters": {}
+      }
+    ],
+    "interactions": [
+      {
+        "kind": "viewBuilt",
+        "value": {
+          "campaign": "spring"
+        }
+      },
+      {
+        "kind": "event",
+        "node": "b",
+        "name": "tap"
+      },
+      {
+        "kind": "actionDispatched",
+        "node": "b",
+        "name": "ping",
+        "value": {}
+      },
+      {
+        "kind": "completionSucceeded",
+        "node": "b",
+        "name": "ping"
+      }
+    ]
+  },
+  "config": {
+    "actions": {
+      "declare": {
+        "ping": {}
+      }
+    }
+  }
+}

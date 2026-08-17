@@ -1,0 +1,72 @@
+{
+  "name": "completion-result-applied",
+  "description": "A success completion carries the handler's returned value: result binds inside onSuccess with the declared type",
+  "document": {
+    "version": "1.0.0",
+    "state": {
+      "code": "string"
+    },
+    "root": {
+      "type": "Button",
+      "id": "b",
+      "properties": {
+        "label": "Go",
+        "enabled": true
+      },
+      "on": {
+        "tap": [
+          {
+            "action": "fetchCode",
+            "onSuccess": [
+              {
+                "action": "$set",
+                "key": "code",
+                "value": {
+                  "$expr": "result"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "state": {
+    "code": ""
+  },
+  "steps": [
+    {
+      "event": {
+        "node": "b",
+        "name": "tap"
+      }
+    },
+    {
+      "complete": {
+        "dispatch": 0,
+        "outcome": "success",
+        "payload": "ABC-123"
+      }
+    }
+  ],
+  "expect": {
+    "state": {
+      "code": "ABC-123"
+    },
+    "dispatched": [
+      {
+        "action": "fetchCode",
+        "parameters": {}
+      }
+    ]
+  },
+  "config": {
+    "actions": {
+      "declare": {
+        "fetchCode": {
+          "result": "string"
+        }
+      }
+    }
+  }
+}

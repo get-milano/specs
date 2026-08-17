@@ -2,7 +2,7 @@
   "name": "dispatch-unbound-event",
   "description": "A declared event emitted with no binding is dropped and reported; nothing dispatches",
   "document": {
-    "version": "0.1.0",
+    "version": "1.0.0",
     "root": {
       "type": "Button",
       "id": "b",

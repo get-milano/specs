@@ -1,7 +1,7 @@
 {
-  "milano": "0.1.0",
+  "milano": "1.0.0",
   "name": "examples",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "components": {
     "Banner": {
       "properties": {
@@ -14,7 +14,8 @@
     },
     "Text": {
       "properties": {
-        "text": "string"
+        "text": "string",
+        "visible": "bool?"
       }
     },
     "Button": {
@@ -52,12 +53,47 @@
       "events": {
         "change": "bool"
       }
+    },
+    "Badge": {
+      "properties": {
+        "label": "string",
+        "tone": {
+          "enum": [
+            "info",
+            "warning",
+            "danger"
+          ]
+        }
+      },
+      "events": {
+        "select": {
+          "enum": [
+            "info",
+            "warning",
+            "danger"
+          ]
+        }
+      }
+    },
+    "Meta": {
+      "properties": {
+        "key": "string"
+      },
+      "strict": true
     }
   },
   "actions": {
     "openUrl": {
       "parameters": {
         "url": "string"
+      }
+    },
+    "submitContact": {
+      "parameters": {
+        "name": "string",
+        "surname": "string",
+        "email": "string",
+        "phone": "string?"
       }
     }
   }

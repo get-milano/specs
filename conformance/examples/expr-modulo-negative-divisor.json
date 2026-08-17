@@ -1,0 +1,26 @@
+{
+  "name": "expr-modulo-negative-divisor",
+  "description": "Modulo sign follows the dividend for both int and double, including negative divisors",
+  "document": {
+    "version": "1.0.0",
+    "root": {
+      "type": "Text",
+      "id": "r",
+      "properties": {
+        "text": {
+          "$expr": "str(7 % -(2)) + ' ' + str(-(7) % -(2)) + ' ' + str(7.5 % -(2.0))"
+        }
+      }
+    }
+  },
+  "expect": {
+    "view": {
+      "type": "Text",
+      "reference": "r",
+      "properties": {
+        "text": "1 -1 1.5"
+      }
+    },
+    "occurrences": []
+  }
+}

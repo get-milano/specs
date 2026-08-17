@@ -1,0 +1,26 @@
+{
+  "name": "expr-signed-zero",
+  "description": "Signed zero: -0.0 formats with its sign, compares equal to 0.0, and division by it yields negative infinity",
+  "document": {
+    "version": "1.0.0",
+    "root": {
+      "type": "Text",
+      "id": "r",
+      "properties": {
+        "text": {
+          "$expr": "str(-(0.0)) + ' ' + str(0.0 == -(0.0)) + ' ' + str(1.0 / -(0.0))"
+        }
+      }
+    }
+  },
+  "expect": {
+    "view": {
+      "type": "Text",
+      "reference": "r",
+      "properties": {
+        "text": "-0.0 true -inf"
+      }
+    },
+    "occurrences": []
+  }
+}

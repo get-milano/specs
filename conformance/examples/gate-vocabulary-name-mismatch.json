@@ -1,0 +1,26 @@
+{
+  "name": "gate-vocabulary-name-mismatch",
+  "description": "A document requiring a differently named vocabulary fails with SchemaViolation",
+  "document": {
+    "version": "1.0.0",
+    "vocabulary": {
+      "name": "shop",
+      "min": "1.0.0"
+    },
+    "root": {
+      "type": "Text",
+      "id": "t",
+      "properties": {
+        "text": "hi"
+      }
+    }
+  },
+  "expect": {
+    "error": {
+      "type": "SchemaViolation",
+      "rule": "vocabulary-requirement",
+      "expected": "shop",
+      "found": "examples"
+    }
+  }
+}

@@ -1,8 +1,8 @@
 {
   "name": "form-contact-consent",
-  "description": "End-to-end contact form: state provider, unidirectional flow via events and $set, $when consent gating, document-local action, async submit completion, onSuccess",
+  "description": "End-to-end contact form: state provider, unidirectional flow via events and $set, $when consent gating, vocabulary-declared action, async submit completion, onSuccess",
   "document": {
-    "version": "0.1.0",
+    "version": "1.0.0",
     "state": {
       "name": "string",
       "surname": "string",
@@ -10,16 +10,6 @@
       "phone": "string?",
       "consent": "bool",
       "submitted": "bool"
-    },
-    "actions": {
-      "submitContact": {
-        "parameters": {
-          "name": "string",
-          "surname": "string",
-          "email": "string",
-          "phone": "string?"
-        }
-      }
     },
     "root": {
       "type": "Column",

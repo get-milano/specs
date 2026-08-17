@@ -1,0 +1,28 @@
+{
+  "name": "vocabulary-requirement-satisfied",
+  "description": "A satisfied vocabulary requirement builds cleanly; name matches and the version is at least the minimum",
+  "document": {
+    "version": "1.0.0",
+    "vocabulary": {
+      "name": "examples",
+      "min": "1.0.0"
+    },
+    "root": {
+      "type": "Text",
+      "id": "t",
+      "properties": {
+        "text": "compatible"
+      }
+    }
+  },
+  "expect": {
+    "view": {
+      "type": "Text",
+      "reference": "t",
+      "properties": {
+        "text": "compatible"
+      }
+    },
+    "occurrences": []
+  }
+}
