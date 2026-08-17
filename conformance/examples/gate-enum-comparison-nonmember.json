@@ -1,0 +1,36 @@
+{
+  "name": "gate-enum-comparison-nonmember",
+  "description": "A string literal compared to an enum must be a member: the typo is a SchemaViolation instead of a silently false condition",
+  "document": {
+    "version": "1.0.0",
+    "state": {
+      "tone": {
+        "enum": [
+          "info",
+          "warning",
+          "danger"
+        ]
+      }
+    },
+    "root": {
+      "type": "Text",
+      "id": "t",
+      "properties": {
+        "text": "alert",
+        "visible": {
+          "$expr": "state.tone == 'dangr'"
+        }
+      }
+    }
+  },
+  "state": {
+    "tone": "danger"
+  },
+  "expect": {
+    "error": {
+      "type": "SchemaViolation",
+      "rule": "expression",
+      "node": "t"
+    }
+  }
+}

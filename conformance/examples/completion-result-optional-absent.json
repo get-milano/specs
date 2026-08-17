@@ -1,0 +1,71 @@
+{
+  "name": "completion-result-optional-absent",
+  "description": "A missing success value counts as null: it satisfies an optional result declaration and result evaluates to null",
+  "document": {
+    "version": "1.0.0",
+    "state": {
+      "label": "string"
+    },
+    "root": {
+      "type": "Button",
+      "id": "b",
+      "properties": {
+        "label": "Go",
+        "enabled": true
+      },
+      "on": {
+        "tap": [
+          {
+            "action": "probe",
+            "onSuccess": [
+              {
+                "action": "$set",
+                "key": "label",
+                "value": {
+                  "$expr": "result ?? 'none'"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "state": {
+    "label": "start"
+  },
+  "steps": [
+    {
+      "event": {
+        "node": "b",
+        "name": "tap"
+      }
+    },
+    {
+      "complete": {
+        "dispatch": 0,
+        "outcome": "success"
+      }
+    }
+  ],
+  "expect": {
+    "state": {
+      "label": "none"
+    },
+    "dispatched": [
+      {
+        "action": "probe",
+        "parameters": {}
+      }
+    ]
+  },
+  "config": {
+    "actions": {
+      "declare": {
+        "probe": {
+          "result": "string?"
+        }
+      }
+    }
+  }
+}

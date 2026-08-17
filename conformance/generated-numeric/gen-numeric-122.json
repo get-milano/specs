@@ -1,0 +1,26 @@
+{
+  "name": "gen-numeric-122",
+  "description": "Generated (seed 20260816): str(((0 - 1) * (0.0001 + 0.1)) % 9223372036854775807)",
+  "document": {
+    "version": "1.0.0",
+    "root": {
+      "type": "Text",
+      "id": "r",
+      "properties": {
+        "text": {
+          "$expr": "str(((0 - 1) * (0.0001 + 0.1)) % 9223372036854775807)"
+        }
+      }
+    }
+  },
+  "expect": {
+    "view": {
+      "type": "Text",
+      "reference": "r",
+      "properties": {
+        "text": "-0.10010000000000001"
+      }
+    },
+    "occurrences": []
+  }
+}

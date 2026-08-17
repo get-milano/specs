@@ -1,0 +1,31 @@
+{
+  "name": "gen-numeric-082",
+  "description": "Generated (seed 20260816): str(((0 % 10) / ((0 - 7) / 9223372036854775807)) % (0 - 7))",
+  "document": {
+    "version": "1.0.0",
+    "root": {
+      "type": "Text",
+      "id": "r",
+      "properties": {
+        "text": {
+          "$expr": "str(((0 % 10) / ((0 - 7) / 9223372036854775807)) % (0 - 7))"
+        }
+      }
+    }
+  },
+  "expect": {
+    "view": {
+      "type": "Text",
+      "reference": "r",
+      "properties": {
+        "text": "0"
+      }
+    },
+    "occurrences": [
+      {
+        "kind": "divisionByZero",
+        "node": "r"
+      }
+    ]
+  }
+}

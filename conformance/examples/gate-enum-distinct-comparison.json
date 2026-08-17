@@ -1,0 +1,43 @@
+{
+  "name": "gate-enum-distinct-comparison",
+  "description": "Two enum types are the same exactly when their member sets are equal; comparing distinct enums is a SchemaViolation",
+  "document": {
+    "version": "1.0.0",
+    "state": {
+      "tone": {
+        "enum": [
+          "info",
+          "warning",
+          "danger"
+        ]
+      },
+      "size": {
+        "enum": [
+          "small",
+          "large"
+        ]
+      }
+    },
+    "root": {
+      "type": "Text",
+      "id": "t",
+      "properties": {
+        "text": "x",
+        "visible": {
+          "$expr": "state.tone == state.size"
+        }
+      }
+    }
+  },
+  "state": {
+    "tone": "info",
+    "size": "small"
+  },
+  "expect": {
+    "error": {
+      "type": "SchemaViolation",
+      "rule": "expression",
+      "node": "t"
+    }
+  }
+}

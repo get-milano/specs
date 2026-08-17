@@ -1,8 +1,8 @@
 {
-  "name": "expr-if-evaluates-both-branches",
-  "description": "if evaluates both branches; the untaken branch's division by zero still reports",
+  "name": "expr-if-lazy",
+  "description": "if evaluates only the taken branch, observable as the absence of the untaken branch's division report",
   "document": {
-    "version": "0.1.0",
+    "version": "1.0.0",
     "root": {
       "type": "Text",
       "id": "result",
@@ -21,11 +21,6 @@
         "text": "1"
       }
     },
-    "occurrences": [
-      {
-        "kind": "divisionByZero",
-        "node": "result"
-      }
-    ]
+    "occurrences": []
   }
 }

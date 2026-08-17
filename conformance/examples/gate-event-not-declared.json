@@ -1,0 +1,30 @@
+{
+  "name": "gate-event-not-declared",
+  "description": "An on entry naming an event the component type does not declare is a SchemaViolation with rule event-binding",
+  "document": {
+    "version": "1.0.0",
+    "root": {
+      "type": "Text",
+      "id": "t",
+      "properties": {
+        "text": "x"
+      },
+      "on": {
+        "tap": [
+          {
+            "action": "$set",
+            "key": "x",
+            "value": true
+          }
+        ]
+      }
+    }
+  },
+  "expect": {
+    "error": {
+      "type": "SchemaViolation",
+      "rule": "event-binding",
+      "node": "t"
+    }
+  }
+}

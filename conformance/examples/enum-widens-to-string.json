@@ -1,0 +1,37 @@
+{
+  "name": "enum-widens-to-string",
+  "description": "An enum value is usable wherever a string is expected: concatenation and string functions widen it",
+  "document": {
+    "version": "1.0.0",
+    "state": {
+      "tone": {
+        "enum": [
+          "info",
+          "warning",
+          "danger"
+        ]
+      }
+    },
+    "root": {
+      "type": "Text",
+      "id": "t",
+      "properties": {
+        "text": {
+          "$expr": "concat('tone: ', state.tone)"
+        }
+      }
+    }
+  },
+  "state": {
+    "tone": "warning"
+  },
+  "expect": {
+    "view": {
+      "type": "Text",
+      "reference": "t",
+      "properties": {
+        "text": "tone: warning"
+      }
+    }
+  }
+}

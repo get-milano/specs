@@ -1,0 +1,53 @@
+{
+  "name": "when-without-then",
+  "description": "A $when may omit then: with a false condition the else branch runs, with no then there is nothing to do on true",
+  "document": {
+    "version": "1.0.0",
+    "state": {
+      "label": "string"
+    },
+    "root": {
+      "type": "Button",
+      "id": "b",
+      "properties": {
+        "label": {
+          "$expr": "state.label"
+        },
+        "enabled": true
+      },
+      "on": {
+        "tap": [
+          {
+            "action": "$when",
+            "condition": {
+              "$expr": "state.label == 'start'"
+            },
+            "else": [
+              {
+                "action": "$set",
+                "key": "label",
+                "value": "from-else"
+              }
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "state": {
+    "label": "other"
+  },
+  "steps": [
+    {
+      "event": {
+        "node": "b",
+        "name": "tap"
+      }
+    }
+  ],
+  "expect": {
+    "state": {
+      "label": "from-else"
+    }
+  }
+}

@@ -2,7 +2,7 @@
   "name": "context-update-applied",
   "description": "A valid context update applies atomically and dependent expressions re-evaluate",
   "document": {
-    "version": "0.1.0",
+    "version": "1.0.0",
     "context": {
       "greeting": "string"
     },

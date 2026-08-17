@@ -1,0 +1,90 @@
+{
+  "name": "completion-result-record-field",
+  "description": "A record result supports field access inside onSuccess, per the reserved-root field rules",
+  "document": {
+    "version": "1.0.0",
+    "state": {
+      "code": "string",
+      "count": "int"
+    },
+    "root": {
+      "type": "Button",
+      "id": "b",
+      "properties": {
+        "label": "Go",
+        "enabled": true
+      },
+      "on": {
+        "tap": [
+          {
+            "action": "lookup",
+            "onSuccess": [
+              {
+                "action": "$set",
+                "key": "code",
+                "value": {
+                  "$expr": "result.code"
+                }
+              },
+              {
+                "action": "$set",
+                "key": "count",
+                "value": {
+                  "$expr": "result.count"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "state": {
+    "code": "",
+    "count": 0
+  },
+  "steps": [
+    {
+      "event": {
+        "node": "b",
+        "name": "tap"
+      }
+    },
+    {
+      "complete": {
+        "dispatch": 0,
+        "outcome": "success",
+        "payload": {
+          "code": "OK",
+          "count": 2
+        }
+      }
+    }
+  ],
+  "expect": {
+    "state": {
+      "code": "OK",
+      "count": 2
+    },
+    "dispatched": [
+      {
+        "action": "lookup",
+        "parameters": {}
+      }
+    ]
+  },
+  "config": {
+    "actions": {
+      "declare": {
+        "lookup": {
+          "result": {
+            "record": {
+              "code": "string",
+              "count": "int"
+            }
+          }
+        }
+      }
+    }
+  }
+}

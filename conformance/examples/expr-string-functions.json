@@ -2,7 +2,7 @@
   "name": "expr-string-functions",
   "description": "trim, length (unicode scalars), and contains compose",
   "document": {
-    "version": "0.1.0",
+    "version": "1.0.0",
     "root": {
       "type": "Text",
       "id": "result",

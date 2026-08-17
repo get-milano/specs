@@ -1,0 +1,32 @@
+{
+  "name": "gate-action-param-type-mismatch",
+  "description": "A custom action parameter literal of the wrong type fails at the gate",
+  "document": {
+    "version": "1.0.0",
+    "root": {
+      "type": "Button",
+      "id": "go",
+      "properties": {
+        "label": "Go",
+        "enabled": true
+      },
+      "on": {
+        "tap": [
+          {
+            "action": "openUrl",
+            "url": 5
+          }
+        ]
+      }
+    }
+  },
+  "expect": {
+    "error": {
+      "type": "SchemaViolation",
+      "rule": "action-encoding",
+      "node": "go",
+      "expected": "string",
+      "found": "int"
+    }
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "name": "vocabulary-requirement-name-only",
+  "description": "A name-only vocabulary requirement checks the name and nothing else",
+  "document": {
+    "version": "1.0.0",
+    "vocabulary": {
+      "name": "examples"
+    },
+    "root": {
+      "type": "Text",
+      "id": "t",
+      "properties": {
+        "text": "ok"
+      }
+    }
+  },
+  "expect": {
+    "view": {
+      "type": "Text",
+      "reference": "t",
+      "properties": {
+        "text": "ok"
+      }
+    },
+    "occurrences": []
+  }
+}

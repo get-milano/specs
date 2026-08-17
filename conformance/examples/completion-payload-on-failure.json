@@ -1,0 +1,75 @@
+{
+  "name": "completion-payload-on-failure",
+  "description": "Failure completions never carry data: any value on a failure is an invalid completion and onFailure does not run",
+  "document": {
+    "version": "1.0.0",
+    "state": {
+      "code": "string"
+    },
+    "root": {
+      "type": "Button",
+      "id": "b",
+      "properties": {
+        "label": "Go",
+        "enabled": true
+      },
+      "on": {
+        "tap": [
+          {
+            "action": "fetchCode",
+            "onFailure": [
+              {
+                "action": "$set",
+                "key": "code",
+                "value": "failed"
+              }
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "state": {
+    "code": "start"
+  },
+  "steps": [
+    {
+      "event": {
+        "node": "b",
+        "name": "tap"
+      }
+    },
+    {
+      "complete": {
+        "dispatch": 0,
+        "outcome": "failure",
+        "payload": "x"
+      }
+    }
+  ],
+  "expect": {
+    "state": {
+      "code": "start"
+    },
+    "dispatched": [
+      {
+        "action": "fetchCode",
+        "parameters": {}
+      }
+    ],
+    "occurrences": [
+      {
+        "kind": "invalidCompletion"
+      }
+    ]
+  },
+  "config": {
+    "actions": {
+      "declare": {
+        "fetchCode": {
+          "result": "string"
+        }
+      }
+    }
+  }
+}

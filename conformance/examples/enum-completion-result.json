@@ -1,0 +1,115 @@
+{
+  "name": "enum-completion-result",
+  "description": "An enum-typed completion result validates membership: a member binds result, a non-member is an invalid completion",
+  "document": {
+    "version": "1.0.0",
+    "state": {
+      "tone": {
+        "enum": [
+          "info",
+          "warning",
+          "danger"
+        ]
+      }
+    },
+    "root": {
+      "type": "Badge",
+      "id": "b",
+      "properties": {
+        "label": "Sev",
+        "tone": {
+          "$expr": "state.tone"
+        }
+      },
+      "on": {
+        "select": [
+          {
+            "action": "classify",
+            "onSuccess": [
+              {
+                "action": "$set",
+                "key": "tone",
+                "value": {
+                  "$expr": "result"
+                }
+              }
+            ]
+          },
+          {
+            "action": "classify",
+            "onSuccess": [
+              {
+                "action": "$set",
+                "key": "tone",
+                "value": {
+                  "$expr": "result"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "state": {
+    "tone": "info"
+  },
+  "steps": [
+    {
+      "event": {
+        "node": "b",
+        "name": "select",
+        "payload": "info"
+      }
+    },
+    {
+      "complete": {
+        "dispatch": 0,
+        "outcome": "success",
+        "payload": "danger"
+      }
+    },
+    {
+      "complete": {
+        "dispatch": 1,
+        "outcome": "success",
+        "payload": "loud"
+      }
+    }
+  ],
+  "expect": {
+    "state": {
+      "tone": "danger"
+    },
+    "dispatched": [
+      {
+        "action": "classify",
+        "parameters": {}
+      },
+      {
+        "action": "classify",
+        "parameters": {}
+      }
+    ],
+    "occurrences": [
+      {
+        "kind": "invalidCompletion"
+      }
+    ]
+  },
+  "config": {
+    "actions": {
+      "declare": {
+        "classify": {
+          "result": {
+            "enum": [
+              "info",
+              "warning",
+              "danger"
+            ]
+          }
+        }
+      }
+    }
+  }
+}
