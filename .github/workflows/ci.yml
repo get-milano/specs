@@ -19,3 +19,9 @@ jobs:
           python3 tools/validate_suite.py
       - name: Reference-check vectors against spec semantics
         run: python3 tools/reference_check.py
+      # The tools' own tests. Discovery, so a new tools/test_*.py runs
+      # without touching this workflow. No compilers here: this repository
+      # stays engine-free, and the SDK compiles the generated output on
+      # its side (its samples are built from it).
+      - name: Tool tests
+        run: python3 -m unittest discover --start-directory tools --pattern "test_*.py" --verbose

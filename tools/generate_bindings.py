@@ -42,6 +42,34 @@ TS_ACCESSORS = {"bool": "boolValue", "int": "intValue",
 TS_WRAP = {"bool": "MilanoValue.bool", "int": "MilanoValue.int",
            "double": "MilanoValue.double", "string": "MilanoValue.string"}
 
+# A Milano identifier is `[A-Za-z][A-Za-z0-9_]*`, which includes plenty of
+# words the target languages reserve. Escaping is the language's own
+# mechanism, and the wire name is untouched: only the declaration changes.
+SWIFT_KEYWORDS = {
+    "associatedtype", "class", "deinit", "enum", "extension", "fileprivate", "func",
+    "import", "init", "inout", "internal", "let", "open", "operator", "private",
+    "precedencegroup", "protocol", "public", "rethrows", "static", "struct", "subscript",
+    "typealias", "var", "break", "case", "catch", "continue", "default", "defer", "do",
+    "else", "fallthrough", "for", "guard", "if", "in", "repeat", "return", "switch",
+    "throw", "throws", "try", "while", "as", "is", "nil", "self", "super", "true",
+    "false", "where", "Any", "Self",
+}
+KOTLIN_KEYWORDS = {
+    "as", "break", "class", "continue", "do", "else", "false", "for", "fun", "if", "in",
+    "interface", "is", "null", "object", "package", "return", "super", "this", "throw",
+    "true", "try", "typealias", "typeof", "val", "var", "when", "while",
+}
+# TypeScript needs no escaping here: reserved words are legal as property
+# and method names, and every generated identifier sits in that position.
+
+
+def escape_swift(name):
+    return f"`{name}`" if name in SWIFT_KEYWORDS else name
+
+
+def escape_kotlin(name):
+    return f"`{name}`" if name in KOTLIN_KEYWORDS else name
+
 
 def capitalize(name):
     return name[0].upper() + name[1:]
@@ -114,31 +142,33 @@ def collect_enums(vocabulary, prefix):
 
 def swift_property(name, descriptor, enum_type=None):
     kind, optional, element = parse_descriptor(descriptor)
+    declared = escape_swift(name)
     if kind == "enum":
         if optional:
-            return (f"    public var {name}: {enum_type}? {{\n"
+            return (f"    public var {declared}: {enum_type}? {{\n"
                     f"        node.property(\"{name}\").stringValue"
                     f".flatMap({enum_type}.init(rawValue:))\n"
                     f"    }}")
-        return (f"    public var {name}: {enum_type} {{\n"
+        return (f"    public var {declared}: {enum_type} {{\n"
                 f"        {enum_type}(rawValue: node.property(\"{name}\").stringValue!)!\n"
                 f"    }}")
     if kind in SWIFT_TYPES:
         base, accessor = SWIFT_TYPES[kind], SWIFT_ACCESSORS[kind]
         if optional:
-            return f"    public var {name}: {base}? {{ node.property(\"{name}\").{accessor} }}"
-        return (f"    public var {name}: {base} "
+            return (f"    public var {declared}: {base}? "
+                    f"{{ node.property(\"{name}\").{accessor} }}")
+        return (f"    public var {declared}: {base} "
                 f"{{ node.property(\"{name}\").{accessor}! }}")
     if kind == "array" and element in SWIFT_TYPES:
         base, accessor = SWIFT_TYPES[element], SWIFT_ACCESSORS[element]
         force = "" if optional else "!"
         suffix = "?" if optional else ""
-        return (f"    public var {name}: [{base}]{suffix} "
+        return (f"    public var {declared}: [{base}]{suffix} "
                 f"{{ node.property(\"{name}\").arrayValue{force}"
                 f".map {{ $0.{accessor}! }} }}")
     suffix = " raw MilanoValue: record-typed" if kind == "record" else ""
     return (f"    /// {name}:{suffix} read fields through MilanoValue accessors.\n"
-            f"    public var {name}: MilanoValue {{ node.property(\"{name}\") }}")
+            f"    public var {declared}: MilanoValue {{ node.property(\"{name}\") }}")
 
 
 def swift_emitter(event, payload_descriptor, enum_type=None):
@@ -182,45 +212,47 @@ def swift_action_case(name, declaration, enum_lookup):
     parameters = declaration.get("parameters", {})
     note = result_note(declaration)
     doc = f"    /// {note}\n" if note else ""
+    declared = escape_swift(name)
     if not parameters:
-        return (doc + f"    case {name}",
-                f"        case \"{name}\":\n            self = .{name}")
+        return (doc + f"    case {declared}",
+                f"        case \"{name}\":\n            self = .{declared}")
     labels, extractors = [], []
     for parameter, descriptor in sorted(parameters.items()):
         kind, optional, _ = parse_descriptor(descriptor)
+        label = escape_swift(parameter)
         if kind == "enum":
             enum_type = enum_lookup[("parameter", name, parameter)]
             if optional:
-                labels.append(f"{parameter}: {enum_type}?")
+                labels.append(f"{label}: {enum_type}?")
                 extractors.append(
-                    f"{parameter}: action.parameters[\"{parameter}\"]?"
+                    f"{label}: action.parameters[\"{parameter}\"]?"
                     f".stringValue.flatMap({enum_type}.init(rawValue:))")
             else:
-                labels.append(f"{parameter}: {enum_type}")
+                labels.append(f"{label}: {enum_type}")
                 extractors.append(
-                    f"{parameter}: {enum_type}(rawValue:"
+                    f"{label}: {enum_type}(rawValue:"
                     f" action.parameters[\"{parameter}\"]!.stringValue!)!")
             continue
         base = SWIFT_TYPES.get(kind, "MilanoValue")
         if base == "MilanoValue":
-            labels.append(f"{parameter}: MilanoValue")
-            extractors.append(f"{parameter}: action.parameters[\"{parameter}\"] ?? .null")
+            labels.append(f"{label}: MilanoValue")
+            extractors.append(f"{label}: action.parameters[\"{parameter}\"] ?? .null")
         elif optional:
-            labels.append(f"{parameter}: {base}?")
+            labels.append(f"{label}: {base}?")
             extractors.append(
-                f"{parameter}: action.parameters[\"{parameter}\"]?.{SWIFT_ACCESSORS[kind]}")
+                f"{label}: action.parameters[\"{parameter}\"]?.{SWIFT_ACCESSORS[kind]}")
         else:
-            labels.append(f"{parameter}: {base}")
+            labels.append(f"{label}: {base}")
             extractors.append(
-                f"{parameter}: action.parameters[\"{parameter}\"]!.{SWIFT_ACCESSORS[kind]}!")
-    case_line = doc + f"    case {name}({', '.join(labels)})"
+                f"{label}: action.parameters[\"{parameter}\"]!.{SWIFT_ACCESSORS[kind]}!")
+    case_line = doc + f"    case {declared}({', '.join(labels)})"
     if len(extractors) == 1:
         init_line = (f"        case \"{name}\":\n"
-                     f"            self = .{name}({extractors[0]})")
+                     f"            self = .{declared}({extractors[0]})")
     else:
         joined = ",\n                ".join(extractors)
         init_line = (f"        case \"{name}\":\n"
-                     f"            self = .{name}(\n"
+                     f"            self = .{declared}(\n"
                      f"                {joined})")
     return case_line, init_line
 
@@ -306,32 +338,33 @@ def generate_swift(vocabulary, prefix):
 
 def kotlin_property(name, descriptor, enum_type=None):
     kind, optional, element = parse_descriptor(descriptor)
+    declared = escape_kotlin(name)
     if kind == "enum":
         if optional:
-            return (f"    val {name}: {enum_type}? get() =\n"
+            return (f"    val {declared}: {enum_type}? get() =\n"
                     f"        node.property(\"{name}\").stringOrNull?.let {{\n"
                     f"            {enum_type}.from(it)\n"
                     f"        }}")
-        return (f"    val {name}: {enum_type} get() =\n"
+        return (f"    val {declared}: {enum_type} get() =\n"
                 f"        {enum_type}.from(node.property(\"{name}\").stringOrNull!!)")
     if kind in KOTLIN_TYPES:
         base, accessor = KOTLIN_TYPES[kind], KOTLIN_ACCESSORS[kind]
         if optional:
-            return (f"    val {name}: {base}? "
+            return (f"    val {declared}: {base}? "
                     f"get() = node.property(\"{name}\").{accessor}")
-        return (f"    val {name}: {base} "
+        return (f"    val {declared}: {base} "
                 f"get() = node.property(\"{name}\").{accessor}!!")
     if kind == "array" and element in KOTLIN_TYPES:
         base, accessor = KOTLIN_TYPES[element], KOTLIN_ACCESSORS[element]
         if optional:
-            return (f"    val {name}: List<{base}>? "
+            return (f"    val {declared}: List<{base}>? "
                     f"get() = node.property(\"{name}\").arrayOrNull"
                     f"?.map {{ it.{accessor}!! }}")
-        return (f"    val {name}: List<{base}> "
+        return (f"    val {declared}: List<{base}> "
                 f"get() = node.property(\"{name}\").arrayOrNull!!"
                 f".map {{ it.{accessor}!! }}")
     return (f"    /** {name}: record-typed, read fields through MilanoValue. */\n"
-            f"    val {name}: MilanoValue get() = node.property(\"{name}\")")
+            f"    val {declared}: MilanoValue get() = node.property(\"{name}\")")
 
 
 def kotlin_emitter(event, payload_descriptor, enum_type=None):
@@ -370,34 +403,35 @@ def kotlin_action_entry(name, declaration, action_type, enum_lookup):
         return entry, decode
     fields, extractors = [], []
     for parameter, descriptor in sorted(parameters.items()):
+        field = escape_kotlin(parameter)
         kind, optional, _ = parse_descriptor(descriptor)
         if kind == "enum":
             enum_type = enum_lookup[("parameter", name, parameter)]
             if optional:
-                fields.append(f"val {parameter}: {enum_type}?")
+                fields.append(f"val {field}: {enum_type}?")
                 extractors.append(
-                    f"{parameter} = action.parameters[\"{parameter}\"]"
+                    f"{field} = action.parameters[\"{parameter}\"]"
                     f"?.stringOrNull?.let {{ {enum_type}.from(it) }}")
             else:
-                fields.append(f"val {parameter}: {enum_type}")
+                fields.append(f"val {field}: {enum_type}")
                 extractors.append(
-                    f"{parameter} = {enum_type}.from("
+                    f"{field} = {enum_type}.from("
                     f"action.parameters[\"{parameter}\"]!!.stringOrNull!!)")
             continue
         base = KOTLIN_TYPES.get(kind, "MilanoValue")
         if base == "MilanoValue":
-            fields.append(f"val {parameter}: MilanoValue")
+            fields.append(f"val {field}: MilanoValue")
             extractors.append(
-                f"{parameter} = action.parameters[\"{parameter}\"] ?: MilanoValue.Null")
+                f"{field} = action.parameters[\"{parameter}\"] ?: MilanoValue.Null")
         elif optional:
-            fields.append(f"val {parameter}: {base}?")
+            fields.append(f"val {field}: {base}?")
             extractors.append(
-                f"{parameter} = action.parameters[\"{parameter}\"]"
+                f"{field} = action.parameters[\"{parameter}\"]"
                 f"?.{KOTLIN_ACCESSORS[kind]}")
         else:
-            fields.append(f"val {parameter}: {base}")
+            fields.append(f"val {field}: {base}")
             extractors.append(
-                f"{parameter} = action.parameters[\"{parameter}\"]!!"
+                f"{field} = action.parameters[\"{parameter}\"]!!"
                 f".{KOTLIN_ACCESSORS[kind]}!!")
     entry = (doc
              + f"    data class {type_name}(\n        "
