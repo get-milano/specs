@@ -11,7 +11,8 @@ helper that refuses to run against a mismatched engine vocabulary.
 
     python3 tools/generate_bindings.py vocabulary.json \
         --swift-prefix Shop --swift-out Generated.swift \
-        --kotlin-package com.acme.shop.milano --kotlin-out Generated.kt
+        --kotlin-package com.acme.shop.milano --kotlin-out Generated.kt \
+        --ts-prefix Shop --ts-out generated.ts
 
 Output is deterministic: same artifact and flags, same bytes. Commit the
 files; regenerate when the vocabulary changes and let the compiler list
@@ -35,6 +36,11 @@ KOTLIN_ACCESSORS = {"bool": "boolOrNull", "int": "intOrNull",
 SWIFT_WRAP = {"bool": ".bool", "int": ".int", "double": ".double", "string": ".string"}
 KOTLIN_WRAP = {"bool": "MilanoValue.BoolValue", "int": "MilanoValue.IntValue",
                "double": "MilanoValue.DoubleValue", "string": "MilanoValue.StringValue"}
+TS_TYPES = {"bool": "boolean", "int": "bigint", "double": "number", "string": "string"}
+TS_ACCESSORS = {"bool": "boolValue", "int": "intValue",
+                "double": "doubleValue", "string": "stringValue"}
+TS_WRAP = {"bool": "MilanoValue.bool", "int": "MilanoValue.int",
+           "double": "MilanoValue.double", "string": "MilanoValue.string"}
 
 
 def capitalize(name):
@@ -500,6 +506,202 @@ def generate_kotlin(vocabulary, package, prefix):
     return "\n".join(lines) + "\n"
 
 
+# ---------------------------------------------------------------------------
+# TypeScript
+# ---------------------------------------------------------------------------
+
+
+def lower_first(name):
+    return name[0].lower() + name[1:]
+
+
+def ts_property(name, descriptor, enum_type=None):
+    """A getter. Non-optional reads are gate-guaranteed, so they assert the
+    type rather than defaulting: a fallback would hide a contract break."""
+    kind, optional, element = parse_descriptor(descriptor)
+    read = f'this.node.property("{name}")'
+    if kind == "enum":
+        suffix = " | null" if optional else ""
+        return (f"  get {name}(): {enum_type}{suffix} {{\n"
+                f"    return {read}.stringValue as {enum_type}{suffix};\n"
+                f"  }}")
+    if kind in TS_TYPES:
+        base, accessor = TS_TYPES[kind], TS_ACCESSORS[kind]
+        if optional:
+            return f"  get {name}(): {base} | null {{ return {read}.{accessor}; }}"
+        return f"  get {name}(): {base} {{ return {read}.{accessor} as {base}; }}"
+    if kind == "array" and element in TS_TYPES:
+        base, accessor = TS_TYPES[element], TS_ACCESSORS[element]
+        suffix = " | null" if optional else ""
+        cast = f"readonly MilanoValue[]{suffix}"
+        mapped = (f"{read}.arrayValue as {cast}")
+        if optional:
+            return (f"  get {name}(): readonly {base}[] | null {{\n"
+                    f"    const items = {mapped};\n"
+                    f"    return items === null ? null"
+                    f" : items.map((item) => item.{accessor} as {base});\n"
+                    f"  }}")
+        return (f"  get {name}(): readonly {base}[] {{\n"
+                f"    return ({mapped}).map((item) => item.{accessor} as {base});\n"
+                f"  }}")
+    note = " record-typed:" if kind == "record" else ""
+    return (f"  /** The raw value;{note} read fields through MilanoValue accessors. */\n"
+            f"  get {name}(): MilanoValue {{ return {read}; }}")
+
+
+def ts_emitter(event, payload_descriptor, enum_type=None):
+    method = f"emit{capitalize(event)}"
+    if payload_descriptor is None:
+        return f'  {method}(): void {{ this.node.emit("{event}"); }}'
+    kind, optional, _ = parse_descriptor(payload_descriptor)
+    if kind == "enum":
+        suffix = " | null" if optional else ""
+        wrapped = (f"payload === null ? MilanoValue.null : MilanoValue.string(payload)"
+                   if optional else "MilanoValue.string(payload)")
+        return (f"  {method}(payload: {enum_type}{suffix}): void {{\n"
+                f'    this.node.emit("{event}", {wrapped});\n'
+                f"  }}")
+    if kind not in TS_TYPES:
+        return (f"  {method}(payload: MilanoValue): void "
+                f'{{ this.node.emit("{event}", payload); }}')
+    base, wrap = TS_TYPES[kind], TS_WRAP[kind]
+    if optional:
+        return (f"  {method}(payload: {base} | null): void {{\n"
+                f'    this.node.emit("{event}",'
+                f" payload === null ? MilanoValue.null : {wrap}(payload));\n"
+                f"  }}")
+    return (f"  {method}(payload: {base}): void "
+            f'{{ this.node.emit("{event}", {wrap}(payload)); }}')
+
+
+def ts_action_member(name, declaration, enum_lookup):
+    """One arm of the action union, plus the case that decodes it."""
+    parameters = declaration.get("parameters", {})
+    note = result_note(declaration)
+    doc = f"  /** {note} */\n" if note else ""
+    fields, reads = [], []
+    for parameter, descriptor in sorted(parameters.items()):
+        kind, optional, _ = parse_descriptor(descriptor)
+        read = f'action.parameters["{parameter}"]'
+        if kind == "enum":
+            enum_type = enum_lookup[("parameter", name, parameter)]
+            suffix = " | null" if optional else ""
+            fields.append(f"readonly {parameter}: {enum_type}{suffix}")
+            reads.append(f"{parameter}: {read}?.stringValue as {enum_type}{suffix}")
+            continue
+        if kind not in TS_TYPES:
+            fields.append(f"readonly {parameter}: MilanoValue")
+            reads.append(f"{parameter}: {read} ?? MilanoValue.null")
+            continue
+        base, accessor = TS_TYPES[kind], TS_ACCESSORS[kind]
+        suffix = " | null" if optional else ""
+        fields.append(f"readonly {parameter}: {base}{suffix}")
+        reads.append(f"{parameter}: {read}?.{accessor} as {base}{suffix}")
+    if fields:
+        arm = doc + (f'  | {{ readonly kind: "{name}"; ' + "; ".join(fields) + " }")
+        joined = ", ".join(reads)
+        case = (f'    case "{name}":\n'
+                f'      return {{ kind: "{name}", {joined} }};')
+    else:
+        arm = doc + f'  | {{ readonly kind: "{name}" }}'
+        case = (f'    case "{name}":\n'
+                f'      return {{ kind: "{name}" }};')
+    return arm, case
+
+
+def generate_ts(vocabulary, prefix, core_import):
+    name, version = vocabulary["name"], vocabulary["version"]
+    enums, enum_lookup = collect_enums(vocabulary, prefix)
+    lines = [
+        f'// Generated from vocabulary "{name}" {version} by generate_bindings.py.',
+        "// Do not edit; regenerate when the vocabulary changes.",
+        "",
+        f'import {{ MilanoValue }} from "{core_import}";',
+        f'import type {{ MilanoAction }} from "{core_import}";',
+        "",
+        "/**",
+        " * What these wrappers need from a resolved node. The React binding's",
+        " * `MilanoNode` satisfies it, and so does any other host wrapper, so",
+        " * the generated file never depends on a UI toolkit.",
+        " */",
+        "export interface MilanoNodeLike {",
+        "  property(name: string): MilanoValue;",
+        "  emit(event: string, payload?: MilanoValue | null): void;",
+        "}",
+        "",
+    ]
+    for enum_type, enum_members, doc in enums:
+        lines.append(f"/** {doc} Gate-guaranteed: the value is always a member. */")
+        members = " | ".join(f'"{member}"' for member in enum_members)
+        lines.append(f"export type {enum_type} = {members};")
+        lines.append("")
+
+    for component in sorted(vocabulary.get("components", {})):
+        declaration = vocabulary["components"][component]
+        lines.append(f"/** Typed view of a resolved `{component}` node."
+                     " Non-optional accessors are gate-guaranteed. */")
+        lines.append(f"export class {prefix}{component}Node {{")
+        lines.append("  readonly node: MilanoNodeLike;")
+        lines.append("")
+        lines.append("  constructor(node: MilanoNodeLike) {")
+        lines.append("    this.node = node;")
+        lines.append("  }")
+        for prop in sorted(declaration.get("properties", {})):
+            lines.append("")
+            lines.append(ts_property(
+                prop, declaration["properties"][prop],
+                enum_lookup.get(("property", component, prop))))
+        for event in sorted(declaration.get("events", {})):
+            lines.append("")
+            lines.append(ts_emitter(
+                event, declaration["events"][event],
+                enum_lookup.get(("event", component, event))))
+        lines.append("}")
+        lines.append("")
+
+    arms, cases = [], []
+    for action in sorted(vocabulary.get("actions", {})):
+        arm, case = ts_action_member(action, vocabulary["actions"][action], enum_lookup)
+        arms.append(arm)
+        cases.append(case)
+    lines.append("/** Every custom action this vocabulary declares, decoded from dispatch. */")
+    lines.append(f"export type {prefix}Action =")
+    lines.extend(arms)
+    lines.append("  /** An action outside this vocabulary's declarations"
+                 " (builder-declared, or a newer vocabulary). */")
+    lines.append('  | { readonly kind: "unrecognized"; readonly action: MilanoAction };')
+    lines.append("")
+    lines.append("/** Decodes a dispatched action; the switch over `kind` is exhaustive. */")
+    lines.append(f"export function {lower_first(prefix)}Action"
+                 f"(action: MilanoAction): {prefix}Action {{")
+    lines.append("  switch (action.name) {")
+    lines.extend(cases)
+    lines.append("    default:")
+    lines.append('      return { kind: "unrecognized", action };')
+    lines.append("  }")
+    lines.append("}")
+    lines.append("")
+    lines.append("/** The vocabulary these bindings were generated from. */")
+    lines.append(f"export const {prefix}Vocabulary = {{")
+    lines.append(f'  name: "{name}",')
+    lines.append(f'  version: "{version}",')
+    lines.append("")
+    lines.append("  /** Throws if the engine holds a different vocabulary. */")
+    lines.append("  assertMatches(engine: {"
+                 " readonly vocabulary: { readonly name: string;"
+                 " readonly version: string } }): void {")
+    lines.append("    const held = engine.vocabulary;")
+    lines.append(f'    if (held.name !== "{name}" || held.version !== "{version}") {{')
+    lines.append("      throw new Error(")
+    lines.append(f'        `bindings generated from {name}@{version}, engine holds'
+                 ' ${held.name}@${held.version}`,')
+    lines.append("      );")
+    lines.append("    }")
+    lines.append("  },")
+    lines.append("} as const;")
+    return "\n".join(lines) + "\n"
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("vocabulary", help="path to the vocabulary artifact")
@@ -510,6 +712,11 @@ def main():
     parser.add_argument("--kotlin-prefix", default="",
                         help="optional type prefix for Kotlin (default: none)")
     parser.add_argument("--kotlin-out", help="Kotlin output file")
+    parser.add_argument("--ts-prefix", default=None,
+                        help="type prefix for TypeScript (default: capitalized vocabulary name)")
+    parser.add_argument("--ts-out", help="TypeScript output file")
+    parser.add_argument("--ts-core-import", default="@get-milano/core",
+                        help="module the generated TypeScript imports MilanoValue from")
     args = parser.parse_args()
 
     vocabulary = json.load(open(args.vocabulary))
@@ -526,8 +733,14 @@ def main():
         with open(args.kotlin_out, "w") as handle:
             handle.write(generate_kotlin(vocabulary, args.kotlin_package, args.kotlin_prefix))
         wrote.append(args.kotlin_out)
+    if args.ts_out:
+        prefix = args.ts_prefix or capitalize(vocabulary["name"])
+        with open(args.ts_out, "w") as handle:
+            handle.write(generate_ts(vocabulary, prefix, args.ts_core_import))
+        wrote.append(args.ts_out)
     if not wrote:
-        print("nothing to do: pass --swift-out and/or --kotlin-out", file=sys.stderr)
+        print("nothing to do: pass --swift-out, --kotlin-out and/or --ts-out",
+              file=sys.stderr)
         return 2
     for path in wrote:
         print(f"generated {path}")
