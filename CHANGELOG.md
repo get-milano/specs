@@ -30,12 +30,17 @@ The contract has been at 1.0.0 since the first release.
 
 - **A TypeScript emitter** in `tools/generate_bindings.py`, alongside the
   Swift and Kotlin ones.
-- **Tests for the tools**, run in CI: `generate_bindings.py`,
-  `vocabulary_diff.py`, and `generate_document_schema.py`. The bindings
-  generator's output is compared against golden files and checked for
-  properties the goldens cannot express; the document-schema generator is
-  checked against a real validator, including the two places it is
-  deliberately stricter than the gate.
+- **Tests for every tool**, run in CI by discovery, so a new
+  `tools/test_*.py` needs no workflow change. The bindings generator's
+  output is compared against golden files and checked for properties the
+  goldens cannot express; the document-schema generator is checked against
+  a real validator, including the two places it is deliberately stricter
+  than the gate; `reference_check.py` is asserted against the prose rather
+  than against itself, since as the suite's oracle it has nothing else to
+  disagree with; `validate_suite.py` is driven against deliberately broken
+  repositories, because a gate that has stopped detecting anything still
+  exits zero; and `generate_numeric_vectors.py` is regenerated into a temp
+  directory and compared byte for byte with the 150 committed vectors.
 
 ### Fixed
 
