@@ -13,15 +13,22 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+      # The repository's only dependency, installed before anything needs
+      # it rather than as a side effect of the first step that does.
+      - name: Install the one dependency
+        run: pip3 install --quiet jsonschema
       - name: Validate conformance suite and schemas
-        run: |
-          pip3 install --quiet jsonschema
-          python3 tools/validate_suite.py
+        run: python3 tools/validate_suite.py
       - name: Reference-check vectors against spec semantics
         run: python3 tools/reference_check.py
-      # The tools' own tests. Discovery, so a new tools/test_*.py runs
-      # without touching this workflow. No compilers here: this repository
-      # stays engine-free, and the SDK compiles the generated output on
-      # its side (its samples are built from it).
+      # Every tool's tests. The runner discovers them, so a new
+      # tools/test_*.py needs no change here, and then asserts that
+      # discovery actually found and ran them: a bare `unittest discover`
+      # exits 0 on an empty run and on a self-skipped one, so either would
+      # turn this gate off without turning the workflow red.
+      #
+      # No compilers here: this repository stays engine-free, and the SDK
+      # compiles the generated output on its side (its samples are built
+      # from it).
       - name: Tool tests
-        run: python3 -m unittest discover --start-directory tools --pattern "test_*.py" --verbose
+        run: python3 tools/run_tests.py
