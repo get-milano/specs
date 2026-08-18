@@ -2,11 +2,18 @@
 
 Changes to the specification, its conformance suite, and its tools.
 
+Two versions live here, and they are not the same number.
+
+The headings below are **repository tags**, cut alongside the SDK release
+they were verified against, so that a given SDK version names an exact
+state of the specification, its vectors, and its tools.
+
 The **contract version** is what documents and vocabularies declare
 (`"milano": "1.0.0"`), and it moves only when the contract itself does.
 Clarifications that describe behaviour every engine already implements do
 not move it; neither do tool or suite changes. Anything that changes what
 a conformant engine must do is a contract change, and comes with vectors.
+The contract has been at 1.0.0 since the first release.
 
 ## 1.2.0
 
