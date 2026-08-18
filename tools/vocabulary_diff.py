@@ -44,12 +44,17 @@ def diff_declarations(kind, owner, old, new, changes):
             # Enum member additions are the one additive type change;
             # removals and renames change the type (evolution rules).
             before, after = enum_members(old[name]), enum_members(new[name])
-            if before is not None and after is not None \
-                    and before[1] == after[1] and before[0] <= after[0]:
-                added = ", ".join(sorted(after[0] - before[0]))
-                changes.append(("ADDITIVE",
-                                f"{owner} {kind} {name} enum gained: {added}"))
-                continue
+            if before is not None and after is not None and before[1] == after[1]:
+                # Enum identity is the member set, so a reordered list is
+                # the same type: comparing the serialized descriptors alone
+                # would report a change that is not one.
+                if before[0] == after[0]:
+                    continue
+                if before[0] < after[0]:
+                    added = ", ".join(sorted(after[0] - before[0]))
+                    changes.append(("ADDITIVE",
+                                    f"{owner} {kind} {name} enum gained: {added}"))
+                    continue
             changes.append(("BREAKING",
                             f"{owner} {kind} {name} type changed: "
                             f"{type_repr(old[name])} -> {type_repr(new[name])}"))

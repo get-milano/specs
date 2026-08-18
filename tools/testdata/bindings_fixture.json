@@ -1,0 +1,43 @@
+{
+  "milano": "1.0.0",
+  "name": "fixture",
+  "version": "2.3.4",
+  "components": {
+    "Widget": {
+      "properties": {
+        "title": "string",
+        "subtitle": "string?",
+        "count": "int",
+        "ratio": "double?",
+        "enabled": "bool",
+        "tags": {"array": "string"},
+        "layout": {"enum": ["wide", "compact"]},
+        "tone": {"enum": ["light", "dark"], "optional": true},
+        "payload": {"record": {"id": "string"}}
+      },
+      "events": {
+        "tap": null,
+        "change": "string",
+        "resize": "int?",
+        "pick": {"enum": ["one", "two"]}
+      },
+      "children": true
+    },
+    "Plain": {}
+  },
+  "actions": {
+    "noop": {},
+    "openUrl": {
+      "parameters": {
+        "url": "string",
+        "referrer": "string?"
+      }
+    },
+    "submit": {
+      "parameters": {
+        "mode": {"enum": ["final", "draft"]}
+      },
+      "result": "string"
+    }
+  }
+}
