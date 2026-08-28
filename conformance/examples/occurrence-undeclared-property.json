@@ -23,7 +23,8 @@
     "occurrences": [
       {
         "kind": "undeclaredProperty",
-        "node": "t"
+        "node": "t",
+        "name": "colour"
       }
     ]
   }

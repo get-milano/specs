@@ -34,33 +34,68 @@ def enum_members(descriptor):
     return None
 
 
+def type_change(old, new):
+    """Classifies one declared type moving from `old` to `new`: None when
+    they are the same type, ("ADDITIVE", gained members) when an enum only
+    gained members, ("BREAKING", None) for every other change. Enum member
+    additions are the one additive type change; removals and renames
+    change the type (evolution rules)."""
+    if type_repr(old) == type_repr(new):
+        return None
+    before, after = enum_members(old), enum_members(new)
+    if before is not None and after is not None and before[1] == after[1]:
+        # Enum identity is the member set, so a reordered list is the same
+        # type: comparing the serialized descriptors alone would report a
+        # change that is not one.
+        if before[0] == after[0]:
+            return None
+        if before[0] < after[0]:
+            return ("ADDITIVE", sorted(after[0] - before[0]))
+    return ("BREAKING", None)
+
+
+def describe_change(subject, old, new, change, changes):
+    verdict, gained = change
+    if verdict == "ADDITIVE":
+        changes.append(("ADDITIVE", f"{subject} enum gained: {', '.join(gained)}"))
+    else:
+        changes.append(("BREAKING",
+                        f"{subject} type changed: {type_repr(old)} -> {type_repr(new)}"))
+
+
 def diff_declarations(kind, owner, old, new, changes):
     """Compare name -> type-descriptor maps (properties, action parameters,
     event payloads)."""
     for name in old:
         if name not in new:
             changes.append(("BREAKING", f"{owner} {kind} {name} removed"))
-        elif type_repr(old[name]) != type_repr(new[name]):
-            # Enum member additions are the one additive type change;
-            # removals and renames change the type (evolution rules).
-            before, after = enum_members(old[name]), enum_members(new[name])
-            if before is not None and after is not None and before[1] == after[1]:
-                # Enum identity is the member set, so a reordered list is
-                # the same type: comparing the serialized descriptors alone
-                # would report a change that is not one.
-                if before[0] == after[0]:
-                    continue
-                if before[0] < after[0]:
-                    added = ", ".join(sorted(after[0] - before[0]))
-                    changes.append(("ADDITIVE",
-                                    f"{owner} {kind} {name} enum gained: {added}"))
-                    continue
-            changes.append(("BREAKING",
-                            f"{owner} {kind} {name} type changed: "
-                            f"{type_repr(old[name])} -> {type_repr(new[name])}"))
+            continue
+        change = type_change(old[name], new[name])
+        if change is not None:
+            describe_change(f"{owner} {kind} {name}", old[name], new[name],
+                            change, changes)
     for name in new:
         if name not in old:
             changes.append(("ADDITIVE", f"{owner} {kind} {name} added"))
+
+
+def diff_result(name, old, new, changes):
+    """The completion result is a declared type like any other (vocabulary
+    schema spec, Completion results): adding one is additive, since no
+    document could bind `result` before; removing or retyping it breaks
+    every document that reads `result` in that action's onSuccess; an enum
+    result may gain members."""
+    before, after = old.get("result"), new.get("result")
+    if before is None and after is None:
+        return
+    if before is None:
+        changes.append(("ADDITIVE", f"action {name} result added"))
+    elif after is None:
+        changes.append(("BREAKING", f"action {name} result removed"))
+    else:
+        change = type_change(before, after)
+        if change is not None:
+            describe_change(f"action {name} result", before, after, change, changes)
 
 
 def diff(old, new):
@@ -100,6 +135,7 @@ def diff(old, new):
             diff_declarations("parameter", f"action {name}",
                               action.get("parameters", {}),
                               new_actions[name].get("parameters", {}), changes)
+            diff_result(name, action, new_actions[name], changes)
     for name in new_actions:
         if name not in old_actions:
             changes.append(("ADDITIVE", f"action {name} added"))

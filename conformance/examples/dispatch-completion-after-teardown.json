@@ -58,7 +58,8 @@
     ],
     "occurrences": [
       {
-        "kind": "completionAfterTeardown"
+        "kind": "completionAfterTeardown",
+        "name": "ping"
       }
     ]
   },

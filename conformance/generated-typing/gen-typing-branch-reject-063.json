@@ -1,0 +1,33 @@
+{
+  "name": "gen-typing-branch-reject-063",
+  "description": "Generated (exhaustive): if(state.b, 'z', 'a') in a enum position is rejected at the gate",
+  "document": {
+    "version": "1.0.0",
+    "state": {
+      "b": "bool"
+    },
+    "root": {
+      "type": "Column",
+      "id": "root",
+      "children": [
+        {
+          "type": "Probe",
+          "id": "p",
+          "properties": {
+            "e": {
+              "$expr": "if(state.b, 'z', 'a')"
+            }
+          }
+        }
+      ]
+    }
+  },
+  "expect": {
+    "error": {
+      "type": "SchemaViolation",
+      "rule": "expression",
+      "node": "p",
+      "expected": "enum"
+    }
+  }
+}

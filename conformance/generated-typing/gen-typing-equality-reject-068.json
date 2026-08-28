@@ -1,0 +1,34 @@
+{
+  "name": "gen-typing-equality-reject-068",
+  "description": "Generated (exhaustive): state.iOpt == state.bOpt in a bool position is rejected at the gate",
+  "document": {
+    "version": "1.0.0",
+    "state": {
+      "bOpt": "bool?",
+      "iOpt": "int?"
+    },
+    "root": {
+      "type": "Column",
+      "id": "root",
+      "children": [
+        {
+          "type": "Probe",
+          "id": "p",
+          "properties": {
+            "b": {
+              "$expr": "state.iOpt == state.bOpt"
+            }
+          }
+        }
+      ]
+    }
+  },
+  "expect": {
+    "error": {
+      "type": "SchemaViolation",
+      "rule": "expression",
+      "node": "p",
+      "expected": "bool"
+    }
+  }
+}

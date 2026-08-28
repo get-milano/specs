@@ -1,0 +1,48 @@
+{
+  "name": "gen-order-value-size-alone",
+  "description": "Generated (order): value-size alone",
+  "config": {
+    "limits": {
+      "maxValueSize": 4
+    }
+  },
+  "document": {
+    "version": "1.0.0",
+    "root": {
+      "type": "Column",
+      "id": "root",
+      "children": [
+        {
+          "type": "Button",
+          "id": "a",
+          "properties": {
+            "label": "A",
+            "enabled": true
+          }
+        },
+        {
+          "type": "Button",
+          "id": "b",
+          "properties": {
+            "label": "B",
+            "enabled": true
+          }
+        }
+      ]
+    },
+    "context": {
+      "big": "string"
+    }
+  },
+  "context": {
+    "big": "0123456789"
+  },
+  "expect": {
+    "error": {
+      "type": "LimitExceeded",
+      "limit": "maxValueSize",
+      "value": 4,
+      "actual": 10
+    }
+  }
+}

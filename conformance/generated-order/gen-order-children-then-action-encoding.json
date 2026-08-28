@@ -1,0 +1,55 @@
+{
+  "name": "gen-order-children-then-action-encoding",
+  "description": "Generated (order): children on node a, then action-encoding on node b; the first defect in document order wins",
+  "document": {
+    "version": "1.0.0",
+    "root": {
+      "type": "Column",
+      "id": "root",
+      "children": [
+        {
+          "type": "Button",
+          "id": "a",
+          "properties": {
+            "label": "A",
+            "enabled": true
+          },
+          "children": [
+            {
+              "type": "Text",
+              "id": "a-child",
+              "properties": {
+                "text": "x"
+              }
+            }
+          ]
+        },
+        {
+          "type": "Button",
+          "id": "b",
+          "properties": {
+            "label": "B",
+            "enabled": true
+          },
+          "on": {
+            "tap": [
+              {
+                "action": "$set",
+                "key": "undeclared",
+                "value": 1
+              }
+            ]
+          }
+        }
+      ]
+    }
+  },
+  "expect": {
+    "error": {
+      "type": "SchemaViolation",
+      "rule": "children",
+      "node": "a",
+      "expected": "no children"
+    }
+  }
+}

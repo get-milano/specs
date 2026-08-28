@@ -1,0 +1,44 @@
+{
+  "name": "gen-order-action-capability-then-undeclared-property",
+  "description": "Generated (order): action-capability on node a, then undeclared-property on node b; the first defect in document order wins",
+  "document": {
+    "version": "1.0.0",
+    "root": {
+      "type": "Column",
+      "id": "root",
+      "children": [
+        {
+          "type": "Button",
+          "id": "a",
+          "properties": {
+            "label": "A",
+            "enabled": true
+          },
+          "on": {
+            "tap": [
+              {
+                "action": "secret"
+              }
+            ]
+          }
+        },
+        {
+          "type": "Meta",
+          "id": "b",
+          "properties": {
+            "key": "k",
+            "extra": 1
+          }
+        }
+      ]
+    }
+  },
+  "expect": {
+    "error": {
+      "type": "SchemaViolation",
+      "rule": "action-capability",
+      "node": "a",
+      "expected": "granted action"
+    }
+  }
+}

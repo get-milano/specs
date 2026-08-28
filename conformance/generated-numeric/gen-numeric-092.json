@@ -1,6 +1,6 @@
 {
   "name": "gen-numeric-092",
-  "description": "Generated (seed 20260816): str((0 + 4611686018427387904) == (0 - 1))",
+  "description": "Generated (seed 20260816): str((3 - 0.5) / (9007199254740993 - 1))",
   "document": {
     "version": "1.0.0",
     "root": {
@@ -8,7 +8,7 @@
       "id": "r",
       "properties": {
         "text": {
-          "$expr": "str((0 + 4611686018427387904) == (0 - 1))"
+          "$expr": "str((3 - 0.5) / (9007199254740993 - 1))"
         }
       }
     }
@@ -18,7 +18,7 @@
       "type": "Text",
       "reference": "r",
       "properties": {
-        "text": "false"
+        "text": "2.7755575615628914e-16"
       }
     },
     "occurrences": []

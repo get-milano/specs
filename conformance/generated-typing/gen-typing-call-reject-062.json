@@ -1,0 +1,33 @@
+{
+  "name": "gen-typing-call-reject-062",
+  "description": "Generated (exhaustive): concat(state.iOpt, 'y') in a string position is rejected at the gate",
+  "document": {
+    "version": "1.0.0",
+    "state": {
+      "iOpt": "int?"
+    },
+    "root": {
+      "type": "Column",
+      "id": "root",
+      "children": [
+        {
+          "type": "Probe",
+          "id": "p",
+          "properties": {
+            "s": {
+              "$expr": "concat(state.iOpt, 'y')"
+            }
+          }
+        }
+      ]
+    }
+  },
+  "expect": {
+    "error": {
+      "type": "SchemaViolation",
+      "rule": "expression",
+      "node": "p",
+      "expected": "string"
+    }
+  }
+}

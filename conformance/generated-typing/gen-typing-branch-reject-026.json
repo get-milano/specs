@@ -1,0 +1,39 @@
+{
+  "name": "gen-typing-branch-reject-026",
+  "description": "Generated (exhaustive): if(state.b, state.e, 'z') in a string? position is rejected at the gate",
+  "document": {
+    "version": "1.0.0",
+    "state": {
+      "b": "bool",
+      "e": {
+        "enum": [
+          "a",
+          "b"
+        ]
+      }
+    },
+    "root": {
+      "type": "Column",
+      "id": "root",
+      "children": [
+        {
+          "type": "Probe",
+          "id": "p",
+          "properties": {
+            "sOpt": {
+              "$expr": "if(state.b, state.e, 'z')"
+            }
+          }
+        }
+      ]
+    }
+  },
+  "expect": {
+    "error": {
+      "type": "SchemaViolation",
+      "rule": "expression",
+      "node": "p",
+      "expected": "string?"
+    }
+  }
+}

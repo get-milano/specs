@@ -1,0 +1,34 @@
+{
+  "name": "gen-order-unsupported-version-and-undeclared-property",
+  "description": "Generated (order): unsupported-version beside undeclared-property on node a; the gate's order decides which error wins",
+  "document": {
+    "version": "9.0.0",
+    "root": {
+      "type": "Column",
+      "id": "root",
+      "children": [
+        {
+          "type": "Meta",
+          "id": "a",
+          "properties": {
+            "key": "k",
+            "extra": 1
+          }
+        },
+        {
+          "type": "Button",
+          "id": "b",
+          "properties": {
+            "label": "B",
+            "enabled": true
+          }
+        }
+      ]
+    }
+  },
+  "expect": {
+    "error": {
+      "type": "UnsupportedVersion"
+    }
+  }
+}

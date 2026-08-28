@@ -1,0 +1,36 @@
+{
+  "name": "gate-limit-value-size-exact",
+  "description": "A value exactly at the value size limit is accepted, counted in Unicode scalars: seven ASCII letters and one emoji are eight, whatever the encoding says",
+  "config": {
+    "limits": {
+      "maxValueSize": 8
+    }
+  },
+  "document": {
+    "version": "1.0.0",
+    "state": {
+      "label": "string"
+    },
+    "root": {
+      "type": "Text",
+      "id": "t",
+      "properties": {
+        "text": {
+          "$expr": "state.label"
+        }
+      }
+    }
+  },
+  "state": {
+    "label": "abcdefg😀"
+  },
+  "expect": {
+    "view": {
+      "type": "Text",
+      "reference": "t",
+      "properties": {
+        "text": "abcdefg😀"
+      }
+    }
+  }
+}

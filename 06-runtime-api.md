@@ -7,7 +7,7 @@ nav_order: 7
 
 **Status:** Stable v1.0.0 · 2026-08-16
 
-Defines the public API surface of the two runtimes: the types a consumer or host touches, their responsibilities, and their behavior. Type names and semantics are normative and identical in role on both platforms; exact signatures are illustrative; names, roles, and behavior are normative. All public types are prefixed `Milano`.
+Defines the public API surface of the three runtimes: the types a consumer or host touches, their responsibilities, and their behavior. Type names and semantics are normative and identical in role on every platform; exact signatures are illustrative; names, roles, and behavior are normative. All public types are prefixed `Milano`.
 
 ## Value model
 
@@ -17,14 +17,14 @@ Defines the public API surface of the two runtimes: the types a consumer or host
 
 - Created with: the vocabulary artifact, the registry of renderers, the optional placeholder renderer, the default unknown-type policy, resource-limit overrides, the observer, and the user-interaction observer.
 - Creation validates everything and fails fast with `InvalidVocabulary` or `IncompleteRegistry` per the vocabulary schema spec.
-- An engine is immutable after creation and safe to share across threads. Apps may hold several engines.
+- An engine is immutable after creation and safe to share across threads. Apps may hold several engines. It exposes the name and version of the vocabulary it holds, so generated bindings can assert they match and telemetry can tag records.
 - Its only factory: creating a MilanoViewBuilder for a document.
 
 ## MilanoRenderer
 
 The consumer implements one renderer type per component type, conforming to the Milano renderer protocol, and registers instances by component type name.
 
-A renderer receives a `MilanoNode` and returns platform UI (a SwiftUI view; a composable). `MilanoNode` exposes:
+A renderer receives a `MilanoNode` and returns platform UI (a SwiftUI view; a composable; a React element). `MilanoNode` exposes:
 
 | Member | Purpose |
 |---|---|
@@ -33,6 +33,7 @@ A renderer receives a `MilanoNode` and returns platform UI (a SwiftUI view; a co
 | `property(name)` | The resolved value of a declared property, as `MilanoValue`, reactive: property changes drive recomposition/re-evaluation natively per platform |
 | `children` | The node's materialized children, ready to place; always empty for types that do not declare `children` |
 | `emit(event, payload)` | Emits a declared event into dispatch; invalid emissions are dropped and reported per Foundations |
+| `userInteraction(kind, value)` | Reports a renderer-observed interaction (focus, visibility, selection) to the user-interaction stream described below; never touches dispatch or state |
 | `metadata` on the hosting view | The document's `metadata` section, verbatim and untyped, so producer annotations (campaign tags, experiment ids) reach host code without a side channel |
 
 The placeholder renderer is a distinct protocol: it receives the unknown node's raw subtree as data (never as live children) and returns platform UI.
@@ -59,7 +60,7 @@ The hosting container additionally offers a quick overload taking raw document a
 
 ## MilanoView
 
-The built, guaranteed-renderable view: a SwiftUI `View` value in the Swift runtime, a class exposing composable content in the Kotlin runtime. Bound to its document for its lifetime; presentation reacts to state and context per the state and actions spec. Carries a stable identity (plus the builder's label) used in all observability reports.
+The built, guaranteed-renderable view: a SwiftUI `View` value in the Swift runtime, a class exposing composable content in the Kotlin runtime, and a class the binding's host component renders in the React runtime. Bound to its document for its lifetime; presentation reacts to state and context per the state and actions spec. Carries a stable identity (plus the builder's label) used in all observability reports.
 
 ## MilanoHost
 
@@ -76,11 +77,25 @@ The hosting container, for hosts that want the swap managed for them:
 | `MilanoContextSource` | Current values plus a subscription: `subscribe` registers a change callback and returns a cancellation, invoked by the runtime at teardown | Milano validates each change atomically per Foundations. Milano ships a standard implementation (`MilanoContextHandle`): create with initial values, push updates from any thread |
 | `MilanoStateDataProvider` | One async method: declared state shape in, values out | Awaited during build; its errors propagate to the build caller unchanged |
 | `MilanoActionHandler` | One async method receiving a `MilanoAction` (name, typed parameters, view identity) | Normal return is success and its returned optional `MilanoValue` is the completion result, validated against the action's declared `result` type; throwing is failure. Through this funnel, completion-exactly-once holds by construction; the runtime still guards the completion path defensively and reports duplicates. Invoked asynchronously off the dispatcher with immutable data; the handler may run and hop threads freely, and its completion is funneled back through the dispatcher |
-| `MilanoObserver` | One method receiving a `MilanoOccurrence` | Engine-scoped and retained by the engine for its lifetime; every occurrence carries the view identity, the occurrence kind, and a node reference when one applies. Engine observability only: defects and diagnostics, never user interactions |
+| `MilanoObserver` | One method receiving a `MilanoOccurrence` | Engine-scoped and retained by the engine for its lifetime; every occurrence carries the view identity, the occurrence kind, a node reference when one applies, and, when they apply, a `name` (the event, action, property, component type, or context key involved) and `expected` and `found` detail in the same terms as the gate's errors (a declared type, `no payload`, `no result`, a value kind, `missing`). Engine observability only: defects and diagnostics, never user interactions |
 | `MilanoUserInteractionObserver` | One method receiving a `MilanoUserInteraction` | Engine-scoped and retained like the observer; the user-interaction analytics stream, described below |
 | `MilanoDispatcher` | One method executing a unit of work | The serialization seam: everything touching a view's state runs through its dispatcher, one item at a time. Each runtime ships a main-thread implementation as the default; the conformance harness injects a deterministic pump. Hosts rarely touch this |
 
-`MilanoOccurrence` kinds are the closed union of everything the specs report: unknown-type skip or placeholder use, undeclared-property reports, dropped events, invalid emissions, invalid completions, duplicate completions, completions after teardown, rejected context updates, division by zero, and saturation.
+`MilanoOccurrence` kinds are the closed union of everything the specs report. What each carries, beyond the view identity, is fixed and pinned by the conformance suite:
+
+| Kind | `node` | `name` | `expected` | `found` |
+|---|---|---|---|---|
+| `unknownTypeSkipped`, `unknownTypePlaceholder` | the node | the type name | | |
+| `undeclaredProperty` | the node | the property name | | |
+| `droppedEvent` | the node | the event name | | |
+| `invalidEmission` | the node as emitted | the event name | `declared event`, the declared payload type, or `no payload` | `unknown node`, `undeclared event`, the payload's kind, or `null` |
+| `invalidCompletion` | | the action name | the declared result type, `no result` (a success value for an action declaring none), or `no payload` (a value on a failure) | the value's kind, `null` when missing |
+| `duplicateCompletion`, `completionAfterTeardown` | | the action name | | |
+| `rejectedContextUpdate` | | the key | the declared type, or the value size limit | the value's kind, `missing`, or the size |
+| `rejectedMutation` | the node whose binding dispatched | the state key | the value size limit | the size |
+| `divisionByZero`, `saturation` | the node being resolved; none during action evaluation | the property being resolved; none otherwise | | |
+
+Absent cells are `null`. Detail vocabulary is the gate's: type names as the document model spells them, value kinds as `MilanoValue` names them.
 
 ## User interaction analytics
 
@@ -97,18 +112,18 @@ The kind set is the closed union of both lists. Interactions and occurrences nev
 
 ## Threading
 
-Per Foundations: renderer invocation, follow-up action execution, and runtime observer callbacks happen on the main thread. Action handlers are invoked asynchronously off the dispatcher (their parameters are immutable data; completions are funneled back through the dispatcher). `build()` may be awaited from any thread; occurrences reported during build arrive on the build caller's thread. Context updates may be posted from any thread and are applied on the main thread. Engines are thread-safe; builders are not (configure and build from one task).
+Per Foundations: renderer invocation, follow-up action execution, and runtime observer callbacks happen on the main thread. Action handlers are invoked asynchronously off the dispatcher (their parameters are immutable data; completions are funneled back through the dispatcher). `build()` may be awaited from any thread; occurrences reported during build arrive on the build caller's thread. Context updates may be posted from any thread and are applied on the main thread. Engines are thread-safe; builders are not (configure and build from one task). In the React runtime the main thread is the JavaScript event loop, single-threaded by construction: the default dispatcher runs inline, and the view's work queue provides the serialization the other runtimes get from a main-thread queue.
 
 ## Platform mapping
 
-Milano targets toolkits, not operating systems: each runtime is usable on every platform its toolkit supports (SwiftUI on iPhone, iPad, macOS, watchOS; Compose on Android and desktop).
+Milano targets toolkits, not operating systems: each runtime is usable on every platform its toolkit supports (SwiftUI on iPhone, iPad, macOS, watchOS; Compose on Android and desktop; React on the web and React Native).
 
-| Concept | SwiftUI runtime | Compose runtime |
-|---|---|---|
-| Language / toolkit | Swift 6, SwiftUI | Kotlin 2.0+, Jetpack Compose |
-| Protocols | `protocol` | `interface` |
-| Async boundary | `async throws` | `suspend` (failure via exception) |
-| `MilanoValue` | enum with associated values | sealed class |
-| `MilanoView` | `View`-conforming struct | class with `@Composable` content |
-| `MilanoHost` | SwiftUI view | `@Composable` function |
-| Change subscriptions | Callback with returned cancellation | Callback with returned cancellation |
+| Concept | SwiftUI runtime | Compose runtime | React runtime |
+|---|---|---|---|
+| Language / toolkit | Swift 6, SwiftUI | Kotlin 2.0+, Jetpack Compose | TypeScript, React 18+ (web and React Native) |
+| Protocols | `protocol` | `interface` | `interface` and function types |
+| Async boundary | `async throws` | `suspend` (failure via exception) | `Promise` (failure via rejection) |
+| `MilanoValue` | enum with associated values | sealed class | class with a `kind` discriminator; `int` backed by `bigint` |
+| `MilanoView` | `View`-conforming struct | class with `@Composable` content | class, rendered by the binding's host component |
+| `MilanoHost` | SwiftUI view | `@Composable` function | React component |
+| Change subscriptions | Callback with returned cancellation | Callback with returned cancellation | Callback with returned cancellation |

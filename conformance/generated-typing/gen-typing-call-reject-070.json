@@ -1,0 +1,33 @@
+{
+  "name": "gen-typing-call-reject-070",
+  "description": "Generated (exhaustive): str(state.s, state.s) in a string position is rejected at the gate",
+  "document": {
+    "version": "1.0.0",
+    "state": {
+      "s": "string"
+    },
+    "root": {
+      "type": "Column",
+      "id": "root",
+      "children": [
+        {
+          "type": "Probe",
+          "id": "p",
+          "properties": {
+            "s": {
+              "$expr": "str(state.s, state.s)"
+            }
+          }
+        }
+      ]
+    }
+  },
+  "expect": {
+    "error": {
+      "type": "SchemaViolation",
+      "rule": "expression",
+      "node": "p",
+      "expected": "string"
+    }
+  }
+}

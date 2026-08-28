@@ -1,0 +1,37 @@
+{
+  "name": "gen-order-construct-alone",
+  "description": "Generated (order): construct alone, on node a",
+  "document": {
+    "version": "1.0.0",
+    "root": {
+      "type": "Column",
+      "id": "root",
+      "children": [
+        {
+          "type": "$Button",
+          "id": "a",
+          "properties": {
+            "label": "A",
+            "enabled": true
+          }
+        },
+        {
+          "type": "Button",
+          "id": "b",
+          "properties": {
+            "label": "B",
+            "enabled": true
+          }
+        }
+      ]
+    }
+  },
+  "expect": {
+    "error": {
+      "type": "SchemaViolation",
+      "rule": "construct",
+      "node": "a",
+      "expected": "component type"
+    }
+  }
+}

@@ -5,3 +5,4 @@ set -e
 root="$(git rev-parse --show-toplevel)"
 python3 "$root/tools/validate_suite.py"
 python3 "$root/tools/reference_check.py"
+python3 "$root/tools/run_tests.py"

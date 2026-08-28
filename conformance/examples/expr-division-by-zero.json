@@ -24,7 +24,8 @@
     "occurrences": [
       {
         "kind": "divisionByZero",
-        "node": "result"
+        "node": "result",
+        "name": "text"
       }
     ]
   }

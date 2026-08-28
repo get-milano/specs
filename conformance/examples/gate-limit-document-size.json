@@ -1,0 +1,18 @@
+{
+  "name": "gate-limit-document-size",
+  "description": "A document larger than the document size limit is a LimitExceeded checked on the raw bytes before parsing, naming the limit, its value, and the byte count found; given as text so the count is exact",
+  "config": {
+    "limits": {
+      "maxDocumentBytes": 64
+    }
+  },
+  "documentText": "{\"version\": \"1.0.0\", \"root\": {\"type\": \"Text\", \"id\": \"t\", \"properties\": {\"text\": \"hello\"}}}",
+  "expect": {
+    "error": {
+      "type": "LimitExceeded",
+      "limit": "maxDocumentBytes",
+      "value": 64,
+      "actual": 90
+    }
+  }
+}

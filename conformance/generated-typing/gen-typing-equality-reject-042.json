@@ -1,0 +1,44 @@
+{
+  "name": "gen-typing-equality-reject-042",
+  "description": "Generated (exhaustive): state.e2 == state.r in a bool position is rejected at the gate",
+  "document": {
+    "version": "1.0.0",
+    "state": {
+      "e2": {
+        "enum": [
+          "a",
+          "c"
+        ]
+      },
+      "r": {
+        "record": {
+          "f": "string",
+          "g": "int?"
+        }
+      }
+    },
+    "root": {
+      "type": "Column",
+      "id": "root",
+      "children": [
+        {
+          "type": "Probe",
+          "id": "p",
+          "properties": {
+            "b": {
+              "$expr": "state.e2 == state.r"
+            }
+          }
+        }
+      ]
+    }
+  },
+  "expect": {
+    "error": {
+      "type": "SchemaViolation",
+      "rule": "expression",
+      "node": "p",
+      "expected": "bool"
+    }
+  }
+}

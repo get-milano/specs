@@ -1,0 +1,33 @@
+{
+  "name": "gen-typing-coalesce-reject-050",
+  "description": "Generated (exhaustive): state.s ?? 1.5 in a string position is rejected at the gate",
+  "document": {
+    "version": "1.0.0",
+    "state": {
+      "s": "string"
+    },
+    "root": {
+      "type": "Column",
+      "id": "root",
+      "children": [
+        {
+          "type": "Probe",
+          "id": "p",
+          "properties": {
+            "s": {
+              "$expr": "state.s ?? 1.5"
+            }
+          }
+        }
+      ]
+    }
+  },
+  "expect": {
+    "error": {
+      "type": "SchemaViolation",
+      "rule": "expression",
+      "node": "p",
+      "expected": "string"
+    }
+  }
+}

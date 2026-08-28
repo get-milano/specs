@@ -1,6 +1,6 @@
 {
   "name": "gen-numeric-069",
-  "description": "Generated (seed 20260816): str(double(2))",
+  "description": "Generated (seed 20260816): str(4611686018427387904 * 123.456)",
   "document": {
     "version": "1.0.0",
     "root": {
@@ -8,7 +8,7 @@
       "id": "r",
       "properties": {
         "text": {
-          "$expr": "str(double(2))"
+          "$expr": "str(4611686018427387904 * 123.456)"
         }
       }
     }
@@ -18,7 +18,7 @@
       "type": "Text",
       "reference": "r",
       "properties": {
-        "text": "2.0"
+        "text": "5.693403090909716e20"
       }
     },
     "occurrences": []

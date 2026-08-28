@@ -1,0 +1,38 @@
+{
+  "name": "gen-typing-position-reject-014",
+  "description": "Generated (exhaustive): state.r.g in a int position is rejected at the gate",
+  "document": {
+    "version": "1.0.0",
+    "state": {
+      "r": {
+        "record": {
+          "f": "string",
+          "g": "int?"
+        }
+      }
+    },
+    "root": {
+      "type": "Column",
+      "id": "root",
+      "children": [
+        {
+          "type": "Probe",
+          "id": "p",
+          "properties": {
+            "i": {
+              "$expr": "state.r.g"
+            }
+          }
+        }
+      ]
+    }
+  },
+  "expect": {
+    "error": {
+      "type": "SchemaViolation",
+      "rule": "expression",
+      "node": "p",
+      "expected": "int"
+    }
+  }
+}

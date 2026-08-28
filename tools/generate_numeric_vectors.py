@@ -12,7 +12,7 @@ harnesses iterate every suite directory.
 
 The reference checker is the oracle. If an engine disagrees with a
 generated vector, the spec prose arbitrates which of the two is wrong;
-if both engines disagree identically, the checker is the suspect.
+if every engine disagrees identically, the checker is the suspect.
 """
 
 import json
@@ -137,12 +137,13 @@ def main():
             continue
         seen.add(expression)
         name = f"gen-numeric-{emitted:03d}"
+        # Only a type mismatch is skipped. Anything else is a defect in the
+        # checker and has to surface: a bare except here once hid a crash on
+        # `inf % x`, and with it every vector that would have pinned it.
         try:
             vector = vector_for(name, expression)
         except GateError:
             continue  # type mismatch by composition; skip, keep determinism
-        except Exception:
-            continue
         with open(SUITE / f"{name}.json", "w") as handle:
             json.dump(vector, handle, indent=2)
             handle.write("\n")

@@ -1,0 +1,38 @@
+{
+  "name": "gen-order-id-duplicate-then-expression",
+  "description": "Generated (order): id-duplicate on node a, then expression on node b; the first defect in document order wins",
+  "document": {
+    "version": "1.0.0",
+    "root": {
+      "type": "Column",
+      "id": "root",
+      "children": [
+        {
+          "type": "Button",
+          "id": "root",
+          "properties": {
+            "label": "A",
+            "enabled": true
+          }
+        },
+        {
+          "type": "Button",
+          "id": "b",
+          "properties": {
+            "label": {
+              "$expr": "state.nope"
+            },
+            "enabled": true
+          }
+        }
+      ]
+    }
+  },
+  "expect": {
+    "error": {
+      "type": "SchemaViolation",
+      "rule": "id-uniqueness",
+      "node": "root"
+    }
+  }
+}

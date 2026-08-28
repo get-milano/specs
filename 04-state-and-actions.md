@@ -7,7 +7,7 @@ nav_order: 5
 
 **Status:** Stable v1.0.0 · 2026-08-16
 
-Defines the runtime semantics of state, events, and action dispatch: the exact order in which things happen, on both platforms identically. Encodings live in the document model spec; this spec fixes behavior.
+Defines the runtime semantics of state, events, and action dispatch: the exact order in which things happen, on every platform identically. Encodings live in the document model spec; this spec fixes behavior.
 
 ## The state store
 
@@ -27,7 +27,7 @@ Defines the runtime semantics of state, events, and action dispatch: the exact o
 
 Actions bound to an event execute synchronously, in document order, on the main thread:
 
-- **`$set`**: targets one declared top-level state key (never a field inside a record: the whole key is assigned). It evaluates its value expression at execution time and assigns it. The mutation is visible immediately: expressions evaluated by subsequent actions in the same dispatch see the new value, and dependent property re-evaluation completes before the next action executes.
+- **`$set`**: targets one declared top-level state key (never a field inside a record: the whole key is assigned). It evaluates its value expression at execution time and assigns it. The mutation is visible immediately: expressions evaluated by subsequent actions in the same dispatch see the new value, and dependent property re-evaluation completes before the next action executes. A property is dependent when its expression reads the key, directly or through a record field; a property that reads no changed key is not re-evaluated, so its arithmetic reports are not repeated, and a `$set` that leaves the value equal to what it was changes nothing and re-evaluates nothing. The assigned value must be within the value size limit (document model spec): a `$set` whose value exceeds it assigns nothing, is reported as a rejected mutation naming the key, the limit, and the size found, and ends the action list, so the remaining actions of that dispatch do not run; mutations the list already applied stay, since each was visible the moment it applied.
 - **`$sequence`**: executes its actions in order. Nesting is allowed. A bare action array in `on` is identical to `$sequence`.
 - **`$when`**: evaluates its condition at execution time, then executes the matching branch's actions in order.
 - **Custom actions**: parameters are evaluated at execution time, including any `event` references, and the resulting values are captured. The action (name plus captured, typed parameters) is delivered to the host's action handler asynchronously, as immutable data; the invocation thread is unspecified. Dispatch does not wait: the sequence continues immediately with the next action. Anything that must happen after the handler finishes belongs in `onSuccess` or `onFailure`.
@@ -47,8 +47,8 @@ Actions bound to an event execute synchronously, in document order, on the main 
 ## Context updates
 
 - The host may post context updates from any thread; they are validated and applied on the main thread, serialized with dispatch: an update never lands mid-action-list.
-- An update is atomic: all keys validate against the declarations or the whole update is rejected, reported, and the previous values stay.
-- After application, dependent expressions re-evaluate before anything else runs.
+- An update is atomic: all keys validate against the declarations and fit the value size limit (document model spec), or the whole update is rejected, reported, and the previous values stay.
+- After application, dependent expressions re-evaluate before anything else runs: those reading a key whose value changed, under the same rule as `$set`. An update that supplies the values already held changes nothing.
 
 ## User interaction records
 
@@ -56,4 +56,4 @@ When the engine carries a user-interaction observer (runtime API spec), dispatch
 
 ## Reported occurrences
 
-This spec's contributions to the engine observer, all tagged with the originating view: dropped events (no binding), invalid emissions, invalid completions, duplicate completions, completions after teardown, rejected context updates, and the arithmetic reports from the expression spec (division by zero, saturation).
+This spec's contributions to the engine observer, all tagged with the originating view: dropped events (no binding), invalid emissions, invalid completions, duplicate completions, completions after teardown, rejected context updates, rejected mutations (a `$set` past the value size limit), and the arithmetic reports from the expression spec (division by zero, saturation).

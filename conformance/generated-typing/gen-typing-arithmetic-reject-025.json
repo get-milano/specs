@@ -1,0 +1,33 @@
+{
+  "name": "gen-typing-arithmetic-reject-025",
+  "description": "Generated (exhaustive): -state.d in a int position is rejected at the gate",
+  "document": {
+    "version": "1.0.0",
+    "state": {
+      "d": "double"
+    },
+    "root": {
+      "type": "Column",
+      "id": "root",
+      "children": [
+        {
+          "type": "Probe",
+          "id": "p",
+          "properties": {
+            "i": {
+              "$expr": "-state.d"
+            }
+          }
+        }
+      ]
+    }
+  },
+  "expect": {
+    "error": {
+      "type": "SchemaViolation",
+      "rule": "expression",
+      "node": "p",
+      "expected": "int"
+    }
+  }
+}

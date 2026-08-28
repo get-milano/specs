@@ -1,0 +1,86 @@
+{
+  "name": "gen-typing-equality-accept-004",
+  "description": "Generated (exhaustive): accepted in their declared positions. p0: 'z' == 'z' in b; p1: 'z' == 'z' in bOpt; p2: 1 == 1 in b; p3: 1 == 1 in bOpt",
+  "document": {
+    "version": "1.0.0",
+    "root": {
+      "type": "Column",
+      "id": "root",
+      "children": [
+        {
+          "type": "Probe",
+          "id": "p0",
+          "properties": {
+            "b": {
+              "$expr": "'z' == 'z'"
+            }
+          }
+        },
+        {
+          "type": "Probe",
+          "id": "p1",
+          "properties": {
+            "bOpt": {
+              "$expr": "'z' == 'z'"
+            }
+          }
+        },
+        {
+          "type": "Probe",
+          "id": "p2",
+          "properties": {
+            "b": {
+              "$expr": "1 == 1"
+            }
+          }
+        },
+        {
+          "type": "Probe",
+          "id": "p3",
+          "properties": {
+            "bOpt": {
+              "$expr": "1 == 1"
+            }
+          }
+        }
+      ]
+    }
+  },
+  "expect": {
+    "view": {
+      "type": "Column",
+      "reference": "root",
+      "children": [
+        {
+          "type": "Probe",
+          "reference": "p0",
+          "properties": {
+            "b": true
+          }
+        },
+        {
+          "type": "Probe",
+          "reference": "p1",
+          "properties": {
+            "bOpt": true
+          }
+        },
+        {
+          "type": "Probe",
+          "reference": "p2",
+          "properties": {
+            "b": true
+          }
+        },
+        {
+          "type": "Probe",
+          "reference": "p3",
+          "properties": {
+            "bOpt": true
+          }
+        }
+      ]
+    },
+    "occurrences": []
+  }
+}

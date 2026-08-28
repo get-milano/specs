@@ -1,0 +1,49 @@
+{
+  "name": "gen-order-context-missing-and-children",
+  "description": "Generated (order): context-missing beside children on node a; the gate's order decides which error wins",
+  "document": {
+    "version": "1.0.0",
+    "root": {
+      "type": "Column",
+      "id": "root",
+      "children": [
+        {
+          "type": "Button",
+          "id": "a",
+          "properties": {
+            "label": "A",
+            "enabled": true
+          },
+          "children": [
+            {
+              "type": "Text",
+              "id": "a-child",
+              "properties": {
+                "text": "x"
+              }
+            }
+          ]
+        },
+        {
+          "type": "Button",
+          "id": "b",
+          "properties": {
+            "label": "B",
+            "enabled": true
+          }
+        }
+      ]
+    },
+    "context": {
+      "who": "string"
+    }
+  },
+  "expect": {
+    "error": {
+      "type": "SchemaViolation",
+      "rule": "children",
+      "node": "a",
+      "expected": "no children"
+    }
+  }
+}

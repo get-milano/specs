@@ -1,0 +1,10 @@
+{
+  "name": "gen-order-malformed-id-and-context-missing",
+  "description": "Generated (order): malformed-id and context-missing in one document; the gate's order decides which error wins",
+  "documentText": "{\"version\": \"1.0.0\", \"root\": {\"type\": \"Column\", \"id\": \"\", \"children\": [{\"type\": \"Button\", \"id\": \"a\", \"properties\": {\"label\": \"A\", \"enabled\": true}}, {\"type\": \"Button\", \"id\": \"b\", \"properties\": {\"label\": \"B\", \"enabled\": true}}]}, \"context\": {\"who\": \"string\"}}",
+  "expect": {
+    "error": {
+      "type": "MalformedDocument"
+    }
+  }
+}
