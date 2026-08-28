@@ -1,6 +1,6 @@
 {
   "name": "gen-numeric-134",
-  "description": "Generated (seed 20260816): str(0.0001 - 0.0001)",
+  "description": "Generated (seed 20260816): str((10 % (2 / 9007199254740993)) + (0.0 - 1.0) / 0.0)",
   "document": {
     "version": "1.0.0",
     "root": {
@@ -8,7 +8,7 @@
       "id": "r",
       "properties": {
         "text": {
-          "$expr": "str(0.0001 - 0.0001)"
+          "$expr": "str((10 % (2 / 9007199254740993)) + (0.0 - 1.0) / 0.0)"
         }
       }
     }
@@ -18,9 +18,15 @@
       "type": "Text",
       "reference": "r",
       "properties": {
-        "text": "0.0"
+        "text": "-inf"
       }
     },
-    "occurrences": []
+    "occurrences": [
+      {
+        "kind": "divisionByZero",
+        "node": "r",
+        "name": "text"
+      }
+    ]
   }
 }

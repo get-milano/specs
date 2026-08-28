@@ -1,0 +1,37 @@
+{
+  "name": "gen-order-property-type-then-id-duplicate",
+  "description": "Generated (order): property-type on node a, then id-duplicate on node b; the first defect in document order wins",
+  "document": {
+    "version": "1.0.0",
+    "root": {
+      "type": "Column",
+      "id": "root",
+      "children": [
+        {
+          "type": "Button",
+          "id": "a",
+          "properties": {
+            "label": 1,
+            "enabled": true
+          }
+        },
+        {
+          "type": "Button",
+          "id": "root",
+          "properties": {
+            "label": "B",
+            "enabled": true
+          }
+        }
+      ]
+    }
+  },
+  "expect": {
+    "error": {
+      "type": "SchemaViolation",
+      "rule": "property-type",
+      "node": "a",
+      "expected": "string"
+    }
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "name": "gate-metadata-not-object",
+  "description": "metadata is a JSON object, the shape hosts read it as; any other shape is a MalformedDocument at parse",
+  "documentText": "{\"version\": \"1.0.0\", \"metadata\": [1, 2], \"root\": {\"type\": \"Text\", \"id\": \"t\", \"properties\": {\"text\": \"x\"}}}",
+  "expect": {
+    "error": {
+      "type": "MalformedDocument"
+    }
+  }
+}

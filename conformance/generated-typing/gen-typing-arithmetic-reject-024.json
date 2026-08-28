@@ -1,0 +1,30 @@
+{
+  "name": "gen-typing-arithmetic-reject-024",
+  "description": "Generated (exhaustive): 'x' + 1 in a string position is rejected at the gate",
+  "document": {
+    "version": "1.0.0",
+    "root": {
+      "type": "Column",
+      "id": "root",
+      "children": [
+        {
+          "type": "Probe",
+          "id": "p",
+          "properties": {
+            "s": {
+              "$expr": "'x' + 1"
+            }
+          }
+        }
+      ]
+    }
+  },
+  "expect": {
+    "error": {
+      "type": "SchemaViolation",
+      "rule": "expression",
+      "node": "p",
+      "expected": "string"
+    }
+  }
+}

@@ -17,13 +17,13 @@ A vocabulary is a single JSON object, encoded in UTF-8, with reserved top-level 
 |---|---|---|
 | `milano` | yes | The contract version the artifact targets (major.minor.patch) |
 | `name` | yes | The vocabulary's name |
-| `version` | yes | The vocabulary's own version, consumer-owned, in major.minor.patch form; the gate compares it against a document's declared `vocabulary.min` requirement, and it is surfaced in observability reports |
+| `version` | yes | The vocabulary's own version, consumer-owned, in major.minor.patch form; the gate compares it against a document's declared `vocabulary.min` requirement, and the engine exposes it with the name (runtime API spec) for tooling and telemetry; reports do not carry it |
 | `components` | yes | Map of component type name to component declaration |
 | `actions` | no | Map of custom action name to action declaration |
 
 ## Naming
 
-One identifier grammar applies to component type names, property names, event names, action names, and the state and context keys of documents: a letter followed by letters, digits, or underscores. Case-sensitive. Names must not begin with `$`, which is reserved for the contract.
+One identifier grammar applies to the vocabulary's own `name`, component type names, property names, event names, action names, enum members, record field names, and the state and context keys of documents: an ASCII letter followed by ASCII letters, digits, or underscores (`[A-Za-z][A-Za-z0-9_]*`). Unicode letters and digits are not letters and digits here, exactly as in the expression grammar. Case-sensitive. Names must not begin with `$`, which is reserved for the contract.
 
 ## Component declarations
 
@@ -36,7 +36,7 @@ Each entry in `components` declares one component type:
 | `children` | no | Boolean, default `false`: whether nodes of this type accept `children` |
 | `strict` | no | Boolean, default `false`: when `true`, undeclared properties on nodes of this type are a `SchemaViolation` instead of ignored-and-reported |
 
-Optional properties (types marked `?`) may be omitted in documents; the renderer receives `null`. There are no default values in v1.0: what a renderer does with `null` is the consumer's decision, made in the renderer.
+Optional properties (types marked optional: a trailing `?` on a primitive, `"optional": true` on the others) may be omitted in documents; the renderer receives `null`. There are no default values in v1.0: what a renderer does with `null` is the consumer's decision, made in the renderer.
 
 ## Action declarations
 
@@ -57,7 +57,7 @@ Each surface (a builder, per the runtime API spec) refines the global set into i
 - The builder may **declare** actions for its surface, adding names absent from the vocabulary or overriding a vocabulary signature, in this same declaration format. This is how one action name carries different parameters on different surfaces.
 - A builder that configures nothing grants the full vocabulary set with its global signatures.
 
-Declarations type the payload; meaning is assigned per surface by the builder's handler. The evolution rule above ("a name never changes meaning") is about meaning across versions; per-surface interpretation across contexts is the handler's explicit job.
+Declarations type the payload; meaning is assigned per surface by the builder's handler. The evolution rule below ("a name never changes meaning") is about meaning across versions; per-surface interpretation across contexts is the handler's explicit job.
 
 ## Completion results
 
@@ -80,9 +80,9 @@ An event declared with a payload type makes the `event` expression root availabl
 
 Within a vocabulary major version, changes are additive only:
 
-- A release may add component types, properties, events, and actions, may loosen a property from required to optional, and may add members to an enum type. Adding a member is safe because the gate validates membership against the engine's held vocabulary: a document using the new member on an older engine fails the gate (declare `vocabulary.min` to say so), and a renderer never receives a member its own vocabulary version does not declare.
+- A release may add component types, properties, events, and actions, and may add members to an enum type. Adding a member is safe because the gate validates membership against the engine's held vocabulary: a document using the new member on an older engine fails the gate (declare `vocabulary.min` to say so), and a renderer never receives a member its own vocabulary version does not declare.
 - A declared name is never removed, never changes type, and never changes meaning. Removing or renaming an enum member changes the type and requires a major bump; narrowing `string` to an enum, or an enum to fewer members, is likewise breaking. A semantic change ships under a new name; the old name keeps its old meaning until the next major. A property that changes unit, interpretation, or effect while keeping its name and type is a breaking change even though no validator can see it.
-- Removing a declaration, changing a type, changing an event payload, marking a component `strict`, or revoking `children` acceptance requires a major bump.
+- Removing a declaration, changing a type, changing an event payload, marking a component `strict`, or revoking `children` acceptance requires a major bump. Optionality is part of the type, in both directions: making a required property optional is breaking too, because a renderer, or a binding generated from the declaration, reads a non-optional property as a promise that a value is present and would now receive `null`; making an optional property required breaks every document that omits it.
 
 This rule governs consumer-owned vocabularies once they are depended on. Milano's own formats (this artifact format included) follow the same discipline: contract v1.0 is stable, and incompatible changes ship only under a new contract major.
 
@@ -90,11 +90,11 @@ This rule is what makes a document's minimum-version requirement sound: any voca
 
 ## Tooling
 
-The artifact is designed to be consumed by more than the engine: producers validate documents against it before shipping them, and `tools/generate_bindings.py` in this repository derives typed node wrappers, event emitters, and action definitions for both platforms from it. Tooling is not required for conformance; the artifact format is.
+The artifact is designed to be consumed by more than the engine: producers validate documents against it before shipping them, and `tools/generate_bindings.py` in this repository derives typed node wrappers, event emitters, action definitions, and one wrapper type per enum and record declaration site for Swift, Kotlin, and TypeScript from it. Tooling is not required for conformance; the artifact format is.
 
 JSON Schema (2020-12) is the tooling bridge, not the artifact language:
 
-- An official meta-schema, `schemas/vocabulary.schema.json` in this repository, validates vocabulary artifacts. Editors and CI get standard validation for free.
+- An official meta-schema, `schemas/vocabulary.schema.json` in this repository, validates vocabulary artifacts. Editors and CI get standard validation for free. Like the document schema, it is open on the objects the contract may grow (declarations and type descriptors), per the tolerance rule.
 - A deterministic mapping from a vocabulary to a generated JSON Schema for its documents ships as `tools/generate_document_schema.py` in this repository, so producers can validate documents with standard validators, and get editor autocomplete for component types, properties, events, and enum members, before shipping them. The gate remains the source of truth: it checks what JSON Schema cannot (expression typing, event bindings, action semantics).
 
 The runtimes never parse JSON Schema; they parse this artifact format. Milano semantics that JSON Schema has no words for (events, actions, children acceptance, strict mode) stay first-class here.

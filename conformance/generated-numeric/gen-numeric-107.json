@@ -1,6 +1,6 @@
 {
   "name": "gen-numeric-107",
-  "description": "Generated (seed 20260816): str((0.0001 % 123.456) == (0.5 + 9223372036854775807.0))",
+  "description": "Generated (seed 20260816): str(0.0 / (0.0 + 123.456))",
   "document": {
     "version": "1.0.0",
     "root": {
@@ -8,7 +8,7 @@
       "id": "r",
       "properties": {
         "text": {
-          "$expr": "str((0.0001 % 123.456) == (0.5 + 9223372036854775807.0))"
+          "$expr": "str(0.0 / (0.0 + 123.456))"
         }
       }
     }
@@ -18,7 +18,7 @@
       "type": "Text",
       "reference": "r",
       "properties": {
-        "text": "false"
+        "text": "0.0"
       }
     },
     "occurrences": []

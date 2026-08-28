@@ -1,0 +1,42 @@
+{
+  "name": "gen-order-node-count-limit-and-undeclared-property",
+  "description": "Generated (order): node-count-limit beside undeclared-property on node a; the gate's order decides which error wins",
+  "config": {
+    "limits": {
+      "maxNodeCount": 2
+    }
+  },
+  "document": {
+    "version": "1.0.0",
+    "root": {
+      "type": "Column",
+      "id": "root",
+      "children": [
+        {
+          "type": "Meta",
+          "id": "a",
+          "properties": {
+            "key": "k",
+            "extra": 1
+          }
+        },
+        {
+          "type": "Button",
+          "id": "b",
+          "properties": {
+            "label": "B",
+            "enabled": true
+          }
+        }
+      ]
+    }
+  },
+  "expect": {
+    "error": {
+      "type": "LimitExceeded",
+      "limit": "maxNodeCount",
+      "value": 2,
+      "actual": 3
+    }
+  }
+}

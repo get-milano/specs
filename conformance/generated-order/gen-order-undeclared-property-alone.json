@@ -1,0 +1,36 @@
+{
+  "name": "gen-order-undeclared-property-alone",
+  "description": "Generated (order): undeclared-property alone, on node a",
+  "document": {
+    "version": "1.0.0",
+    "root": {
+      "type": "Column",
+      "id": "root",
+      "children": [
+        {
+          "type": "Meta",
+          "id": "a",
+          "properties": {
+            "key": "k",
+            "extra": 1
+          }
+        },
+        {
+          "type": "Button",
+          "id": "b",
+          "properties": {
+            "label": "B",
+            "enabled": true
+          }
+        }
+      ]
+    }
+  },
+  "expect": {
+    "error": {
+      "type": "SchemaViolation",
+      "rule": "undeclared-property",
+      "node": "a"
+    }
+  }
+}

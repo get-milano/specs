@@ -1,0 +1,49 @@
+{
+  "name": "gen-order-depth-limit-and-value-size",
+  "description": "Generated (order): depth-limit and value-size in one document; the gate's order decides which error wins",
+  "config": {
+    "limits": {
+      "maxTreeDepth": 1,
+      "maxValueSize": 4
+    }
+  },
+  "document": {
+    "version": "1.0.0",
+    "root": {
+      "type": "Column",
+      "id": "root",
+      "children": [
+        {
+          "type": "Button",
+          "id": "a",
+          "properties": {
+            "label": "A",
+            "enabled": true
+          }
+        },
+        {
+          "type": "Button",
+          "id": "b",
+          "properties": {
+            "label": "B",
+            "enabled": true
+          }
+        }
+      ]
+    },
+    "context": {
+      "big": "string"
+    }
+  },
+  "context": {
+    "big": "0123456789"
+  },
+  "expect": {
+    "error": {
+      "type": "LimitExceeded",
+      "limit": "maxTreeDepth",
+      "value": 1,
+      "actual": 2
+    }
+  }
+}

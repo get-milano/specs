@@ -1,0 +1,38 @@
+{
+  "name": "gen-typing-call-reject-029",
+  "description": "Generated (exhaustive): trim(state.e) in a enum position is rejected at the gate",
+  "document": {
+    "version": "1.0.0",
+    "state": {
+      "e": {
+        "enum": [
+          "a",
+          "b"
+        ]
+      }
+    },
+    "root": {
+      "type": "Column",
+      "id": "root",
+      "children": [
+        {
+          "type": "Probe",
+          "id": "p",
+          "properties": {
+            "e": {
+              "$expr": "trim(state.e)"
+            }
+          }
+        }
+      ]
+    }
+  },
+  "expect": {
+    "error": {
+      "type": "SchemaViolation",
+      "rule": "expression",
+      "node": "p",
+      "expected": "enum"
+    }
+  }
+}

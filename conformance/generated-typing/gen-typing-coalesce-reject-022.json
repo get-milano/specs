@@ -1,0 +1,33 @@
+{
+  "name": "gen-typing-coalesce-reject-022",
+  "description": "Generated (exhaustive): state.dOpt ?? 1.5 in a int position is rejected at the gate",
+  "document": {
+    "version": "1.0.0",
+    "state": {
+      "dOpt": "double?"
+    },
+    "root": {
+      "type": "Column",
+      "id": "root",
+      "children": [
+        {
+          "type": "Probe",
+          "id": "p",
+          "properties": {
+            "i": {
+              "$expr": "state.dOpt ?? 1.5"
+            }
+          }
+        }
+      ]
+    }
+  },
+  "expect": {
+    "error": {
+      "type": "SchemaViolation",
+      "rule": "expression",
+      "node": "p",
+      "expected": "int"
+    }
+  }
+}

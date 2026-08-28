@@ -119,7 +119,7 @@ class VectorShape(unittest.TestCase):
         vector = gnv.vector_for("gen-numeric-test", "str(1 / 0)")
         self.assertEqual(vector["expect"]["view"]["properties"]["text"], "0")
         self.assertEqual(vector["expect"]["occurrences"],
-                         [{"kind": "divisionByZero", "node": "r"}])
+                         [{"kind": "divisionByZero", "node": "r", "name": "text"}])
 
     def test_a_checker_defect_is_not_swallowed(self):
         # Only a type mismatch is a reason to skip a composition. A bare

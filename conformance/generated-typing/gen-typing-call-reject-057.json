@@ -1,0 +1,30 @@
+{
+  "name": "gen-typing-call-reject-057",
+  "description": "Generated (exhaustive): double(null) in a string position is rejected at the gate",
+  "document": {
+    "version": "1.0.0",
+    "root": {
+      "type": "Column",
+      "id": "root",
+      "children": [
+        {
+          "type": "Probe",
+          "id": "p",
+          "properties": {
+            "s": {
+              "$expr": "double(null)"
+            }
+          }
+        }
+      ]
+    }
+  },
+  "expect": {
+    "error": {
+      "type": "SchemaViolation",
+      "rule": "expression",
+      "node": "p",
+      "expected": "string"
+    }
+  }
+}

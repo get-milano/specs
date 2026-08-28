@@ -1,0 +1,38 @@
+{
+  "name": "gen-typing-position-reject-013",
+  "description": "Generated (exhaustive): state.r.f in a enum position is rejected at the gate",
+  "document": {
+    "version": "1.0.0",
+    "state": {
+      "r": {
+        "record": {
+          "f": "string",
+          "g": "int?"
+        }
+      }
+    },
+    "root": {
+      "type": "Column",
+      "id": "root",
+      "children": [
+        {
+          "type": "Probe",
+          "id": "p",
+          "properties": {
+            "e": {
+              "$expr": "state.r.f"
+            }
+          }
+        }
+      ]
+    }
+  },
+  "expect": {
+    "error": {
+      "type": "SchemaViolation",
+      "rule": "expression",
+      "node": "p",
+      "expected": "enum"
+    }
+  }
+}

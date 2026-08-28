@@ -59,7 +59,10 @@
     ],
     "occurrences": [
       {
-        "kind": "invalidCompletion"
+        "kind": "invalidCompletion",
+        "name": "ping",
+        "expected": "no result",
+        "found": "string"
       }
     ]
   },

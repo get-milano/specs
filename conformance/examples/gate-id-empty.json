@@ -1,0 +1,10 @@
+{
+  "name": "gate-id-empty",
+  "description": "A node id, when present, is a non-empty string: an empty id is an envelope violation, since it would be an empty reference in every report about the node",
+  "documentText": "{\"version\": \"1.0.0\", \"root\": {\"type\": \"Text\", \"id\": \"\", \"properties\": {\"text\": \"x\"}}}",
+  "expect": {
+    "error": {
+      "type": "MalformedDocument"
+    }
+  }
+}

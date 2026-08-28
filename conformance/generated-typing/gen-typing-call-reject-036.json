@@ -1,0 +1,30 @@
+{
+  "name": "gen-typing-call-reject-036",
+  "description": "Generated (exhaustive): trim(1.5) in a string position is rejected at the gate",
+  "document": {
+    "version": "1.0.0",
+    "root": {
+      "type": "Column",
+      "id": "root",
+      "children": [
+        {
+          "type": "Probe",
+          "id": "p",
+          "properties": {
+            "s": {
+              "$expr": "trim(1.5)"
+            }
+          }
+        }
+      ]
+    }
+  },
+  "expect": {
+    "error": {
+      "type": "SchemaViolation",
+      "rule": "expression",
+      "node": "p",
+      "expected": "string"
+    }
+  }
+}

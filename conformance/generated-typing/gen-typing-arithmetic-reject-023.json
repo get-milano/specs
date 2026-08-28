@@ -1,0 +1,30 @@
+{
+  "name": "gen-typing-arithmetic-reject-023",
+  "description": "Generated (exhaustive): 'x' + 'x' in a enum position is rejected at the gate",
+  "document": {
+    "version": "1.0.0",
+    "root": {
+      "type": "Column",
+      "id": "root",
+      "children": [
+        {
+          "type": "Probe",
+          "id": "p",
+          "properties": {
+            "e": {
+              "$expr": "'x' + 'x'"
+            }
+          }
+        }
+      ]
+    }
+  },
+  "expect": {
+    "error": {
+      "type": "SchemaViolation",
+      "rule": "expression",
+      "node": "p",
+      "expected": "enum"
+    }
+  }
+}

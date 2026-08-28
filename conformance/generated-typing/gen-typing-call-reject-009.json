@@ -1,0 +1,30 @@
+{
+  "name": "gen-typing-call-reject-009",
+  "description": "Generated (exhaustive): str(1.5) in a enum position is rejected at the gate",
+  "document": {
+    "version": "1.0.0",
+    "root": {
+      "type": "Column",
+      "id": "root",
+      "children": [
+        {
+          "type": "Probe",
+          "id": "p",
+          "properties": {
+            "e": {
+              "$expr": "str(1.5)"
+            }
+          }
+        }
+      ]
+    }
+  },
+  "expect": {
+    "error": {
+      "type": "SchemaViolation",
+      "rule": "expression",
+      "node": "p",
+      "expected": "enum"
+    }
+  }
+}

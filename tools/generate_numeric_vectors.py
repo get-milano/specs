@@ -12,7 +12,7 @@ harnesses iterate every suite directory.
 
 The reference checker is the oracle. If an engine disagrees with a
 generated vector, the spec prose arbitrates which of the two is wrong;
-if both engines disagree identically, the checker is the suspect.
+if every engine disagrees identically, the checker is the suspect.
 """
 
 import json

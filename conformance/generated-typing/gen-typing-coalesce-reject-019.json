@@ -1,0 +1,33 @@
+{
+  "name": "gen-typing-coalesce-reject-019",
+  "description": "Generated (exhaustive): state.dOpt ?? 'a' in a string position is rejected at the gate",
+  "document": {
+    "version": "1.0.0",
+    "state": {
+      "dOpt": "double?"
+    },
+    "root": {
+      "type": "Column",
+      "id": "root",
+      "children": [
+        {
+          "type": "Probe",
+          "id": "p",
+          "properties": {
+            "s": {
+              "$expr": "state.dOpt ?? 'a'"
+            }
+          }
+        }
+      ]
+    }
+  },
+  "expect": {
+    "error": {
+      "type": "SchemaViolation",
+      "rule": "expression",
+      "node": "p",
+      "expected": "string"
+    }
+  }
+}

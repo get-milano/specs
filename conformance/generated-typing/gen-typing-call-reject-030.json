@@ -1,0 +1,33 @@
+{
+  "name": "gen-typing-call-reject-030",
+  "description": "Generated (exhaustive): trim(state.i) in a string position is rejected at the gate",
+  "document": {
+    "version": "1.0.0",
+    "state": {
+      "i": "int"
+    },
+    "root": {
+      "type": "Column",
+      "id": "root",
+      "children": [
+        {
+          "type": "Probe",
+          "id": "p",
+          "properties": {
+            "s": {
+              "$expr": "trim(state.i)"
+            }
+          }
+        }
+      ]
+    }
+  },
+  "expect": {
+    "error": {
+      "type": "SchemaViolation",
+      "rule": "expression",
+      "node": "p",
+      "expected": "string"
+    }
+  }
+}

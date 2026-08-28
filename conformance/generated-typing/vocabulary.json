@@ -1,0 +1,35 @@
+{
+  "milano": "1.0.0",
+  "name": "generated_typing",
+  "version": "1.0.0",
+  "components": {
+    "Column": {
+      "children": true
+    },
+    "Probe": {
+      "properties": {
+        "s": "string",
+        "sOpt": "string?",
+        "i": "int",
+        "iOpt": "int?",
+        "d": "double",
+        "dOpt": "double?",
+        "b": "bool",
+        "bOpt": "bool?",
+        "e": {
+          "enum": [
+            "a",
+            "b"
+          ]
+        },
+        "eOpt": {
+          "enum": [
+            "a",
+            "b"
+          ],
+          "optional": true
+        }
+      }
+    }
+  }
+}

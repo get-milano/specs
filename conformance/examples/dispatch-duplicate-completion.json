@@ -64,7 +64,8 @@
     ],
     "occurrences": [
       {
-        "kind": "duplicateCompletion"
+        "kind": "duplicateCompletion",
+        "name": "ping"
       }
     ]
   },

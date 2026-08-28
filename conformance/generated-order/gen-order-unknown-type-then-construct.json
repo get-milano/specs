@@ -1,0 +1,35 @@
+{
+  "name": "gen-order-unknown-type-then-construct",
+  "description": "Generated (order): unknown-type on node a, then construct on node b; the first defect in document order wins",
+  "document": {
+    "version": "1.0.0",
+    "root": {
+      "type": "Column",
+      "id": "root",
+      "children": [
+        {
+          "type": "Mystery",
+          "id": "a",
+          "properties": {
+            "label": "A",
+            "enabled": true
+          }
+        },
+        {
+          "type": "$Button",
+          "id": "b",
+          "properties": {
+            "label": "B",
+            "enabled": true
+          }
+        }
+      ]
+    }
+  },
+  "expect": {
+    "error": {
+      "type": "UnknownComponentType",
+      "node": "a"
+    }
+  }
+}

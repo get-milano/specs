@@ -3,9 +3,10 @@
 
 Pure Python, no compilers: the specs repository stays engine-free, so
 these check what can be checked from the text itself. Compiling the
-generated code is the engine repositories' job, and the SDK does it (the
-React Native sample compiles the TypeScript output on every CI run, the
-SwiftUI and Compose samples compile theirs).
+generated code is the engine repositories' job, and the SDK does it: its
+CI compiles the goldens under testdata/ against every engine
+(scripts/verify-bindings.mjs), and the three samples compile what the
+generator wrote for their vocabulary.
 
 What is checked here:
 
@@ -242,7 +243,8 @@ class TypeScriptShape(unittest.TestCase):
 
     def test_arrays_and_records(self):
         self.assertIn("get tags(): readonly string[] {", self.produced)
-        self.assertIn("get payload(): MilanoValue {", self.produced)
+        self.assertIn("get payload(): FxWidgetPayload {", self.produced)
+        self.assertIn("get items(): readonly FxWidgetItemsItem[] {", self.produced)
 
 
 class Failures(unittest.TestCase):
@@ -352,9 +354,9 @@ class Descriptors(unittest.TestCase):
             ("array", True, "string"),
         )
 
-    def test_an_array_of_non_scalars_falls_back_to_a_raw_value(self):
-        # Nothing typed can be generated for it, so the emitters hand back
-        # a MilanoValue rather than guessing.
+    def test_an_array_of_non_scalars_names_its_element_kind(self):
+        # The element kind is what sends the emitters to the record
+        # wrapper path instead of the scalar accessors.
         self.assertEqual(
             gb.parse_descriptor({"array": {"record": {"a": "string"}}}),
             ("array", False, "record"),
@@ -397,7 +399,8 @@ class EnumSites(unittest.TestCase):
         sites, _ = gb.collect_enums(FIXTURE, "Fx")
         self.assertEqual(
             [name for name, _, _ in sites],
-            ["FxWidgetLayout", "FxWidgetTone", "FxWidgetPickPayload", "FxSubmitMode"],
+            ["FxWidgetLayout", "FxWidgetPayloadKind", "FxWidgetTone",
+             "FxWidgetPickPayload", "FxSubmitMode"],
         )
 
     def test_members_are_sorted_whatever_the_declaration_order(self):
@@ -408,6 +411,77 @@ class EnumSites(unittest.TestCase):
         }
         sites, _ = gb.collect_enums(vocabulary, "Or")
         self.assertEqual(sites[0][1], ["compact", "mid", "wide"])
+
+
+class RecordSites(unittest.TestCase):
+    """One wrapper type per record declaration site, nesting through
+    record fields and array elements, with typed field accessors whose
+    optionality is the declared one and a memberwise constructor. Before
+    these existed, a record-typed property, payload, or parameter came
+    back as a raw MilanoValue, the one place the bindings stopped being
+    typed."""
+
+    def setUp(self):
+        self.swift = gb.generate_swift(FIXTURE, "Fx")
+        self.kotlin = gb.generate_kotlin(FIXTURE, "com.example.fixture", "")
+        self.ts = gb.generate_ts(FIXTURE, "Fx", "@get-milano/core")
+
+    def test_sites_are_collected_with_their_nesting(self):
+        _, records, lookup = gb.collect_sites(FIXTURE, "Fx")
+        names = [name for name, _, _, _ in records]
+        self.assertEqual(
+            names,
+            ["FxWidgetItemsItem", "FxWidgetPayload", "FxWidgetPayloadOwner",
+             "FxWidgetSubmitPayload", "FxOrderCart", "FxOrderNote", "FxOrderResult"],
+        )
+        self.assertEqual(lookup[("property", "Widget", "payload", "field", "owner")],
+                         "FxWidgetPayloadOwner")
+        self.assertEqual(lookup[("property", "Widget", "payload", "field", "kind")],
+                         "FxWidgetPayloadKind")
+        self.assertEqual(lookup[("property", "Widget", "items", "item")], "FxWidgetItemsItem")
+
+    def test_swift_wrappers(self):
+        self.assertIn("public struct FxWidgetPayload {", self.swift)
+        self.assertIn("public init(_ value: MilanoValue) { self.value = value }", self.swift)
+        self.assertIn("    public init(\n        id: String,\n        count: Int64?,\n"
+                      "        kind: FxWidgetPayloadKind,\n        owner: FxWidgetPayloadOwner,\n"
+                      "        labels: [String]?\n    ) {", self.swift)
+        self.assertIn("public init(name: String) {", self.swift)
+        self.assertIn("public var count: Int64? {", self.swift)
+        self.assertIn("public var owner: FxWidgetPayloadOwner {", self.swift)
+        self.assertIn("public var payload: FxWidgetPayload {", self.swift)
+        self.assertIn("public var items: [FxWidgetItemsItem] {", self.swift)
+        self.assertIn("case order(cart: FxOrderCart, note: FxOrderNote?)", self.swift)
+        self.assertIn("public struct FxOrderResult {", self.swift)
+
+    def test_kotlin_wrappers(self):
+        self.assertIn("class WidgetPayload(", self.kotlin)
+        self.assertRegex(self.kotlin, r"val count: Long\? get\(\)")
+        self.assertRegex(self.kotlin, r"val owner: WidgetPayloadOwner get\(\)")
+        self.assertIn("fun of(", self.kotlin)
+        self.assertRegex(self.kotlin, r"val payload: WidgetPayload get\(\)")
+        self.assertRegex(self.kotlin, r"val items: List<WidgetItemsItem> get\(\)")
+        self.assertIn("val cart: OrderCart", self.kotlin)
+        self.assertIn("val note: OrderNote?", self.kotlin)
+        self.assertIn("class OrderResult(", self.kotlin)
+
+    def test_typescript_wrappers(self):
+        self.assertIn("export class FxWidgetPayload {", self.ts)
+        self.assertIn("  static of(fields: {\n    readonly id: string;\n"
+                      "    readonly count: bigint | null;\n    readonly kind: FxWidgetPayloadKind;\n"
+                      "    readonly owner: FxWidgetPayloadOwner;\n"
+                      "    readonly labels: readonly string[] | null;\n  }): FxWidgetPayload {", self.ts)
+        self.assertIn("static of(fields: { readonly name: string }): FxWidgetPayloadOwner {", self.ts)
+        self.assertIn("get count(): bigint | null {", self.ts)
+        self.assertIn("get owner(): FxWidgetPayloadOwner {", self.ts)
+        self.assertIn("readonly cart: FxOrderCart", self.ts)
+        self.assertIn("readonly note: FxOrderNote | null", self.ts)
+        self.assertIn("export class FxOrderResult {", self.ts)
+
+    def test_no_declaration_site_is_left_untyped(self):
+        for language, produced in (("swift", self.swift), ("kotlin", self.kotlin),
+                                   ("typescript", self.ts)):
+            self.assertNotIn("raw MilanoValue", produced, f"{language}: an untyped site remains")
 
 
 class ReservedWords(unittest.TestCase):
@@ -530,8 +604,10 @@ class SparseVocabularies(unittest.TestCase):
         self.assertIn("public var tags: [String]?", swift)
         self.assertIn("val tags: List<String>?", kotlin)
         self.assertIn("get tags(): readonly string[] | null {", ts)
-        # A record payload has no typed form, so the emitter takes a raw value.
-        self.assertIn("emitSubmit(payload: MilanoValue)", ts)
+        # A record payload gets a wrapper, and the emitter takes it.
+        self.assertIn("emitSubmit(payload: SpWidgetSubmitPayload)", ts)
+        self.assertIn("public func emitSubmit(_ payload: SpWidgetSubmitPayload)", swift)
+        self.assertIn("fun emitSubmit(payload: WidgetSubmitPayload)", kotlin)
 
 
 class SchemaCoverage(unittest.TestCase):

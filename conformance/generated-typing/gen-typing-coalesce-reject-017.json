@@ -1,0 +1,34 @@
+{
+  "name": "gen-typing-coalesce-reject-017",
+  "description": "Generated (exhaustive): state.iOpt ?? state.sOpt in a string position is rejected at the gate",
+  "document": {
+    "version": "1.0.0",
+    "state": {
+      "iOpt": "int?",
+      "sOpt": "string?"
+    },
+    "root": {
+      "type": "Column",
+      "id": "root",
+      "children": [
+        {
+          "type": "Probe",
+          "id": "p",
+          "properties": {
+            "s": {
+              "$expr": "state.iOpt ?? state.sOpt"
+            }
+          }
+        }
+      ]
+    }
+  },
+  "expect": {
+    "error": {
+      "type": "SchemaViolation",
+      "rule": "expression",
+      "node": "p",
+      "expected": "string"
+    }
+  }
+}

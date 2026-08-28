@@ -1,0 +1,39 @@
+{
+  "name": "gen-order-expression-alone",
+  "description": "Generated (order): expression alone, on node a",
+  "document": {
+    "version": "1.0.0",
+    "root": {
+      "type": "Column",
+      "id": "root",
+      "children": [
+        {
+          "type": "Button",
+          "id": "a",
+          "properties": {
+            "label": {
+              "$expr": "state.nope"
+            },
+            "enabled": true
+          }
+        },
+        {
+          "type": "Button",
+          "id": "b",
+          "properties": {
+            "label": "B",
+            "enabled": true
+          }
+        }
+      ]
+    }
+  },
+  "expect": {
+    "error": {
+      "type": "SchemaViolation",
+      "rule": "expression",
+      "node": "a",
+      "expected": "string"
+    }
+  }
+}

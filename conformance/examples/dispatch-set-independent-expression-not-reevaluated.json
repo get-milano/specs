@@ -1,0 +1,152 @@
+{
+  "name": "dispatch-set-independent-expression-not-reevaluated",
+  "description": "Only dependent expressions re-evaluate: a $set of an unrelated key, or of the same value, leaves a dividing expression alone and its report unrepeated; a $set that changes the divisor re-evaluates it, and setting it back to zero reports again",
+  "document": {
+    "version": "1.0.0",
+    "state": {
+      "divisor": "int",
+      "other": "int"
+    },
+    "root": {
+      "type": "Column",
+      "id": "form",
+      "children": [
+        {
+          "type": "Text",
+          "id": "ratio",
+          "properties": {
+            "text": {
+              "$expr": "str(100 / state.divisor)"
+            }
+          }
+        },
+        {
+          "type": "Button",
+          "id": "unrelated",
+          "properties": {
+            "label": "Other",
+            "enabled": true
+          },
+          "on": {
+            "tap": [
+              {
+                "action": "$set",
+                "key": "other",
+                "value": {
+                  "$expr": "state.other + 1"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "Button",
+          "id": "same",
+          "properties": {
+            "label": "Same",
+            "enabled": true
+          },
+          "on": {
+            "tap": [
+              {
+                "action": "$set",
+                "key": "divisor",
+                "value": {
+                  "$expr": "state.divisor"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "Button",
+          "id": "one",
+          "properties": {
+            "label": "One",
+            "enabled": true
+          },
+          "on": {
+            "tap": [
+              {
+                "action": "$set",
+                "key": "divisor",
+                "value": 1
+              }
+            ]
+          }
+        },
+        {
+          "type": "Button",
+          "id": "zero",
+          "properties": {
+            "label": "Zero",
+            "enabled": true
+          },
+          "on": {
+            "tap": [
+              {
+                "action": "$set",
+                "key": "divisor",
+                "value": 0
+              }
+            ]
+          }
+        }
+      ]
+    }
+  },
+  "state": {
+    "divisor": 0,
+    "other": 0
+  },
+  "steps": [
+    {
+      "event": {
+        "node": "unrelated",
+        "name": "tap"
+      }
+    },
+    {
+      "event": {
+        "node": "unrelated",
+        "name": "tap"
+      }
+    },
+    {
+      "event": {
+        "node": "same",
+        "name": "tap"
+      }
+    },
+    {
+      "event": {
+        "node": "one",
+        "name": "tap"
+      }
+    },
+    {
+      "event": {
+        "node": "zero",
+        "name": "tap"
+      }
+    }
+  ],
+  "expect": {
+    "state": {
+      "divisor": 0,
+      "other": 2
+    },
+    "occurrences": [
+      {
+        "kind": "divisionByZero",
+        "node": "ratio",
+        "name": "text"
+      },
+      {
+        "kind": "divisionByZero",
+        "node": "ratio",
+        "name": "text"
+      }
+    ]
+  }
+}

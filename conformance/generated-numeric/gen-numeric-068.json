@@ -1,6 +1,6 @@
 {
   "name": "gen-numeric-068",
-  "description": "Generated (seed 20260816): str(0.0 / 1.0)",
+  "description": "Generated (seed 20260816): str((0.0 - 1.0) / 0.0 / 0.1)",
   "document": {
     "version": "1.0.0",
     "root": {
@@ -8,7 +8,7 @@
       "id": "r",
       "properties": {
         "text": {
-          "$expr": "str(0.0 / 1.0)"
+          "$expr": "str((0.0 - 1.0) / 0.0 / 0.1)"
         }
       }
     }
@@ -18,7 +18,7 @@
       "type": "Text",
       "reference": "r",
       "properties": {
-        "text": "0.0"
+        "text": "-inf"
       }
     },
     "occurrences": []

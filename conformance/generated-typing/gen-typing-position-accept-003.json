@@ -1,0 +1,86 @@
+{
+  "name": "gen-typing-position-accept-003",
+  "description": "Generated (exhaustive): accepted in their declared positions. p0: 1.5 in dOpt; p1: true in b; p2: true in bOpt; p3: null in sOpt",
+  "document": {
+    "version": "1.0.0",
+    "root": {
+      "type": "Column",
+      "id": "root",
+      "children": [
+        {
+          "type": "Probe",
+          "id": "p0",
+          "properties": {
+            "dOpt": {
+              "$expr": "1.5"
+            }
+          }
+        },
+        {
+          "type": "Probe",
+          "id": "p1",
+          "properties": {
+            "b": {
+              "$expr": "true"
+            }
+          }
+        },
+        {
+          "type": "Probe",
+          "id": "p2",
+          "properties": {
+            "bOpt": {
+              "$expr": "true"
+            }
+          }
+        },
+        {
+          "type": "Probe",
+          "id": "p3",
+          "properties": {
+            "sOpt": {
+              "$expr": "null"
+            }
+          }
+        }
+      ]
+    }
+  },
+  "expect": {
+    "view": {
+      "type": "Column",
+      "reference": "root",
+      "children": [
+        {
+          "type": "Probe",
+          "reference": "p0",
+          "properties": {
+            "dOpt": 1.5
+          }
+        },
+        {
+          "type": "Probe",
+          "reference": "p1",
+          "properties": {
+            "b": true
+          }
+        },
+        {
+          "type": "Probe",
+          "reference": "p2",
+          "properties": {
+            "bOpt": true
+          }
+        },
+        {
+          "type": "Probe",
+          "reference": "p3",
+          "properties": {
+            "sOpt": null
+          }
+        }
+      ]
+    },
+    "occurrences": []
+  }
+}

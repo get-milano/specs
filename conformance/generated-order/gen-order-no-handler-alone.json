@@ -1,0 +1,47 @@
+{
+  "name": "gen-order-no-handler-alone",
+  "description": "Generated (order): no-handler alone, on node a",
+  "config": {
+    "actionHandler": false
+  },
+  "document": {
+    "version": "1.0.0",
+    "root": {
+      "type": "Column",
+      "id": "root",
+      "children": [
+        {
+          "type": "Button",
+          "id": "a",
+          "properties": {
+            "label": "A",
+            "enabled": true
+          },
+          "on": {
+            "tap": [
+              {
+                "action": "openUrl",
+                "url": "https://example.com"
+              }
+            ]
+          }
+        },
+        {
+          "type": "Button",
+          "id": "b",
+          "properties": {
+            "label": "B",
+            "enabled": true
+          }
+        }
+      ]
+    }
+  },
+  "expect": {
+    "error": {
+      "type": "SchemaViolation",
+      "rule": "action-handler",
+      "expected": "action handler"
+    }
+  }
+}

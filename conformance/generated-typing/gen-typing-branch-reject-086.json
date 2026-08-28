@@ -1,0 +1,34 @@
+{
+  "name": "gen-typing-branch-reject-086",
+  "description": "Generated (exhaustive): if(state.b, state.sOpt ?? 'y', state.sOpt) in a string? position is rejected at the gate",
+  "document": {
+    "version": "1.0.0",
+    "state": {
+      "b": "bool",
+      "sOpt": "string?"
+    },
+    "root": {
+      "type": "Column",
+      "id": "root",
+      "children": [
+        {
+          "type": "Probe",
+          "id": "p",
+          "properties": {
+            "sOpt": {
+              "$expr": "if(state.b, state.sOpt ?? 'y', state.sOpt)"
+            }
+          }
+        }
+      ]
+    }
+  },
+  "expect": {
+    "error": {
+      "type": "SchemaViolation",
+      "rule": "expression",
+      "node": "p",
+      "expected": "string?"
+    }
+  }
+}
