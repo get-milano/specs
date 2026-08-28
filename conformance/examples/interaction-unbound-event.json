@@ -34,7 +34,8 @@
     "occurrences": [
       {
         "kind": "droppedEvent",
-        "node": "b"
+        "node": "b",
+        "name": "tap"
       }
     ]
   }

@@ -1,0 +1,42 @@
+{
+  "name": "gen-order-node-count-limit-and-unknown-type",
+  "description": "Generated (order): node-count-limit beside unknown-type on node a; the gate's order decides which error wins",
+  "config": {
+    "limits": {
+      "maxNodeCount": 2
+    }
+  },
+  "document": {
+    "version": "1.0.0",
+    "root": {
+      "type": "Column",
+      "id": "root",
+      "children": [
+        {
+          "type": "Mystery",
+          "id": "a",
+          "properties": {
+            "label": "A",
+            "enabled": true
+          }
+        },
+        {
+          "type": "Button",
+          "id": "b",
+          "properties": {
+            "label": "B",
+            "enabled": true
+          }
+        }
+      ]
+    }
+  },
+  "expect": {
+    "error": {
+      "type": "LimitExceeded",
+      "limit": "maxNodeCount",
+      "value": 2,
+      "actual": 3
+    }
+  }
+}

@@ -1,0 +1,38 @@
+{
+  "name": "gen-order-context-missing-and-unknown-type",
+  "description": "Generated (order): context-missing beside unknown-type on node a; the gate's order decides which error wins",
+  "document": {
+    "version": "1.0.0",
+    "root": {
+      "type": "Column",
+      "id": "root",
+      "children": [
+        {
+          "type": "Mystery",
+          "id": "a",
+          "properties": {
+            "label": "A",
+            "enabled": true
+          }
+        },
+        {
+          "type": "Button",
+          "id": "b",
+          "properties": {
+            "label": "B",
+            "enabled": true
+          }
+        }
+      ]
+    },
+    "context": {
+      "who": "string"
+    }
+  },
+  "expect": {
+    "error": {
+      "type": "UnknownComponentType",
+      "node": "a"
+    }
+  }
+}

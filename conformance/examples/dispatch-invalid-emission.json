@@ -54,11 +54,17 @@
     "occurrences": [
       {
         "kind": "invalidEmission",
-        "node": "f"
+        "node": "f",
+        "name": "focus",
+        "expected": "declared event",
+        "found": "undeclared event"
       },
       {
         "kind": "invalidEmission",
-        "node": "f"
+        "node": "f",
+        "name": "change",
+        "expected": "string",
+        "found": "int"
       }
     ]
   }

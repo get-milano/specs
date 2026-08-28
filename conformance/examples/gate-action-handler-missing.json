@@ -1,0 +1,33 @@
+{
+  "name": "gate-action-handler-missing",
+  "description": "A document binding a custom action built on a surface with no action handler is a SchemaViolation with rule action-handler, raised by the builder before dispatch exists",
+  "config": {
+    "actionHandler": false
+  },
+  "document": {
+    "version": "1.0.0",
+    "root": {
+      "type": "Button",
+      "id": "go",
+      "properties": {
+        "label": "Go",
+        "enabled": true
+      },
+      "on": {
+        "tap": [
+          {
+            "action": "openUrl",
+            "url": "https://example.com"
+          }
+        ]
+      }
+    }
+  },
+  "expect": {
+    "error": {
+      "type": "SchemaViolation",
+      "rule": "action-handler",
+      "expected": "action handler"
+    }
+  }
+}

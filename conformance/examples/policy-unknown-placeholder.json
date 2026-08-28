@@ -63,7 +63,8 @@
     "occurrences": [
       {
         "kind": "unknownTypePlaceholder",
-        "node": "promo"
+        "node": "promo",
+        "name": "Carousel"
       }
     ]
   }

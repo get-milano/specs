@@ -44,7 +44,10 @@
     },
     "occurrences": [
       {
-        "kind": "rejectedContextUpdate"
+        "kind": "rejectedContextUpdate",
+        "name": "tone",
+        "expected": "enum",
+        "found": "string"
       }
     ]
   }

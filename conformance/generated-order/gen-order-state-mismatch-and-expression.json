@@ -1,0 +1,45 @@
+{
+  "name": "gen-order-state-mismatch-and-expression",
+  "description": "Generated (order): state-mismatch beside expression on node a; the gate's order decides which error wins",
+  "document": {
+    "version": "1.0.0",
+    "root": {
+      "type": "Column",
+      "id": "root",
+      "children": [
+        {
+          "type": "Button",
+          "id": "a",
+          "properties": {
+            "label": {
+              "$expr": "state.nope"
+            },
+            "enabled": true
+          }
+        },
+        {
+          "type": "Button",
+          "id": "b",
+          "properties": {
+            "label": "B",
+            "enabled": true
+          }
+        }
+      ]
+    },
+    "state": {
+      "n": "int"
+    }
+  },
+  "state": {
+    "n": "x"
+  },
+  "expect": {
+    "error": {
+      "type": "SchemaViolation",
+      "rule": "expression",
+      "node": "a",
+      "expected": "string"
+    }
+  }
+}

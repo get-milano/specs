@@ -1,0 +1,37 @@
+{
+  "name": "gen-order-property-type-alone",
+  "description": "Generated (order): property-type alone, on node a",
+  "document": {
+    "version": "1.0.0",
+    "root": {
+      "type": "Column",
+      "id": "root",
+      "children": [
+        {
+          "type": "Button",
+          "id": "a",
+          "properties": {
+            "label": 1,
+            "enabled": true
+          }
+        },
+        {
+          "type": "Button",
+          "id": "b",
+          "properties": {
+            "label": "B",
+            "enabled": true
+          }
+        }
+      ]
+    }
+  },
+  "expect": {
+    "error": {
+      "type": "SchemaViolation",
+      "rule": "property-type",
+      "node": "a",
+      "expected": "string"
+    }
+  }
+}

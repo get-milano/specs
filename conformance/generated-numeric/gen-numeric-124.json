@@ -1,6 +1,6 @@
 {
   "name": "gen-numeric-124",
-  "description": "Generated (seed 20260816): str(((0 - 9223372036854775807 - 1) + (0.00001 % 0.0)) * 0.00001)",
+  "description": "Generated (seed 20260816): str(((0 - 1) * (0.0001 + 0.1)) % 9223372036854775807)",
   "document": {
     "version": "1.0.0",
     "root": {
@@ -8,7 +8,7 @@
       "id": "r",
       "properties": {
         "text": {
-          "$expr": "str(((0 - 9223372036854775807 - 1) + (0.00001 % 0.0)) * 0.00001)"
+          "$expr": "str(((0 - 1) * (0.0001 + 0.1)) % 9223372036854775807)"
         }
       }
     }
@@ -18,7 +18,7 @@
       "type": "Text",
       "reference": "r",
       "properties": {
-        "text": "nan"
+        "text": "-0.10010000000000001"
       }
     },
     "occurrences": []

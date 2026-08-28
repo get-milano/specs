@@ -1,6 +1,6 @@
 {
   "name": "gen-numeric-139",
-  "description": "Generated (seed 20260816): str(double((7 / 0)))",
+  "description": "Generated (seed 20260816): str(int((0.00001 * 2.0)))",
   "document": {
     "version": "1.0.0",
     "root": {
@@ -8,7 +8,7 @@
       "id": "r",
       "properties": {
         "text": {
-          "$expr": "str(double((7 / 0)))"
+          "$expr": "str(int((0.00001 * 2.0)))"
         }
       }
     }
@@ -18,14 +18,9 @@
       "type": "Text",
       "reference": "r",
       "properties": {
-        "text": "0.0"
+        "text": "0"
       }
     },
-    "occurrences": [
-      {
-        "kind": "divisionByZero",
-        "node": "r"
-      }
-    ]
+    "occurrences": []
   }
 }

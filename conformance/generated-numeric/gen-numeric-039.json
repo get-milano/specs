@@ -1,6 +1,6 @@
 {
   "name": "gen-numeric-039",
-  "description": "Generated (seed 20260816): str(int(9223372036854775807.0))",
+  "description": "Generated (seed 20260816): str(double(100))",
   "document": {
     "version": "1.0.0",
     "root": {
@@ -8,7 +8,7 @@
       "id": "r",
       "properties": {
         "text": {
-          "$expr": "str(int(9223372036854775807.0))"
+          "$expr": "str(double(100))"
         }
       }
     }
@@ -18,14 +18,9 @@
       "type": "Text",
       "reference": "r",
       "properties": {
-        "text": "9223372036854775807"
+        "text": "100.0"
       }
     },
-    "occurrences": [
-      {
-        "kind": "saturation",
-        "node": "r"
-      }
-    ]
+    "occurrences": []
   }
 }

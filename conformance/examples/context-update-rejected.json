@@ -36,7 +36,10 @@
     },
     "occurrences": [
       {
-        "kind": "rejectedContextUpdate"
+        "kind": "rejectedContextUpdate",
+        "name": "greeting",
+        "expected": "string",
+        "found": "int"
       }
     ]
   }

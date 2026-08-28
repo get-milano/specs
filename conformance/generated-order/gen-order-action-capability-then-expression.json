@@ -1,0 +1,46 @@
+{
+  "name": "gen-order-action-capability-then-expression",
+  "description": "Generated (order): action-capability on node a, then expression on node b; the first defect in document order wins",
+  "document": {
+    "version": "1.0.0",
+    "root": {
+      "type": "Column",
+      "id": "root",
+      "children": [
+        {
+          "type": "Button",
+          "id": "a",
+          "properties": {
+            "label": "A",
+            "enabled": true
+          },
+          "on": {
+            "tap": [
+              {
+                "action": "secret"
+              }
+            ]
+          }
+        },
+        {
+          "type": "Button",
+          "id": "b",
+          "properties": {
+            "label": {
+              "$expr": "state.nope"
+            },
+            "enabled": true
+          }
+        }
+      ]
+    }
+  },
+  "expect": {
+    "error": {
+      "type": "SchemaViolation",
+      "rule": "action-capability",
+      "node": "a",
+      "expected": "granted action"
+    }
+  }
+}

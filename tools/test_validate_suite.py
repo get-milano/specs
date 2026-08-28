@@ -228,5 +228,33 @@ class AgainstTheRepository(unittest.TestCase):
         self.assertGreater(checked, 5, line)
 
 
+
+class EnginePinnedRegistry(unittest.TestCase):
+    """The engine-pinned registry (conformance suite spec, Harness)."""
+
+    def test_the_committed_registry_validates(self):
+        self.assertEqual(vs.engine_pinned_problems(ROOT), [])
+
+    def test_defects_are_named(self):
+        import tempfile
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / "conformance").mkdir()
+            (root / "04-state-and-actions.md").write_text("## Completion\n")
+            registry = {"statements": [
+                {"id": "Bad Id", "spec": "04-state-and-actions.md", "section": "Completion",
+                 "statement": "x", "applies": ["swiftui"]},
+                {"id": "ok", "spec": "missing.md", "section": "Completion",
+                 "statement": "x", "applies": ["swiftui"]},
+                {"id": "ok", "spec": "04-state-and-actions.md", "section": "Nowhere",
+                 "statement": "", "applies": ["ios"]},
+            ]}
+            (root / "conformance" / "engine-pinned.json").write_text(json.dumps(registry))
+            problems = "\n".join(vs.engine_pinned_problems(root))
+            for expected in ("kebab-case", "not a file", "duplicate id ok",
+                             "not a heading", "non-empty", "applies must name"):
+                self.assertIn(expected, problems)
+            self.assertEqual(vs.engine_pinned_problems(root / "elsewhere"), [])
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)

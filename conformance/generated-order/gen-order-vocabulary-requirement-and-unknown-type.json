@@ -1,0 +1,39 @@
+{
+  "name": "gen-order-vocabulary-requirement-and-unknown-type",
+  "description": "Generated (order): vocabulary-requirement beside unknown-type on node a; the gate's order decides which error wins",
+  "document": {
+    "version": "1.0.0",
+    "root": {
+      "type": "Column",
+      "id": "root",
+      "children": [
+        {
+          "type": "Mystery",
+          "id": "a",
+          "properties": {
+            "label": "A",
+            "enabled": true
+          }
+        },
+        {
+          "type": "Button",
+          "id": "b",
+          "properties": {
+            "label": "B",
+            "enabled": true
+          }
+        }
+      ]
+    },
+    "vocabulary": {
+      "name": "other"
+    }
+  },
+  "expect": {
+    "error": {
+      "type": "SchemaViolation",
+      "rule": "vocabulary-requirement",
+      "expected": "other"
+    }
+  }
+}

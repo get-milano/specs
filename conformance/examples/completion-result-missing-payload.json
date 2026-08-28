@@ -60,7 +60,10 @@
     ],
     "occurrences": [
       {
-        "kind": "invalidCompletion"
+        "kind": "invalidCompletion",
+        "name": "fetchCode",
+        "expected": "string",
+        "found": "null"
       }
     ]
   },

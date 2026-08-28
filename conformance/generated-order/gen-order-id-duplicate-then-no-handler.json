@@ -1,0 +1,47 @@
+{
+  "name": "gen-order-id-duplicate-then-no-handler",
+  "description": "Generated (order): id-duplicate on node a, then no-handler on node b; the first defect in document order wins",
+  "config": {
+    "actionHandler": false
+  },
+  "document": {
+    "version": "1.0.0",
+    "root": {
+      "type": "Column",
+      "id": "root",
+      "children": [
+        {
+          "type": "Button",
+          "id": "root",
+          "properties": {
+            "label": "A",
+            "enabled": true
+          }
+        },
+        {
+          "type": "Button",
+          "id": "b",
+          "properties": {
+            "label": "B",
+            "enabled": true
+          },
+          "on": {
+            "tap": [
+              {
+                "action": "openUrl",
+                "url": "https://example.com"
+              }
+            ]
+          }
+        }
+      ]
+    }
+  },
+  "expect": {
+    "error": {
+      "type": "SchemaViolation",
+      "rule": "id-uniqueness",
+      "node": "root"
+    }
+  }
+}

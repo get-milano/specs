@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "document.schema.json",
   "title": "Milano Document",
-  "description": "Validates the canonical JSON encoding of a Milano document per the document model spec: top-level structure, node envelope, values and expressions, and action encoding. Unknown core and envelope fields are permitted, matching the contract's tolerance rules. Semantic rules (vocabulary resolution, expression typing, id uniqueness, resource limits) belong to the gate, not this schema.",
+  "description": "Validates the canonical JSON encoding of a Milano document per the document model spec: top-level structure, node envelope, values and expressions, and action encoding. Every object the contract may grow (the top level, the node envelope, the vocabulary section, type descriptors) is open, matching the contract's tolerance rules; only the $expr wrapper is closed, since the model defines it as exactly single-key. Semantic rules (vocabulary resolution, expression typing, id uniqueness, resource limits) belong to the gate, not this schema.",
   "type": "object",
   "required": [
     "version",
@@ -26,8 +26,7 @@
           "type": "string",
           "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
         }
-      },
-      "additionalProperties": false
+      }
     },
     "context": {
       "type": "object",
@@ -280,8 +279,7 @@
             "optional": {
               "type": "boolean"
             }
-          },
-          "additionalProperties": false
+          }
         },
         {
           "type": "object",
@@ -295,8 +293,7 @@
             "optional": {
               "type": "boolean"
             }
-          },
-          "additionalProperties": false
+          }
         },
         {
           "type": "object",
@@ -316,8 +313,7 @@
             "optional": {
               "type": "boolean"
             }
-          },
-          "additionalProperties": false
+          }
         }
       ]
     }

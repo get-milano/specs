@@ -17,10 +17,12 @@ helper that refuses to run against a mismatched engine vocabulary.
 Output is deterministic: same artifact and flags, same bytes. Commit the
 files; regenerate when the vocabulary changes and let the compiler list
 every bridge site the change touches. Type coverage: primitives and
-arrays of primitives get native types; enum-typed properties, event
-payloads, and action parameters get generated Swift/Kotlin enums (one
-nominal type per declaration site); record-typed values and arrays of
-non-primitives surface as raw MilanoValue.
+arrays get native types; enums get one nominal type per declaration site
+(a Swift/Kotlin enum, a TypeScript string-literal union); records get one
+wrapper type per declaration site with typed field accessors and a
+memberwise constructor, nesting through record fields and array elements,
+so a record-typed property, event payload, action parameter, or result
+is as typed as a scalar one.
 """
 
 import argparse
@@ -93,46 +95,99 @@ def enum_type_name(prefix, *parts):
     return prefix + "".join(capitalize(part) for part in parts)
 
 
-def collect_enums(vocabulary, prefix):
-    """Every enum declaration site, in deterministic order: one nominal
-    generated type per site. Returns [(type_name, members, doc)] plus a
-    lookup from site key to type name."""
-    sites, lookup = [], {}
+class Shape:
+    """A type descriptor, parsed: `kind` is bool/int/double/string/enum/
+    array/record; `element` the array element's Shape; `fields` the
+    record's name -> Shape, in declaration order; `members` the enum's."""
 
-    def add(key, type_name, members, doc):
-        entry_names = [capitalize(member) for member in sorted(members)]
-        if len(set(entry_names)) != len(entry_names):
-            raise SystemExit(f"enum at {key} has members that collide when"
-                             f" capitalized; rename them")
-        sites.append((type_name, sorted(members), doc))
-        lookup[key] = type_name
+    def __init__(self, descriptor):
+        if isinstance(descriptor, str):
+            self.kind, self.optional = descriptor.rstrip("?"), descriptor.endswith("?")
+            self.element, self.fields, self.members = None, None, None
+        elif "enum" in descriptor:
+            self.kind, self.optional = "enum", bool(descriptor.get("optional"))
+            self.element, self.fields, self.members = None, None, list(descriptor["enum"])
+        elif "array" in descriptor:
+            self.kind, self.optional = "array", bool(descriptor.get("optional"))
+            self.element, self.fields, self.members = Shape(descriptor["array"]), None, None
+        else:
+            self.kind, self.optional = "record", bool(descriptor.get("optional"))
+            self.element, self.members = None, None
+            self.fields = [(name, Shape(field))
+                           for name, field in descriptor["record"].items()]
+
+
+def collect_sites(vocabulary, prefix):
+    """Every enum and record declaration site, in deterministic order,
+    nesting through record fields and array elements: one nominal
+    generated type per site. Returns (enums, records, lookup): enums as
+    [(type_name, members, doc)], records as [(type_name, fields, doc, key)]
+    with fields [(name, Shape)], and a lookup from site key to type name.
+    A nested site's key extends its parent's with ("field", name) or
+    ("item",), and its type name extends the parent's the same way."""
+    enums, records, lookup = [], [], {}
+
+    def visit(key, shape, type_name, where):
+        if shape.kind == "enum":
+            entry_names = [capitalize(member) for member in sorted(shape.members)]
+            if len(set(entry_names)) != len(entry_names):
+                raise SystemExit(f"enum at {key} has members that collide when"
+                                 f" capitalized; rename them")
+            enums.append((type_name, sorted(shape.members), f"Members of the {where}."))
+            lookup[key] = type_name
+        elif shape.kind == "record":
+            records.append((type_name, shape.fields, f"Fields of the {where}.", key))
+            lookup[key] = type_name
+            for name, field in shape.fields:
+                visit(key + ("field", name), field, type_name + capitalize(name),
+                      f"`{name}` field of `{type_name}`")
+        elif shape.kind == "array":
+            visit(key + ("item",), shape.element, type_name + "Item",
+                  f"element of the {where}")
 
     for component in sorted(vocabulary.get("components", {})):
         declaration = vocabulary["components"][component]
         for prop in sorted(declaration.get("properties", {}) or {}):
-            descriptor = declaration["properties"][prop]
-            if isinstance(descriptor, dict) and "enum" in descriptor:
-                add(("property", component, prop),
-                    enum_type_name(prefix, component, prop),
-                    descriptor["enum"],
-                    f"Members of the `{prop}` enum on `{component}`.")
+            visit(("property", component, prop), Shape(declaration["properties"][prop]),
+                  enum_type_name(prefix, component, prop),
+                  f"`{prop}` {Shape(declaration['properties'][prop]).kind} on `{component}`")
         for event in sorted(declaration.get("events", {}) or {}):
             descriptor = declaration["events"][event]
-            if isinstance(descriptor, dict) and "enum" in descriptor:
-                add(("event", component, event),
-                    enum_type_name(prefix, component, event, "payload"),
-                    descriptor["enum"],
-                    f"Members of the `{event}` payload enum on `{component}`.")
+            if descriptor is None:
+                continue
+            visit(("event", component, event), Shape(descriptor),
+                  enum_type_name(prefix, component, event, "payload"),
+                  f"`{event}` payload {Shape(descriptor).kind} on `{component}`")
     for action in sorted(vocabulary.get("actions", {})):
         declaration = vocabulary["actions"][action]
         for parameter in sorted(declaration.get("parameters", {}) or {}):
             descriptor = declaration["parameters"][parameter]
-            if isinstance(descriptor, dict) and "enum" in descriptor:
-                add(("parameter", action, parameter),
-                    enum_type_name(prefix, action, parameter),
-                    descriptor["enum"],
-                    f"Members of the `{parameter}` enum on action `{action}`.")
-    return sites, lookup
+            visit(("parameter", action, parameter), Shape(descriptor),
+                  enum_type_name(prefix, action, parameter),
+                  f"`{parameter}` {Shape(descriptor).kind} on action `{action}`")
+        if declaration.get("result") is not None:
+            visit(("result", action), Shape(declaration["result"]),
+                  enum_type_name(prefix, action, "result"),
+                  f"result {Shape(declaration['result']).kind} of action `{action}`")
+    return enums, records, lookup
+
+
+def collect_enums(vocabulary, prefix):
+    """The enum sites and the lookup, for callers that need only those."""
+    enums, _, lookup = collect_sites(vocabulary, prefix)
+    return enums, lookup
+
+
+# Element names for nested array lambdas, one per nesting depth, so an
+# array of arrays never shadows its own element.
+def element_name(depth):
+    return f"item{depth}" if depth else "item"
+
+
+def postfix(expr):
+    """`expr` made safe to follow with `.accessor`: compound expressions
+    get parentheses, plain ones stay readable."""
+    return f"({expr})" if " " in expr else expr
 
 
 # ---------------------------------------------------------------------------
@@ -140,9 +195,92 @@ def collect_enums(vocabulary, prefix):
 # ---------------------------------------------------------------------------
 
 
-def swift_property(name, descriptor, enum_type=None):
+def swift_type(shape, key, lookup):
+    base = {"bool": "Bool", "int": "Int64", "double": "Double", "string": "String"}.get(shape.kind)
+    if shape.kind in ("enum", "record"):
+        base = lookup[key]
+    elif shape.kind == "array":
+        base = "[" + swift_type(shape.element, key + ("item",), lookup) + "]"
+    return base + ("?" if shape.optional else "")
+
+
+def swift_read(shape, key, lookup, expr, depth=0):
+    """An expression of `swift_type` reading the MilanoValue `expr`."""
+    if shape.kind in SWIFT_ACCESSORS:
+        return f"{postfix(expr)}.{SWIFT_ACCESSORS[shape.kind]}" + ("" if shape.optional else "!")
+    if shape.kind == "enum":
+        enum_type = lookup[key]
+        if shape.optional:
+            return f"{postfix(expr)}.stringValue.flatMap({enum_type}.init(rawValue:))"
+        return f"{enum_type}(rawValue: {postfix(expr)}.stringValue!)!"
+    if shape.kind == "record":
+        record_type = lookup[key]
+        if shape.optional:
+            return f"{postfix(expr)}.isNull ? nil : {record_type}({expr})"
+        return f"{record_type}({expr})"
+    inner = swift_read(shape.element, key + ("item",), lookup, "$0", depth + 1)
+    access = f"{postfix(expr)}.arrayValue" + ("?" if shape.optional else "!")
+    return f"{access}.map {{ {inner} }}"
+
+
+def swift_write(shape, key, lookup, expr):
+    """A MilanoValue expression wrapping the typed `expr`."""
+    if shape.kind in SWIFT_WRAP:
+        if shape.optional:
+            return f"{expr}.map {{ {SWIFT_WRAP[shape.kind]}($0) }} ?? .null"
+        return f"{SWIFT_WRAP[shape.kind]}({expr})"
+    if shape.kind == "enum":
+        if shape.optional:
+            return f"{expr}.map {{ .string($0.rawValue) }} ?? .null"
+        return f".string({expr}.rawValue)"
+    if shape.kind == "record":
+        return f"{expr}?.value ?? .null" if shape.optional else f"{expr}.value"
+    inner = swift_write(shape.element, key + ("item",), lookup, "$0")
+    if shape.optional:
+        return f"{expr}.map {{ .array($0.map {{ {inner} }}) }} ?? .null"
+    return f".array({expr}.map {{ {inner} }})"
+
+
+def swift_record(type_name, fields, doc, key, lookup):
+    lines = [f"/// {doc} Non-optional accessors are gate-guaranteed.",
+             f"public struct {type_name} {{",
+             "    public let value: MilanoValue",
+             "    public init(_ value: MilanoValue) { self.value = value }"]
+    if fields:
+        parameters = [f"{escape_swift(name)}: {swift_type(shape, key + ('field', name), lookup)}"
+                      for name, shape in fields]
+        signature = f"    public init({', '.join(parameters)}) {{"
+        if len(signature) <= 100:
+            lines.append(signature)
+        else:
+            lines.append("    public init(")
+            lines.append(",\n".join(f"        {parameter}" for parameter in parameters))
+            lines.append("    ) {")
+        lines.append("        value = .record([")
+        entries = [f"            \"{name}\": "
+                   f"{swift_write(shape, key + ('field', name), lookup, escape_swift(name))}"
+                   for name, shape in fields]
+        lines.append(",\n".join(entries))
+        lines.append("        ])")
+        lines.append("    }")
+    for name, shape in fields:
+        read = swift_read(shape, key + ("field", name), lookup,
+                          f"value.recordValue?[\"{name}\"] ?? .null")
+        lines.append(f"    public var {escape_swift(name)}: "
+                     f"{swift_type(shape, key + ('field', name), lookup)} {{ {read} }}")
+    lines.append("}")
+    return "\n".join(lines)
+
+
+def swift_property(name, descriptor, enum_type=None, key=None, lookup=None):
     kind, optional, element = parse_descriptor(descriptor)
     declared = escape_swift(name)
+    shape = Shape(descriptor)
+    if kind == "record" or (kind == "array" and element not in SWIFT_TYPES):
+        read = swift_read(shape, key, lookup, f"node.property(\"{name}\")")
+        return (f"    public var {declared}: {swift_type(shape, key, lookup)} {{\n"
+                f"        {read}\n"
+                f"    }}")
     if kind == "enum":
         if optional:
             return (f"    public var {declared}: {enum_type}? {{\n"
@@ -171,11 +309,16 @@ def swift_property(name, descriptor, enum_type=None):
             f"    public var {declared}: MilanoValue {{ node.property(\"{name}\") }}")
 
 
-def swift_emitter(event, payload_descriptor, enum_type=None):
+def swift_emitter(event, payload_descriptor, enum_type=None, key=None, lookup=None):
     method = f"emit{capitalize(event)}"
     if payload_descriptor is None:
         return f"    public func {method}() {{ node.emit(\"{event}\") }}"
-    kind, optional, _ = parse_descriptor(payload_descriptor)
+    kind, optional, element = parse_descriptor(payload_descriptor)
+    shape = Shape(payload_descriptor)
+    if kind == "record" or (kind == "array" and element not in SWIFT_TYPES):
+        return (f"    public func {method}(_ payload: {swift_type(shape, key, lookup)}) {{\n"
+                f"        node.emit(\"{event}\", payload: {swift_write(shape, key, lookup, 'payload')})\n"
+                f"    }}")
     if kind == "enum":
         if optional:
             return (f"    public func {method}(_ payload: {enum_type}?) {{\n"
@@ -218,8 +361,15 @@ def swift_action_case(name, declaration, enum_lookup):
                 f"        case \"{name}\":\n            self = .{declared}")
     labels, extractors = [], []
     for parameter, descriptor in sorted(parameters.items()):
-        kind, optional, _ = parse_descriptor(descriptor)
+        kind, optional, element = parse_descriptor(descriptor)
         label = escape_swift(parameter)
+        shape = Shape(descriptor)
+        if kind == "record" or (kind == "array" and element not in SWIFT_TYPES):
+            key = ("parameter", name, parameter)
+            labels.append(f"{label}: {swift_type(shape, key, enum_lookup)}")
+            source = f"action.parameters[\"{parameter}\"] ?? .null"
+            extractors.append(f"{label}: {swift_read(shape, key, enum_lookup, source)}")
+            continue
         if kind == "enum":
             enum_type = enum_lookup[("parameter", name, parameter)]
             if optional:
@@ -259,7 +409,7 @@ def swift_action_case(name, declaration, enum_lookup):
 
 def generate_swift(vocabulary, prefix):
     name, version = vocabulary["name"], vocabulary["version"]
-    enums, enum_lookup = collect_enums(vocabulary, prefix)
+    enums, records, enum_lookup = collect_sites(vocabulary, prefix)
     lines = [
         f"// Generated from vocabulary \"{name}\" {version} by generate_bindings.py.",
         "// Do not edit; regenerate when the vocabulary changes.",
@@ -274,6 +424,9 @@ def generate_swift(vocabulary, prefix):
             lines.append(f"    case {member}")
         lines.append("}")
         lines.append("")
+    for record_type, fields, doc, key in records:
+        lines.append(swift_record(record_type, fields, doc, key, enum_lookup))
+        lines.append("")
     for component in sorted(vocabulary.get("components", {})):
         declaration = vocabulary["components"][component]
         lines.append(f"/// Typed view of a resolved `{component}` node."
@@ -284,11 +437,13 @@ def generate_swift(vocabulary, prefix):
         for prop in sorted(declaration.get("properties", {})):
             lines.append(swift_property(
                 prop, declaration["properties"][prop],
-                enum_lookup.get(("property", component, prop))))
+                enum_lookup.get(("property", component, prop)),
+                ("property", component, prop), enum_lookup))
         for event in sorted(declaration.get("events", {})):
             lines.append(swift_emitter(
                 event, declaration["events"][event],
-                enum_lookup.get(("event", component, event))))
+                enum_lookup.get(("event", component, event)),
+                ("event", component, event), enum_lookup))
         lines.append("}")
         lines.append("")
 
@@ -336,9 +491,94 @@ def generate_swift(vocabulary, prefix):
 # ---------------------------------------------------------------------------
 
 
-def kotlin_property(name, descriptor, enum_type=None):
+def kotlin_type(shape, key, lookup):
+    base = {"bool": "Boolean", "int": "Long", "double": "Double", "string": "String"}.get(shape.kind)
+    if shape.kind in ("enum", "record"):
+        base = lookup[key]
+    elif shape.kind == "array":
+        base = "List<" + kotlin_type(shape.element, key + ("item",), lookup) + ">"
+    return base + ("?" if shape.optional else "")
+
+
+def kotlin_read(shape, key, lookup, expr, depth=0):
+    """An expression of `kotlin_type` reading the MilanoValue `expr`."""
+    if shape.kind in KOTLIN_ACCESSORS:
+        return f"{postfix(expr)}.{KOTLIN_ACCESSORS[shape.kind]}" + ("" if shape.optional else "!!")
+    if shape.kind == "enum":
+        enum_type = lookup[key]
+        if shape.optional:
+            return f"{postfix(expr)}.stringOrNull?.let {{ {enum_type}.from(it) }}"
+        return f"{enum_type}.from({postfix(expr)}.stringOrNull!!)"
+    if shape.kind == "record":
+        record_type = lookup[key]
+        if shape.optional:
+            return f"{postfix(expr)}.takeUnless {{ it.isNull }}?.let {{ {record_type}(it) }}"
+        return f"{record_type}({expr})"
+    item = element_name(depth)
+    inner = kotlin_read(shape.element, key + ("item",), lookup, item, depth + 1)
+    access = f"{postfix(expr)}.arrayOrNull" + ("?" if shape.optional else "!!")
+    return f"{access}.map {{ {item} -> {inner} }}"
+
+
+def kotlin_write(shape, key, lookup, expr, depth=0):
+    """A MilanoValue expression wrapping the typed `expr`."""
+    if shape.kind in KOTLIN_WRAP:
+        if shape.optional:
+            return f"{expr}?.let {{ {KOTLIN_WRAP[shape.kind]}(it) }} ?: MilanoValue.Null"
+        return f"{KOTLIN_WRAP[shape.kind]}({expr})"
+    if shape.kind == "enum":
+        if shape.optional:
+            return f"{expr}?.let {{ MilanoValue.StringValue(it.value) }} ?: MilanoValue.Null"
+        return f"MilanoValue.StringValue({expr}.value)"
+    if shape.kind == "record":
+        return f"{expr}?.value ?: MilanoValue.Null" if shape.optional else f"{expr}.value"
+    item = element_name(depth)
+    inner = kotlin_write(shape.element, key + ("item",), lookup, item, depth + 1)
+    if shape.optional:
+        return f"{expr}?.let {{ MilanoValue.ArrayValue(it.map {{ {item} -> {inner} }}) }} ?: MilanoValue.Null"
+    return f"MilanoValue.ArrayValue({expr}.map {{ {item} -> {inner} }})"
+
+
+def kotlin_record(type_name, fields, doc, key, lookup):
+    lines = [f"/** {doc} Non-null accessors are gate-guaranteed. */",
+             f"class {type_name}(",
+             "    val value: MilanoValue,",
+             ") {"]
+    for name, shape in fields:
+        read = kotlin_read(shape, key + ("field", name), lookup,
+                           f"value.recordOrNull?.get(\"{name}\") ?: MilanoValue.Null")
+        lines.append(f"    val {escape_kotlin(name)}: {kotlin_type(shape, key + ('field', name), lookup)}"
+                     f" get() = {read}")
+    if fields:
+        lines.append("")
+        lines.append("    companion object {")
+        lines.append("        fun of(")
+        for name, shape in fields:
+            lines.append(f"            {escape_kotlin(name)}: "
+                         f"{kotlin_type(shape, key + ('field', name), lookup)},")
+        lines.append(f"        ): {type_name} =")
+        lines.append(f"            {type_name}(")
+        lines.append("                MilanoValue.RecordValue(")
+        lines.append("                    mapOf(")
+        for name, shape in fields:
+            write = kotlin_write(shape, key + ("field", name), lookup, escape_kotlin(name))
+            lines.append(f"                        \"{name}\" to ({write}),")
+        lines.append("                    ),")
+        lines.append("                ),")
+        lines.append("            )")
+        lines.append("    }")
+    lines.append("}")
+    return "\n".join(lines)
+
+
+def kotlin_property(name, descriptor, enum_type=None, key=None, lookup=None):
     kind, optional, element = parse_descriptor(descriptor)
     declared = escape_kotlin(name)
+    shape = Shape(descriptor)
+    if kind == "record" or (kind == "array" and element not in KOTLIN_TYPES):
+        read = kotlin_read(shape, key, lookup, f"node.property(\"{name}\")")
+        return (f"    val {declared}: {kotlin_type(shape, key, lookup)} get() =\n"
+                f"        {read}")
     if kind == "enum":
         if optional:
             return (f"    val {declared}: {enum_type}? get() =\n"
@@ -367,11 +607,15 @@ def kotlin_property(name, descriptor, enum_type=None):
             f"    val {declared}: MilanoValue get() = node.property(\"{name}\")")
 
 
-def kotlin_emitter(event, payload_descriptor, enum_type=None):
+def kotlin_emitter(event, payload_descriptor, enum_type=None, key=None, lookup=None):
     method = f"emit{capitalize(event)}"
     if payload_descriptor is None:
         return f"    fun {method}() = node.emit(\"{event}\")"
-    kind, optional, _ = parse_descriptor(payload_descriptor)
+    kind, optional, element = parse_descriptor(payload_descriptor)
+    shape = Shape(payload_descriptor)
+    if kind == "record" or (kind == "array" and element not in KOTLIN_TYPES):
+        return (f"    fun {method}(payload: {kotlin_type(shape, key, lookup)}) ="
+                f" node.emit(\"{event}\", {kotlin_write(shape, key, lookup, 'payload')})")
     if kind == "enum":
         if optional:
             return (f"    fun {method}(payload: {enum_type}?) ="
@@ -404,7 +648,14 @@ def kotlin_action_entry(name, declaration, action_type, enum_lookup):
     fields, extractors = [], []
     for parameter, descriptor in sorted(parameters.items()):
         field = escape_kotlin(parameter)
-        kind, optional, _ = parse_descriptor(descriptor)
+        kind, optional, element = parse_descriptor(descriptor)
+        shape = Shape(descriptor)
+        if kind == "record" or (kind == "array" and element not in KOTLIN_TYPES):
+            key = ("parameter", name, parameter)
+            fields.append(f"val {field}: {kotlin_type(shape, key, enum_lookup)}")
+            source = f"action.parameters[\"{parameter}\"] ?: MilanoValue.Null"
+            extractors.append(f"{field} = {kotlin_read(shape, key, enum_lookup, source)}")
+            continue
         if kind == "enum":
             enum_type = enum_lookup[("parameter", name, parameter)]
             if optional:
@@ -460,7 +711,7 @@ def generate_kotlin(vocabulary, package, prefix):
         "import dev.getmilano.MilanoValue",
         "",
     ]
-    enums, enum_lookup = collect_enums(vocabulary, prefix)
+    enums, records, enum_lookup = collect_sites(vocabulary, prefix)
     for enum_type, enum_members, doc in enums:
         lines.append(f"/** {doc} Gate-guaranteed: decoding never fails. */")
         lines.append(f"enum class {enum_type}(")
@@ -476,17 +727,22 @@ def generate_kotlin(vocabulary, package, prefix):
         lines.append("    }")
         lines.append("}")
         lines.append("")
+    for record_type, fields, doc, key in records:
+        lines.append(kotlin_record(record_type, fields, doc, key, enum_lookup))
+        lines.append("")
     for component in sorted(vocabulary.get("components", {})):
         declaration = vocabulary["components"][component]
         lines.append(f"/** Typed view of a resolved [{component}] node;"
                      " non-null accessors are gate-guaranteed. */")
         members = [kotlin_property(
                        prop, declaration["properties"][prop],
-                       enum_lookup.get(("property", component, prop)))
+                       enum_lookup.get(("property", component, prop)),
+                       ("property", component, prop), enum_lookup)
                    for prop in sorted(declaration.get("properties", {}))]
         members += [kotlin_emitter(
                         event, declaration["events"][event],
-                        enum_lookup.get(("event", component, event)))
+                        enum_lookup.get(("event", component, event)),
+                        ("event", component, event), enum_lookup)
                     for event in sorted(declaration.get("events", {}))]
         lines.append(f"class {prefix}{component}Node(")
         lines.append("    val node: MilanoNode,")
@@ -549,11 +805,103 @@ def lower_first(name):
     return name[0].lower() + name[1:]
 
 
-def ts_property(name, descriptor, enum_type=None):
+def ts_type(shape, key, lookup):
+    base = {"bool": "boolean", "int": "bigint", "double": "number", "string": "string"}.get(shape.kind)
+    if shape.kind in ("enum", "record"):
+        base = lookup[key]
+    elif shape.kind == "array":
+        base = "readonly " + ts_type(shape.element, key + ("item",), lookup) + "[]"
+        if shape.element.optional or shape.element.kind == "array":
+            base = "readonly (" + ts_type(shape.element, key + ("item",), lookup) + ")[]"
+    return base + (" | null" if shape.optional else "")
+
+
+def ts_read(shape, key, lookup, expr, depth=0):
+    """An expression of `ts_type` reading the MilanoValue `expr`."""
+    if shape.kind in TS_ACCESSORS:
+        if shape.optional:
+            return f"{postfix(expr)}.{TS_ACCESSORS[shape.kind]}"
+        return f"({postfix(expr)}.{TS_ACCESSORS[shape.kind]} as {TS_TYPES[shape.kind]})"
+    if shape.kind == "enum":
+        return f"({postfix(expr)}.stringValue as {ts_type(shape, key, lookup)})"
+    if shape.kind == "record":
+        record_type = lookup[key]
+        if shape.optional:
+            return f"({postfix(expr)}.isNull ? null : new {record_type}({expr}))"
+        return f"new {record_type}({expr})"
+    item = element_name(depth)
+    inner = ts_read(shape.element, key + ("item",), lookup, item, depth + 1)
+    if shape.optional:
+        return f"({postfix(expr)}.arrayValue?.map(({item}) => {inner}) ?? null)"
+    return f"({postfix(expr)}.arrayValue as readonly MilanoValue[]).map(({item}) => {inner})"
+
+
+def ts_write(shape, key, lookup, expr, depth=0):
+    """A MilanoValue expression wrapping the typed `expr`."""
+    if shape.kind in TS_WRAP:
+        if shape.optional:
+            return f"{expr} === null ? MilanoValue.null : {TS_WRAP[shape.kind]}({expr})"
+        return f"{TS_WRAP[shape.kind]}({expr})"
+    if shape.kind == "enum":
+        if shape.optional:
+            return f"{expr} === null ? MilanoValue.null : MilanoValue.string({expr})"
+        return f"MilanoValue.string({expr})"
+    if shape.kind == "record":
+        return f"{expr} === null ? MilanoValue.null : {expr}.value" if shape.optional else f"{expr}.value"
+    item = element_name(depth)
+    inner = ts_write(shape.element, key + ("item",), lookup, item, depth + 1)
+    if shape.optional:
+        return f"{expr} === null ? MilanoValue.null : MilanoValue.array({expr}.map(({item}) => {inner}))"
+    return f"MilanoValue.array({expr}.map(({item}) => {inner}))"
+
+
+def ts_record(type_name, fields, doc, key, lookup):
+    lines = [f"/** {doc} Non-optional accessors are gate-guaranteed. */",
+             f"export class {type_name} {{",
+             "  readonly value: MilanoValue;",
+             "",
+             "  constructor(value: MilanoValue) {",
+             "    this.value = value;",
+             "  }"]
+    if fields:
+        parameters = [f"readonly {name}: {ts_type(shape, key + ('field', name), lookup)}"
+                      for name, shape in fields]
+        signature = f"  static of(fields: {{ {'; '.join(parameters)} }}): {type_name} {{"
+        lines.append("")
+        if len(signature) <= 100:
+            lines.append(signature)
+        else:
+            lines.append("  static of(fields: {")
+            for parameter in parameters:
+                lines.append(f"    {parameter};")
+            lines.append(f"  }}): {type_name} {{")
+        lines.append(f"    return new {type_name}(MilanoValue.record({{")
+        for name, shape in fields:
+            lines.append(f"      {name}: {ts_write(shape, key + ('field', name), lookup, f'fields.{name}')},")
+        lines.append("    }));")
+        lines.append("  }")
+    for name, shape in fields:
+        lines.append("")
+        read = ts_read(shape, key + ("field", name), lookup, f'this.field("{name}")')
+        lines.append(f"  get {name}(): {ts_type(shape, key + ('field', name), lookup)} {{ return {read}; }}")
+    lines.append("")
+    lines.append("  private field(name: string): MilanoValue {")
+    lines.append("    return this.value.recordValue?.[name] ?? MilanoValue.null;")
+    lines.append("  }")
+    lines.append("}")
+    return "\n".join(lines)
+
+
+def ts_property(name, descriptor, enum_type=None, key=None, lookup=None):
     """A getter. Non-optional reads are gate-guaranteed, so they assert the
     type rather than defaulting: a fallback would hide a contract break."""
     kind, optional, element = parse_descriptor(descriptor)
     read = f'this.node.property("{name}")'
+    shape = Shape(descriptor)
+    if kind == "record" or (kind == "array" and element not in TS_TYPES):
+        return (f"  get {name}(): {ts_type(shape, key, lookup)} {{\n"
+                f"    return {ts_read(shape, key, lookup, read)};\n"
+                f"  }}")
     if kind == "enum":
         suffix = " | null" if optional else ""
         return (f"  get {name}(): {enum_type}{suffix} {{\n"
@@ -583,11 +931,16 @@ def ts_property(name, descriptor, enum_type=None):
             f"  get {name}(): MilanoValue {{ return {read}; }}")
 
 
-def ts_emitter(event, payload_descriptor, enum_type=None):
+def ts_emitter(event, payload_descriptor, enum_type=None, key=None, lookup=None):
     method = f"emit{capitalize(event)}"
     if payload_descriptor is None:
         return f'  {method}(): void {{ this.node.emit("{event}"); }}'
-    kind, optional, _ = parse_descriptor(payload_descriptor)
+    kind, optional, element = parse_descriptor(payload_descriptor)
+    shape = Shape(payload_descriptor)
+    if kind == "record" or (kind == "array" and element not in TS_TYPES):
+        return (f"  {method}(payload: {ts_type(shape, key, lookup)}): void {{\n"
+                f'    this.node.emit("{event}", {ts_write(shape, key, lookup, "payload")});\n'
+                f"  }}")
     if kind == "enum":
         suffix = " | null" if optional else ""
         wrapped = (f"payload === null ? MilanoValue.null : MilanoValue.string(payload)"
@@ -615,8 +968,14 @@ def ts_action_member(name, declaration, enum_lookup):
     doc = f"  /** {note} */\n" if note else ""
     fields, reads = [], []
     for parameter, descriptor in sorted(parameters.items()):
-        kind, optional, _ = parse_descriptor(descriptor)
+        kind, optional, element = parse_descriptor(descriptor)
         read = f'action.parameters["{parameter}"]'
+        shape = Shape(descriptor)
+        if kind == "record" or (kind == "array" and element not in TS_TYPES):
+            key = ("parameter", name, parameter)
+            fields.append(f"readonly {parameter}: {ts_type(shape, key, enum_lookup)}")
+            reads.append(f"{parameter}: {ts_read(shape, key, enum_lookup, f'{read} ?? MilanoValue.null')}")
+            continue
         if kind == "enum":
             enum_type = enum_lookup[("parameter", name, parameter)]
             suffix = " | null" if optional else ""
@@ -645,7 +1004,7 @@ def ts_action_member(name, declaration, enum_lookup):
 
 def generate_ts(vocabulary, prefix, core_import):
     name, version = vocabulary["name"], vocabulary["version"]
-    enums, enum_lookup = collect_enums(vocabulary, prefix)
+    enums, records, enum_lookup = collect_sites(vocabulary, prefix)
     lines = [
         f'// Generated from vocabulary "{name}" {version} by generate_bindings.py.',
         "// Do not edit; regenerate when the vocabulary changes.",
@@ -669,6 +1028,9 @@ def generate_ts(vocabulary, prefix, core_import):
         members = " | ".join(f'"{member}"' for member in enum_members)
         lines.append(f"export type {enum_type} = {members};")
         lines.append("")
+    for record_type, fields, doc, key in records:
+        lines.append(ts_record(record_type, fields, doc, key, enum_lookup))
+        lines.append("")
 
     for component in sorted(vocabulary.get("components", {})):
         declaration = vocabulary["components"][component]
@@ -684,12 +1046,14 @@ def generate_ts(vocabulary, prefix, core_import):
             lines.append("")
             lines.append(ts_property(
                 prop, declaration["properties"][prop],
-                enum_lookup.get(("property", component, prop))))
+                enum_lookup.get(("property", component, prop)),
+                ("property", component, prop), enum_lookup))
         for event in sorted(declaration.get("events", {})):
             lines.append("")
             lines.append(ts_emitter(
                 event, declaration["events"][event],
-                enum_lookup.get(("event", component, event))))
+                enum_lookup.get(("event", component, event)),
+                ("event", component, event), enum_lookup))
         lines.append("}")
         lines.append("")
 

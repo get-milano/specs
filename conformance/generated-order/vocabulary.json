@@ -1,0 +1,37 @@
+{
+  "milano": "1.0.0",
+  "name": "generated_order",
+  "version": "1.0.0",
+  "components": {
+    "Column": {
+      "children": true
+    },
+    "Text": {
+      "properties": {
+        "text": "string"
+      }
+    },
+    "Button": {
+      "properties": {
+        "label": "string",
+        "enabled": "bool"
+      },
+      "events": {
+        "tap": null
+      }
+    },
+    "Meta": {
+      "properties": {
+        "key": "string"
+      },
+      "strict": true
+    }
+  },
+  "actions": {
+    "openUrl": {
+      "parameters": {
+        "url": "string"
+      }
+    }
+  }
+}

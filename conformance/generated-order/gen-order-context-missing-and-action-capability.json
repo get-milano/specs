@@ -1,0 +1,47 @@
+{
+  "name": "gen-order-context-missing-and-action-capability",
+  "description": "Generated (order): context-missing beside action-capability on node a; the gate's order decides which error wins",
+  "document": {
+    "version": "1.0.0",
+    "root": {
+      "type": "Column",
+      "id": "root",
+      "children": [
+        {
+          "type": "Button",
+          "id": "a",
+          "properties": {
+            "label": "A",
+            "enabled": true
+          },
+          "on": {
+            "tap": [
+              {
+                "action": "secret"
+              }
+            ]
+          }
+        },
+        {
+          "type": "Button",
+          "id": "b",
+          "properties": {
+            "label": "B",
+            "enabled": true
+          }
+        }
+      ]
+    },
+    "context": {
+      "who": "string"
+    }
+  },
+  "expect": {
+    "error": {
+      "type": "SchemaViolation",
+      "rule": "action-capability",
+      "node": "a",
+      "expected": "granted action"
+    }
+  }
+}

@@ -12,6 +12,7 @@ of vector expectations lives in tools/reference_check.py.
 """
 
 import json
+import re
 import sys
 from pathlib import Path
 
@@ -25,6 +26,53 @@ except ImportError:
     sys.exit(2)
 
 ROOT = Path(__file__).resolve().parent.parent
+
+
+RUNTIMES = ("swiftui", "compose", "typescript")
+
+
+def engine_pinned_problems(root):
+    """The engine-pinned registry (conformance suite spec, Harness):
+    statements no vector can express, pinned by a named test in every
+    runtime they apply to. Ids are unique kebab-case, every spec named
+    exists and carries the named section as a heading, and `applies`
+    names known runtimes only. A missing registry is not a problem: a
+    fixture repository may have none."""
+    path = root / "conformance" / "engine-pinned.json"
+    if not path.exists():
+        return []
+    try:
+        registry = json.loads(path.read_text(encoding="utf-8"))
+    except ValueError as error:
+        return [f"conformance/engine-pinned.json: {error}"]
+    statements = registry.get("statements") if isinstance(registry, dict) else None
+    if not isinstance(statements, list) or not statements:
+        return ["conformance/engine-pinned.json: no statements"]
+    problems, seen = [], set()
+    for index, entry in enumerate(statements):
+        where = f"conformance/engine-pinned.json: statements[{index}]"
+        if not isinstance(entry, dict):
+            problems.append(f"{where}: not an object")
+            continue
+        ident = entry.get("id")
+        if not isinstance(ident, str) or not re.fullmatch(r"[a-z0-9]+(-[a-z0-9]+)*", ident):
+            problems.append(f"{where}: id must be kebab-case")
+        elif ident in seen:
+            problems.append(f"{where}: duplicate id {ident}")
+        seen.add(ident)
+        spec = entry.get("spec")
+        if not isinstance(spec, str) or not (root / spec).is_file():
+            problems.append(f"{where}: spec {spec!r} is not a file in the repository")
+        elif not isinstance(entry.get("section"), str) or \
+                f"## {entry['section']}" not in (root / spec).read_text(encoding="utf-8"):
+            problems.append(f"{where}: section {entry.get('section')!r} is not a heading in {spec}")
+        if not isinstance(entry.get("statement"), str) or not entry["statement"].strip():
+            problems.append(f"{where}: statement must be non-empty")
+        applies = entry.get("applies")
+        if not isinstance(applies, list) or not applies or \
+                any(runtime not in RUNTIMES for runtime in applies):
+            problems.append(f"{where}: applies must name runtimes from {', '.join(RUNTIMES)}")
+    return problems
 
 
 def main():
@@ -75,6 +123,11 @@ def main():
             dashes += 1
             problems.append(f"{path.relative_to(ROOT)}: contains an em dash")
     print(f"markdown: {markdown - dashes}/{markdown} files free of em dashes")
+
+    pinned = engine_pinned_problems(ROOT)
+    problems.extend(pinned)
+    if (ROOT / "conformance" / "engine-pinned.json").exists():
+        print(f"engine-pinned registry: {'INVALID' if pinned else 'valid'}")
 
     if problems:
         print()

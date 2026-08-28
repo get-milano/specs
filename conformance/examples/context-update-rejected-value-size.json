@@ -1,0 +1,56 @@
+{
+  "name": "context-update-rejected-value-size",
+  "description": "A context update carrying a value past the value size limit is rejected whole and reported with the key, the limit, and the size found; the previous values stay, and a later update within the limit applies",
+  "config": {
+    "limits": {
+      "maxValueSize": 8
+    }
+  },
+  "document": {
+    "version": "1.0.0",
+    "context": {
+      "who": "string"
+    },
+    "root": {
+      "type": "Text",
+      "id": "t",
+      "properties": {
+        "text": {
+          "$expr": "context.who"
+        }
+      }
+    }
+  },
+  "context": {
+    "who": "Ada"
+  },
+  "steps": [
+    {
+      "contextUpdate": {
+        "who": "a very long name"
+      }
+    },
+    {
+      "contextUpdate": {
+        "who": "Grace"
+      }
+    }
+  ],
+  "expect": {
+    "view": {
+      "type": "Text",
+      "reference": "t",
+      "properties": {
+        "text": "Grace"
+      }
+    },
+    "occurrences": [
+      {
+        "kind": "rejectedContextUpdate",
+        "name": "who",
+        "expected": "8",
+        "found": "16"
+      }
+    ]
+  }
+}

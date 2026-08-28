@@ -1,0 +1,46 @@
+{
+  "name": "gen-order-action-encoding-then-undeclared-property",
+  "description": "Generated (order): action-encoding on node a, then undeclared-property on node b; the first defect in document order wins",
+  "document": {
+    "version": "1.0.0",
+    "root": {
+      "type": "Column",
+      "id": "root",
+      "children": [
+        {
+          "type": "Button",
+          "id": "a",
+          "properties": {
+            "label": "A",
+            "enabled": true
+          },
+          "on": {
+            "tap": [
+              {
+                "action": "$set",
+                "key": "undeclared",
+                "value": 1
+              }
+            ]
+          }
+        },
+        {
+          "type": "Meta",
+          "id": "b",
+          "properties": {
+            "key": "k",
+            "extra": 1
+          }
+        }
+      ]
+    }
+  },
+  "expect": {
+    "error": {
+      "type": "SchemaViolation",
+      "rule": "action-encoding",
+      "node": "a",
+      "expected": "declared state key"
+    }
+  }
+}

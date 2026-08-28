@@ -1,0 +1,55 @@
+{
+  "name": "gen-order-no-handler-then-action-capability",
+  "description": "Generated (order): no-handler on node a, then action-capability on node b; the first defect in document order wins",
+  "config": {
+    "actionHandler": false
+  },
+  "document": {
+    "version": "1.0.0",
+    "root": {
+      "type": "Column",
+      "id": "root",
+      "children": [
+        {
+          "type": "Button",
+          "id": "a",
+          "properties": {
+            "label": "A",
+            "enabled": true
+          },
+          "on": {
+            "tap": [
+              {
+                "action": "openUrl",
+                "url": "https://example.com"
+              }
+            ]
+          }
+        },
+        {
+          "type": "Button",
+          "id": "b",
+          "properties": {
+            "label": "B",
+            "enabled": true
+          },
+          "on": {
+            "tap": [
+              {
+                "action": "secret"
+              }
+            ]
+          }
+        }
+      ]
+    }
+  },
+  "expect": {
+    "error": {
+      "type": "SchemaViolation",
+      "rule": "action-capability",
+      "node": "b",
+      "expected": "granted action"
+    }
+  }
+}

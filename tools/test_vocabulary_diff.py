@@ -126,9 +126,10 @@ class Properties(unittest.TestCase):
 
     def test_changing_optionality_is_breaking_in_both_directions(self):
         required, optional = self.component({"a": "string"}), self.component({"a": "string?"})
-        # Both directions retype the property, and the tool does not try to
-        # reason about which documents survive: the spec's rule is that a
-        # type change needs a major bump.
+        # Optionality is part of the type (vocabulary schema spec,
+        # Evolution): loosening breaks renderers and generated bindings
+        # that read a non-optional declaration as a promise of presence,
+        # tightening breaks every document that omits the property.
         self.assertEqual(verdicts(required, optional), ["BREAKING"])
         self.assertEqual(verdicts(optional, required), ["BREAKING"])
 
@@ -206,13 +207,37 @@ class Actions(unittest.TestCase):
         retyped = vocabulary(actions={"a": {"parameters": {"x": "int"}}})
         self.assertEqual(verdicts(old, retyped), ["BREAKING"])
 
-    def test_a_result_declaration_is_not_compared(self):
-        # Known limitation, pinned so a future change to it is deliberate:
-        # only parameters are diffed, so adding or changing `result` reads
-        # as no change at all.
+    def test_adding_a_result_is_additive(self):
+        # No document could bind `result` for this action before, so every
+        # existing document keeps building; only handlers change.
         old = vocabulary(actions={"a": {}})
         new = vocabulary(actions={"a": {"result": "string"}})
-        self.assertEqual(vd.diff(old, new), [])
+        self.assertEqual(verdicts(old, new), ["ADDITIVE"])
+        self.assertIn("action a result added", messages(old, new))
+
+    def test_removing_or_retyping_a_result_is_breaking(self):
+        # Every document reading `result` in that action's onSuccess was
+        # typed against the declaration; the evolution rules make a type
+        # change a major bump. Until this was compared, both read as no
+        # change at all.
+        old = vocabulary(actions={"a": {"result": "string"}})
+        self.assertEqual(verdicts(old, vocabulary(actions={"a": {}})), ["BREAKING"])
+        self.assertIn("action a result removed",
+                      messages(old, vocabulary(actions={"a": {}})))
+        retyped = vocabulary(actions={"a": {"result": "int"}})
+        self.assertEqual(verdicts(old, retyped), ["BREAKING"])
+        self.assertIn("type changed", messages(old, retyped)[0])
+
+    def test_a_result_enum_gaining_members_is_additive(self):
+        old = vocabulary(actions={"a": {"result": {"enum": ["one"]}}})
+        new = vocabulary(actions={"a": {"result": {"enum": ["one", "two"]}}})
+        self.assertEqual(verdicts(old, new), ["ADDITIVE"])
+        self.assertIn("action a result enum gained: two", messages(old, new))
+
+    def test_an_unchanged_result_is_not_a_change(self):
+        artifact = vocabulary(actions={"a": {"result": {"enum": ["b", "a"]}}})
+        reordered = vocabulary(actions={"a": {"result": {"enum": ["a", "b"]}}})
+        self.assertEqual(vd.diff(artifact, reordered), [])
 
 
 class Combinations(unittest.TestCase):

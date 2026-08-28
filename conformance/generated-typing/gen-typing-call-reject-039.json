@@ -1,0 +1,33 @@
+{
+  "name": "gen-typing-call-reject-039",
+  "description": "Generated (exhaustive): int(state.sOpt) in a string position is rejected at the gate",
+  "document": {
+    "version": "1.0.0",
+    "state": {
+      "sOpt": "string?"
+    },
+    "root": {
+      "type": "Column",
+      "id": "root",
+      "children": [
+        {
+          "type": "Probe",
+          "id": "p",
+          "properties": {
+            "s": {
+              "$expr": "int(state.sOpt)"
+            }
+          }
+        }
+      ]
+    }
+  },
+  "expect": {
+    "error": {
+      "type": "SchemaViolation",
+      "rule": "expression",
+      "node": "p",
+      "expected": "string"
+    }
+  }
+}

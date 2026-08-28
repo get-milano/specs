@@ -2,8 +2,8 @@
 """Tests for tools/reference_check.py.
 
 The checker is the oracle: every vector's expectation was produced or
-confirmed by it, the generated numeric suite is written from it, and both
-engines are measured against the vectors it blesses. So an error here does
+confirmed by it, the generated numeric suite is written from it, and every
+engine is measured against the vectors it blesses. So an error here does
 not fail loudly, it becomes the definition of correct. Nothing else in the
 repository can catch that, because everything else agrees with it by
 construction.
@@ -161,17 +161,29 @@ class NumericSemantics(GateHarness):
         # and tell the host it happened.
         self.assertEqual(self.value("str(1 / 0)"), "0")
         self.assertEqual(self.occurrences("str(1 / 0)"),
-                         [{"kind": "divisionByZero", "node": "r"}])
+                         [{"kind": "divisionByZero", "node": "r", "name": "text"}])
 
     def test_integer_modulo_by_zero_yields_zero_and_is_reported(self):
         self.assertEqual(self.value("str(7 % 0)"), "0")
         self.assertEqual(self.occurrences("str(7 % 0)"),
-                         [{"kind": "divisionByZero", "node": "r"}])
+                         [{"kind": "divisionByZero", "node": "r", "name": "text"}])
 
     def test_double_division_by_zero_follows_ieee_754(self):
         self.assertEqual(self.value("str(0.0 / 0.0)"), "nan")
         self.assertEqual(self.value("str(1.0 / 0.0)"), "inf")
         self.assertEqual(self.value("str((0.0 - 1.0) / 0.0)"), "-inf")
+
+    def test_double_modulo_with_non_finite_operands_follows_ieee_754(self):
+        # An infinite dividend or a zero divisor is NaN; an infinite divisor
+        # leaves the dividend alone. math.fmod raises on the first two, and
+        # the checker used to crash where every engine answers nan.
+        self.assertEqual(self.value("str((1.0 / 0.0) % 2.0)"), "nan")
+        self.assertEqual(self.value("str(((0.0 - 1.0) / 0.0) % 2.0)"), "nan")
+        self.assertEqual(self.value("str(2.0 % 0.0)"), "nan")
+        self.assertEqual(self.value("str((0.0 / 0.0) % 2.0)"), "nan")
+        self.assertEqual(self.value("str(2.0 % (1.0 / 0.0))"), "2.0")
+        self.assertEqual(self.value("str((0.0 - 2.0) % (1.0 / 0.0))"), "-2.0")
+        self.assertEqual(self.occurrences("str((1.0 / 0.0) % 2.0)"), [])
 
     def test_double_division_by_zero_is_not_reported(self):
         # Only the integer case is an occurrence: the double case has an
@@ -193,12 +205,12 @@ class NumericSemantics(GateHarness):
         self.assertEqual(self.value("str(int(9223372036854775807.0 * 2.0))"),
                          "9223372036854775807")
         self.assertEqual(self.occurrences("str(int(9223372036854775807.0 * 2.0))"),
-                         [{"kind": "saturation", "node": "r"}])
+                         [{"kind": "saturation", "node": "r", "name": "text"}])
 
     def test_int_of_nan_is_zero_and_reported_as_saturation(self):
         self.assertEqual(self.value("str(int(0.0 / 0.0))"), "0")
         self.assertEqual(self.occurrences("str(int(0.0 / 0.0))"),
-                         [{"kind": "saturation", "node": "r"}])
+                         [{"kind": "saturation", "node": "r", "name": "text"}])
 
     def test_double_conversion_rounds_at_the_precision_cliff(self):
         # 2^53 + 1 has no binary64 representation; it rounds to 2^53.
@@ -268,6 +280,19 @@ class TypeChecking(GateHarness):
         doc = document("str(state.n ?? 5)", state={"n": "int"})
         self.assertEqual(self.refusal(doc)["rule"], "expression")
 
+    def test_null_compares_only_to_an_optional_operand(self):
+        # Spec 03: optionals are comparable to null. A non-optional beside
+        # null, or null beside null, could only ever be constant and is
+        # refused. Every engine did; the checker let the null literal's own
+        # optionality stand in for the other operand's.
+        doc = document("str(state.maybe == null)", state={"maybe": "string?"})
+        resolved, _ = self.build(doc, state={"maybe": None})
+        self.assertEqual(resolved["properties"]["text"], "true")
+        for expression in ("state.n == null", "null == state.n", "null == null", "'x' != null"):
+            with self.subTest(expression=expression):
+                doc = document(f"str({expression})", state={"n": "string"})
+                self.assertEqual(self.refusal(doc)["rule"], "expression")
+
     def test_enum_comparison_against_a_non_member_is_refused(self):
         doc = document("str(state.role == 'nope')",
                        state={"role": {"enum": ["a", "b"]}})
@@ -278,6 +303,47 @@ class TypeChecking(GateHarness):
                        state={"role": {"enum": ["a", "b"]}})
         resolved, _ = self.build(doc, state={"role": "a"})
         self.assertEqual(resolved["properties"]["text"], "true")
+
+    def test_if_branches_must_agree_on_optionality(self):
+        # Spec 03: exactly the same T, optionality included. The null
+        # literal is the only way an if makes an optional; a T? branch is
+        # resolved with ?? before it can sit beside a T one. Swift and
+        # Kotlin always refused this; the checker used to widen instead.
+        doc = document("if(true, state.maybe, 'x') ?? ''",
+                       state={"maybe": "string?"})
+        self.assertEqual(self.refusal(doc)["rule"], "expression")
+        resolved = document("if(true, state.maybe ?? 'y', 'x')",
+                            state={"maybe": "string?"})
+        self.assertEqual(
+            self.build(resolved, state={"maybe": None})[0]["properties"]["text"],
+            "y")
+
+    def test_an_int_expression_is_promoted_where_a_double_is_declared(self):
+        # Spec 03: accepted at every declared position and promoted at
+        # evaluation, as an int literal or data value is. Every engine did
+        # this; the checker refused it.
+        vocabulary = {
+            "milano": "1.0.0", "name": "gauge", "version": "1.0.0",
+            "components": {"Gauge": {"properties": {"ratio": "double"}}},
+        }
+        doc = {"version": "1.0.0", "state": {"count": "int"},
+               "root": {"type": "Gauge", "id": "g",
+                        "properties": {"ratio": {"$expr": "state.count * 2"}}}}
+        resolved, _ = self.build(doc, state={"count": 3}, vocabulary=vocabulary)
+        ratio = resolved["properties"]["ratio"]
+        self.assertIsInstance(ratio, float)
+        self.assertEqual(ratio, 6.0)
+
+    def test_a_double_expression_is_refused_where_an_int_is_declared(self):
+        vocabulary = {
+            "milano": "1.0.0", "name": "gauge", "version": "1.0.0",
+            "components": {"Gauge": {"properties": {"count": "int"}}},
+        }
+        doc = {"version": "1.0.0",
+               "root": {"type": "Gauge", "id": "g",
+                        "properties": {"count": {"$expr": "1.5 * 2.0"}}}}
+        self.assertEqual(self.refusal(doc, vocabulary=vocabulary)["rule"],
+                         "expression")
 
 
 class GateValidation(GateHarness):
@@ -299,18 +365,27 @@ class GateValidation(GateHarness):
             "type": "Column", "children": [{"type": "Nope", "id": "u"}]}}
         resolved, occurrences = self.build(doc, policy="skip")
         self.assertNotIn("children", resolved)
-        self.assertEqual(occurrences, [{"kind": "unknownTypeSkipped", "node": "u"}])
+        self.assertEqual(occurrences, [{"kind": "unknownTypeSkipped", "node": "u", "name": "Nope"}])
 
     def test_unknown_component_type_becomes_a_placeholder_under_that_policy(self):
         doc = {"version": "1.0.0", "root": {
             "type": "Column", "children": [{"type": "Nope", "id": "u"}]}}
         resolved, occurrences = self.build(doc, policy="placeholder")
         self.assertTrue(resolved["children"][0]["placeholder"])
-        self.assertEqual(occurrences, [{"kind": "unknownTypePlaceholder", "node": "u"}])
+        self.assertEqual(occurrences, [{"kind": "unknownTypePlaceholder", "node": "u", "name": "Nope"}])
 
     def test_reserved_type_prefix_is_refused(self):
         doc = {"version": "1.0.0", "root": {"type": "$Nope", "id": "r"}}
         self.assertEqual(self.refusal(doc)["rule"], "construct")
+
+    def test_an_empty_or_non_string_id_is_malformed(self):
+        # Spec 01, node envelope: an id, when present, is a non-empty
+        # string. The checker used to treat "" as absent and fall back to
+        # the path, while every engine kept "" as the reference.
+        for bad in ("", 5):
+            doc = {"version": "1.0.0",
+                   "root": {"type": "Text", "id": bad, "properties": {"text": "x"}}}
+            self.assertEqual(self.refusal(doc)["type"], "MalformedDocument")
 
     def test_duplicate_ids_are_refused(self):
         doc = {"version": "1.0.0", "root": {
@@ -320,6 +395,20 @@ class GateValidation(GateHarness):
         fields = self.refusal(doc)
         self.assertEqual(fields["rule"], "id-uniqueness")
         self.assertEqual(fields["found"], "same")
+
+    def test_declaration_keys_follow_the_ascii_identifier_grammar(self):
+        # Vocabulary schema spec, Naming: a letter is an ASCII letter. The
+        # checker used str.isalpha, which let a Unicode letter through where
+        # every engine and the schemas refuse it.
+        doc = document("str(1)", state={"caf\u00e9": "int"})
+        fields = self.refusal(doc)
+        self.assertEqual(fields["rule"], "state-declaration")
+        self.assertEqual(fields["found"], "caf\u00e9")
+        digits = document("str(1)", context={"a\u0663": "string"})
+        self.assertEqual(self.refusal(digits)["rule"], "context-declaration")
+        self.assertTrue(rc._identifier("a_1"))
+        self.assertFalse(rc._identifier("_a"))
+        self.assertFalse(rc._identifier(""))
 
     def test_a_literal_of_the_wrong_type_is_refused(self):
         doc = {"version": "1.0.0", "root": {
@@ -344,7 +433,7 @@ class GateValidation(GateHarness):
             "properties": {"text": "x", "extra": 1}}}
         resolved, occurrences = self.build(doc)
         self.assertEqual(resolved["properties"], {"text": "x"})
-        self.assertEqual(occurrences, [{"kind": "undeclaredProperty", "node": "r"}])
+        self.assertEqual(occurrences, [{"kind": "undeclaredProperty", "node": "r", "name": "extra"}])
 
     def test_undeclared_properties_are_refused_on_a_strict_type(self):
         doc = {"version": "1.0.0", "root": {
@@ -554,6 +643,131 @@ class AgainstTheRepository(unittest.TestCase):
         checked = int(result.stdout.split("reference check: ")[1].split()[0])
         self.assertGreater(checked, 200, result.stdout.splitlines()[0])
 
+
+
+class ValueSizeLimit(GateHarness):
+    """Document model, Resource limits: the value size limit applies to
+    every value entering state or context, at the gate and at runtime;
+    the size counts scalars as one, strings per Unicode scalar, and
+    arrays and records as one plus their contents."""
+
+    def gate(self, limits):
+        return rc.ReferenceGate(self.vocabulary, "fail", None, limits)
+
+    def test_the_size_metric(self):
+        self.assertEqual(rc.value_size(None), 1)
+        self.assertEqual(rc.value_size(True), 1)
+        self.assertEqual(rc.value_size(7), 1)
+        self.assertEqual(rc.value_size(2.5), 1)
+        self.assertEqual(rc.value_size(""), 0)
+        # Scalars, never UTF-16 units: an emoji is one.
+        self.assertEqual(rc.value_size("abcdefg\U0001F600"), 8)
+        self.assertEqual(rc.value_size([]), 1)
+        self.assertEqual(rc.value_size(["ab", "cd"]), 5)
+        self.assertEqual(rc.value_size({"a": [1, 2], "b": "xyz"}), 1 + 3 + 3)
+
+    def test_the_default_is_the_document_model_default(self):
+        self.assertEqual(rc.DEFAULT_LIMITS["maxValueSize"], 65_536)
+        self.assertEqual(self.gate(None).limits["maxValueSize"], 65_536)
+
+    def test_an_initial_state_value_past_the_limit_is_a_limit_error(self):
+        doc = document("state.label", state={"label": "string"})
+        with self.assertRaises(rc.GateError) as caught:
+            self.gate({"maxValueSize": 8}).build(
+                {"name": "t", "document": doc, "context": {}, "state": {"label": "nine char"}})
+        self.assertEqual(caught.exception.fields,
+                         {"type": "LimitExceeded", "limit": "maxValueSize",
+                          "value": 8, "actual": 9})
+
+    def test_a_context_value_past_the_limit_is_a_limit_error(self):
+        doc = document("str(length(context.tags))", context={"tags": {"array": "string"}})
+        with self.assertRaises(rc.GateError) as caught:
+            self.gate({"maxValueSize": 8}).build(
+                {"name": "t", "document": doc, "context": {"tags": ["ab", "cd", "ef", "gh"]},
+                 "state": {}})
+        self.assertEqual(caught.exception.fields["actual"], 9)
+
+    def test_a_value_exactly_at_the_limit_is_accepted(self):
+        doc = document("state.label", state={"label": "string"})
+        resolved, _ = self.gate({"maxValueSize": 8}).build(
+            {"name": "t", "document": doc, "context": {}, "state": {"label": "abcdefg\U0001F600"}})
+        self.assertEqual(resolved["properties"]["text"], "abcdefg\U0001F600")
+
+    def test_every_limit_can_be_overridden_by_name(self):
+        doc = {"version": "1.0.0", "root": {"type": "Column", "id": "root", "children": [
+            {"type": "Text", "id": "a", "properties": {"text": "a"}},
+            {"type": "Text", "id": "b", "properties": {"text": "b"}}]}}
+        with self.assertRaises(rc.GateError) as caught:
+            self.gate({"maxNodeCount": 2}).build(
+                {"name": "t", "document": doc, "context": {}, "state": {}})
+        self.assertEqual(caught.exception.fields["limit"], "maxNodeCount")
+        self.assertEqual(caught.exception.fields["actual"], 3)
+        text = json.dumps(doc)
+        with self.assertRaises(rc.GateError) as caught:
+            self.gate({"maxDocumentBytes": 10}).build(
+                {"name": "t", "documentText": text, "context": {}, "state": {}})
+        self.assertEqual(caught.exception.fields["actual"], len(text.encode()))
+
+
+class SurfaceConfiguration(GateHarness):
+    """Builder-level rules the document model pins: a document declaring
+    state needs a state data provider, one binding custom actions needs an
+    action handler, and metadata is an object."""
+
+    def build_with(self, doc, surface, state=None):
+        gate = rc.ReferenceGate(self.vocabulary, "fail", None, None, surface)
+        return gate.build({"name": "t", "document": doc, "context": {}, "state": state or {}})
+
+    def test_no_state_data_provider(self):
+        doc = document("str(state.n)", state={"n": "int"})
+        with self.assertRaises(rc.GateError) as caught:
+            self.build_with(doc, {"stateDataProvider": False}, state={"n": 1})
+        self.assertEqual(caught.exception.fields,
+                         {"type": "SchemaViolation", "rule": "state-declaration",
+                          "expected": "state data provider"})
+        # With a provider that returns nothing, the omitted value is null and
+        # the rule is the value's: the declared type against null.
+        with self.assertRaises(rc.GateError) as caught:
+            self.build_with(doc, {})
+        self.assertEqual(caught.exception.fields["expected"], "int")
+        self.assertEqual(caught.exception.fields["found"], "null")
+
+    def test_no_action_handler(self):
+        doc = {"version": "1.0.0", "root": {"type": "Text", "id": "r",
+               "properties": {"text": "x"},
+               "on": {"tap": [{"action": "go", "url": "https://x"}]}}}
+        vocabulary = json.loads(json.dumps(self.vocabulary))
+        vocabulary["components"]["Text"]["events"] = {"tap": None}
+        gate = rc.ReferenceGate(vocabulary, "fail", None, None, {"actionHandler": False})
+        with self.assertRaises(rc.GateError) as caught:
+            gate.build({"name": "t", "document": doc, "context": {}, "state": {}})
+        self.assertEqual(caught.exception.fields,
+                         {"type": "SchemaViolation", "rule": "action-handler",
+                          "expected": "action handler"})
+        # Built-in actions alone need no handler.
+        doc["root"]["on"] = {"tap": [{"action": "$sequence", "actions": []}]}
+        rc.ReferenceGate(vocabulary, "fail", None, None, {"actionHandler": False}).build(
+            {"name": "t", "document": doc, "context": {}, "state": {}})
+
+    def test_metadata_must_be_an_object(self):
+        for shape in ([1], "x", 3):
+            with self.assertRaises(rc.GateError) as caught:
+                self.build_with(document("'x'", metadata=shape), {})
+            self.assertEqual(caught.exception.fields["type"], "MalformedDocument")
+        self.build_with(document("'x'", metadata={"campaign": "summer"}), {})
+
+    def test_unknown_key_warnings_name_the_object(self):
+        doc = document("'x'", vocabulary={"name": "checker", "max": "2.0.0"}, extra=1,
+                       state={"n": {"enum": ["a"], "optinal": True}})
+        doc["root"]["style"] = {}
+        warnings = rc.unknown_key_warnings(doc)
+        self.assertEqual(sorted(warnings), sorted([
+            "document: unknown top-level key 'extra'",
+            "vocabulary: unknown key 'max'",
+            "state.n: unknown type descriptor key 'optinal'",
+            "root: unknown envelope key 'style'",
+        ]))
+        self.assertEqual(rc.unknown_key_warnings(document("'x'")), [])
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)

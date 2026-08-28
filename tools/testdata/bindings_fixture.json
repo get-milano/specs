@@ -10,16 +10,70 @@
         "count": "int",
         "ratio": "double?",
         "enabled": "bool",
-        "tags": {"array": "string"},
-        "layout": {"enum": ["wide", "compact"]},
-        "tone": {"enum": ["light", "dark"], "optional": true},
-        "payload": {"record": {"id": "string"}}
+        "tags": {
+          "array": "string"
+        },
+        "layout": {
+          "enum": [
+            "wide",
+            "compact"
+          ]
+        },
+        "tone": {
+          "enum": [
+            "light",
+            "dark"
+          ],
+          "optional": true
+        },
+        "payload": {
+          "record": {
+            "id": "string",
+            "count": "int?",
+            "kind": {
+              "enum": [
+                "minor",
+                "major"
+              ]
+            },
+            "owner": {
+              "record": {
+                "name": "string"
+              }
+            },
+            "labels": {
+              "array": "string",
+              "optional": true
+            }
+          }
+        },
+        "items": {
+          "array": {
+            "record": {
+              "sku": "string",
+              "qty": "int"
+            }
+          }
+        }
       },
       "events": {
         "tap": null,
         "change": "string",
         "resize": "int?",
-        "pick": {"enum": ["one", "two"]}
+        "pick": {
+          "enum": [
+            "one",
+            "two"
+          ]
+        },
+        "submit": {
+          "record": {
+            "id": "string",
+            "lines": {
+              "array": "int"
+            }
+          }
+        }
       },
       "children": true
     },
@@ -35,9 +89,37 @@
     },
     "submit": {
       "parameters": {
-        "mode": {"enum": ["final", "draft"]}
+        "mode": {
+          "enum": [
+            "final",
+            "draft"
+          ]
+        }
       },
       "result": "string"
+    },
+    "order": {
+      "parameters": {
+        "cart": {
+          "record": {
+            "id": "string",
+            "lines": {
+              "array": "int"
+            }
+          }
+        },
+        "note": {
+          "record": {
+            "text": "string"
+          },
+          "optional": true
+        }
+      },
+      "result": {
+        "record": {
+          "reference": "string"
+        }
+      }
     }
   }
 }

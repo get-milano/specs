@@ -93,7 +93,10 @@
     ],
     "occurrences": [
       {
-        "kind": "invalidCompletion"
+        "kind": "invalidCompletion",
+        "name": "classify",
+        "expected": "enum",
+        "found": "string"
       }
     ]
   },

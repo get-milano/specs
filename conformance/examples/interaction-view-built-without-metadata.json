@@ -1,0 +1,22 @@
+{
+  "name": "interaction-view-built-without-metadata",
+  "description": "The impression record of a document without a metadata section carries a null value, not an empty record",
+  "document": {
+    "version": "1.0.0",
+    "root": {
+      "type": "Text",
+      "id": "t",
+      "properties": {
+        "text": "x"
+      }
+    }
+  },
+  "expect": {
+    "interactions": [
+      {
+        "kind": "viewBuilt",
+        "value": null
+      }
+    ]
+  }
+}

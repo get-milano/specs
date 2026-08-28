@@ -1,0 +1,39 @@
+{
+  "name": "gen-order-unsupported-version-and-depth-limit",
+  "description": "Generated (order): unsupported-version and depth-limit in one document; the gate's order decides which error wins",
+  "config": {
+    "limits": {
+      "maxTreeDepth": 1
+    }
+  },
+  "document": {
+    "version": "9.0.0",
+    "root": {
+      "type": "Column",
+      "id": "root",
+      "children": [
+        {
+          "type": "Button",
+          "id": "a",
+          "properties": {
+            "label": "A",
+            "enabled": true
+          }
+        },
+        {
+          "type": "Button",
+          "id": "b",
+          "properties": {
+            "label": "B",
+            "enabled": true
+          }
+        }
+      ]
+    }
+  },
+  "expect": {
+    "error": {
+      "type": "UnsupportedVersion"
+    }
+  }
+}

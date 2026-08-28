@@ -81,6 +81,38 @@
             }
           },
           "additionalProperties": false
+        },
+        "limits": {
+          "type": "object",
+          "properties": {
+            "maxTreeDepth": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "maxNodeCount": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "maxDocumentBytes": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "maxExpressionLength": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "maxValueSize": {
+              "type": "integer",
+              "minimum": 1
+            }
+          },
+          "additionalProperties": false
+        },
+        "stateDataProvider": {
+          "type": "boolean"
+        },
+        "actionHandler": {
+          "type": "boolean"
         }
       },
       "additionalProperties": false
@@ -233,11 +265,24 @@
                   "duplicateCompletion",
                   "completionAfterTeardown",
                   "rejectedContextUpdate",
+                  "rejectedMutation",
                   "divisionByZero",
                   "saturation"
                 ]
               },
               "node": {
+                "type": "string",
+                "minLength": 1
+              },
+              "name": {
+                "type": "string",
+                "minLength": 1
+              },
+              "expected": {
+                "type": "string",
+                "minLength": 1
+              },
+              "found": {
                 "type": "string",
                 "minLength": 1
               }

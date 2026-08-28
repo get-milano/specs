@@ -1,0 +1,40 @@
+{
+  "name": "gen-typing-branch-reject-021",
+  "description": "Generated (exhaustive): if(state.b, state.e, state.s) in a string? position is rejected at the gate",
+  "document": {
+    "version": "1.0.0",
+    "state": {
+      "b": "bool",
+      "e": {
+        "enum": [
+          "a",
+          "b"
+        ]
+      },
+      "s": "string"
+    },
+    "root": {
+      "type": "Column",
+      "id": "root",
+      "children": [
+        {
+          "type": "Probe",
+          "id": "p",
+          "properties": {
+            "sOpt": {
+              "$expr": "if(state.b, state.e, state.s)"
+            }
+          }
+        }
+      ]
+    }
+  },
+  "expect": {
+    "error": {
+      "type": "SchemaViolation",
+      "rule": "expression",
+      "node": "p",
+      "expected": "string?"
+    }
+  }
+}

@@ -1,6 +1,6 @@
 {
   "name": "gen-numeric-061",
-  "description": "Generated (seed 20260816): str((10 + (0 - 1)) < 100)",
+  "description": "Generated (seed 20260816): str(double((4611686018427387904 % 4611686018427387904)))",
   "document": {
     "version": "1.0.0",
     "root": {
@@ -8,7 +8,7 @@
       "id": "r",
       "properties": {
         "text": {
-          "$expr": "str((10 + (0 - 1)) < 100)"
+          "$expr": "str(double((4611686018427387904 % 4611686018427387904)))"
         }
       }
     }
@@ -18,7 +18,7 @@
       "type": "Text",
       "reference": "r",
       "properties": {
-        "text": "true"
+        "text": "0.0"
       }
     },
     "occurrences": []

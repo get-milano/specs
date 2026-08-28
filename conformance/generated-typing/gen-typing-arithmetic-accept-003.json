@@ -1,0 +1,96 @@
+{
+  "name": "gen-typing-arithmetic-accept-003",
+  "description": "Generated (exhaustive): accepted in their declared positions. p0: !state.b in b; p1: !state.b in bOpt; p2: state.i < state.d in b; p3: state.i < state.d in bOpt",
+  "document": {
+    "version": "1.0.0",
+    "state": {
+      "b": "bool",
+      "d": "double",
+      "i": "int"
+    },
+    "root": {
+      "type": "Column",
+      "id": "root",
+      "children": [
+        {
+          "type": "Probe",
+          "id": "p0",
+          "properties": {
+            "b": {
+              "$expr": "!state.b"
+            }
+          }
+        },
+        {
+          "type": "Probe",
+          "id": "p1",
+          "properties": {
+            "bOpt": {
+              "$expr": "!state.b"
+            }
+          }
+        },
+        {
+          "type": "Probe",
+          "id": "p2",
+          "properties": {
+            "b": {
+              "$expr": "state.i < state.d"
+            }
+          }
+        },
+        {
+          "type": "Probe",
+          "id": "p3",
+          "properties": {
+            "bOpt": {
+              "$expr": "state.i < state.d"
+            }
+          }
+        }
+      ]
+    }
+  },
+  "state": {
+    "b": true,
+    "d": 2.5,
+    "i": 7
+  },
+  "expect": {
+    "view": {
+      "type": "Column",
+      "reference": "root",
+      "children": [
+        {
+          "type": "Probe",
+          "reference": "p0",
+          "properties": {
+            "b": false
+          }
+        },
+        {
+          "type": "Probe",
+          "reference": "p1",
+          "properties": {
+            "bOpt": false
+          }
+        },
+        {
+          "type": "Probe",
+          "reference": "p2",
+          "properties": {
+            "b": false
+          }
+        },
+        {
+          "type": "Probe",
+          "reference": "p3",
+          "properties": {
+            "bOpt": false
+          }
+        }
+      ]
+    },
+    "occurrences": []
+  }
+}

@@ -1,0 +1,38 @@
+{
+  "name": "gen-typing-access-reject-003",
+  "description": "Generated (exhaustive): state.rOpt.f in a string position is rejected at the gate",
+  "document": {
+    "version": "1.0.0",
+    "state": {
+      "rOpt": {
+        "record": {
+          "f": "string"
+        },
+        "optional": true
+      }
+    },
+    "root": {
+      "type": "Column",
+      "id": "root",
+      "children": [
+        {
+          "type": "Probe",
+          "id": "p",
+          "properties": {
+            "s": {
+              "$expr": "state.rOpt.f"
+            }
+          }
+        }
+      ]
+    }
+  },
+  "expect": {
+    "error": {
+      "type": "SchemaViolation",
+      "rule": "expression",
+      "node": "p",
+      "expected": "string"
+    }
+  }
+}

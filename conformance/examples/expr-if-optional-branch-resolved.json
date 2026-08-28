@@ -1,0 +1,36 @@
+{
+  "name": "expr-if-optional-branch-resolved",
+  "description": "The idiom for an optional beside a non-optional in if(): resolve it with ?? so both branches are bool, and the bool result feeds the bool? property",
+  "document": {
+    "version": "1.0.0",
+    "state": {
+      "flag": "bool",
+      "maybe": "bool?"
+    },
+    "root": {
+      "type": "Text",
+      "id": "t",
+      "properties": {
+        "text": "x",
+        "visible": {
+          "$expr": "if(state.flag, state.maybe ?? true, false)"
+        }
+      }
+    }
+  },
+  "state": {
+    "flag": true,
+    "maybe": null
+  },
+  "expect": {
+    "view": {
+      "type": "Text",
+      "reference": "t",
+      "properties": {
+        "text": "x",
+        "visible": true
+      }
+    },
+    "occurrences": []
+  }
+}

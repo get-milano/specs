@@ -1,0 +1,18 @@
+{
+  "name": "gen-order-malformed-id-and-value-size",
+  "description": "Generated (order): malformed-id and value-size in one document; the gate's order decides which error wins",
+  "config": {
+    "limits": {
+      "maxValueSize": 4
+    }
+  },
+  "documentText": "{\"version\": \"1.0.0\", \"root\": {\"type\": \"Column\", \"id\": \"\", \"children\": [{\"type\": \"Button\", \"id\": \"a\", \"properties\": {\"label\": \"A\", \"enabled\": true}}, {\"type\": \"Button\", \"id\": \"b\", \"properties\": {\"label\": \"B\", \"enabled\": true}}]}, \"context\": {\"big\": \"string\"}}",
+  "context": {
+    "big": "0123456789"
+  },
+  "expect": {
+    "error": {
+      "type": "MalformedDocument"
+    }
+  }
+}

@@ -21,7 +21,8 @@
     "occurrences": [
       {
         "kind": "unknownTypeSkipped",
-        "node": "root"
+        "node": "root",
+        "name": "Carousel"
       }
     ]
   }

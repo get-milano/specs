@@ -1,0 +1,38 @@
+{
+  "name": "gen-typing-position-reject-012",
+  "description": "Generated (exhaustive): state.e2 in a enum? position is rejected at the gate",
+  "document": {
+    "version": "1.0.0",
+    "state": {
+      "e2": {
+        "enum": [
+          "a",
+          "c"
+        ]
+      }
+    },
+    "root": {
+      "type": "Column",
+      "id": "root",
+      "children": [
+        {
+          "type": "Probe",
+          "id": "p",
+          "properties": {
+            "eOpt": {
+              "$expr": "state.e2"
+            }
+          }
+        }
+      ]
+    }
+  },
+  "expect": {
+    "error": {
+      "type": "SchemaViolation",
+      "rule": "expression",
+      "node": "p",
+      "expected": "enum?"
+    }
+  }
+}

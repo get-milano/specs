@@ -1,0 +1,83 @@
+{
+  "name": "expr-int-expression-in-double-slot",
+  "description": "An int expression is accepted where a double is declared and promoted at evaluation, in a property and in an action parameter declared by the builder",
+  "document": {
+    "version": "1.0.0",
+    "state": {
+      "count": "int"
+    },
+    "root": {
+      "type": "Column",
+      "id": "form",
+      "children": [
+        {
+          "type": "NumberField",
+          "id": "amount",
+          "properties": {
+            "label": "Amount",
+            "value": {
+              "$expr": "state.count * 2"
+            }
+          }
+        },
+        {
+          "type": "Button",
+          "id": "go",
+          "properties": {
+            "label": "Go",
+            "enabled": true
+          },
+          "on": {
+            "tap": [
+              {
+                "action": "score",
+                "rate": {
+                  "$expr": "state.count + 1"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    }
+  },
+  "state": {
+    "count": 3
+  },
+  "config": {
+    "actions": {
+      "declare": {
+        "score": {
+          "parameters": {
+            "rate": "double"
+          }
+        }
+      }
+    }
+  },
+  "expect": {
+    "view": {
+      "type": "Column",
+      "reference": "form",
+      "children": [
+        {
+          "type": "NumberField",
+          "reference": "amount",
+          "properties": {
+            "label": "Amount",
+            "value": 6.0
+          }
+        },
+        {
+          "type": "Button",
+          "reference": "go",
+          "properties": {
+            "label": "Go",
+            "enabled": true
+          }
+        }
+      ]
+    },
+    "occurrences": []
+  }
+}
