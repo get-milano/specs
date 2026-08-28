@@ -85,6 +85,18 @@ def _semver(text):
     return (-1, -1, -1)
 
 
+def sorted_keys(value):
+    """The document model's member order: every JSON object visited in
+    lexicographic key order (document model spec, Validation), arrays in
+    their own order. Applied once to a document and a vocabulary, so every
+    walk below inherits it."""
+    if isinstance(value, dict):
+        return {key: sorted_keys(value[key]) for key in sorted(value)}
+    if isinstance(value, list):
+        return [sorted_keys(element) for element in value]
+    return value
+
+
 class GateError(Exception):
     """A typed gate error; fields mirror the error taxonomy's detail."""
 
@@ -760,7 +772,8 @@ def format_scalar(value):
 class ReferenceGate:
     def __init__(self, vocabulary, policy, actions_config=None, limits=None,
                  surface=None):
-        self.vocabulary = vocabulary
+        self.vocabulary = sorted_keys(vocabulary)
+        vocabulary = self.vocabulary
         self.policy = policy
         self.occurrences = []
         # The surface's inputs: a vector's config may build without a state
@@ -801,6 +814,7 @@ class ReferenceGate:
         else:
             document = vector["document"]
         self.check_envelope(document)
+        document = sorted_keys(document)
 
         # 2. Version.
         version = document["version"]
