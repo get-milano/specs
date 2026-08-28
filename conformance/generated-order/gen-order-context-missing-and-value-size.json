@@ -40,9 +40,10 @@
   },
   "expect": {
     "error": {
-      "type": "SchemaViolation",
-      "rule": "context-declaration",
-      "expected": "who"
+      "type": "LimitExceeded",
+      "limit": "maxValueSize",
+      "value": 4,
+      "actual": 10
     }
   }
 }
