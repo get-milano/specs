@@ -1,0 +1,29 @@
+{
+  "name": "gate-expression-if-optional-branch-mismatch",
+  "description": "if() branches must agree on optionality: a bool? branch beside a bool branch is a SchemaViolation even in a bool? position; the optional is resolved with ?? first",
+  "document": {
+    "version": "1.0.0",
+    "state": {
+      "flag": "bool",
+      "maybe": "bool?"
+    },
+    "root": {
+      "type": "Text",
+      "id": "t",
+      "properties": {
+        "text": "x",
+        "visible": {
+          "$expr": "if(state.flag, state.maybe, false)"
+        }
+      }
+    }
+  },
+  "expect": {
+    "error": {
+      "type": "SchemaViolation",
+      "rule": "expression",
+      "node": "t",
+      "expected": "bool?"
+    }
+  }
+}

@@ -22,6 +22,7 @@ floats, which are IEEE 754 binary64.
 
 import json
 import math
+import re
 import sys
 from pathlib import Path
 
@@ -40,10 +41,15 @@ WHITE_SPACE = set(
     "\u2009\u200a\u2028\u2029\u202f\u205f\u3000"
 )
 
+_IDENTIFIER = re.compile(r"^[A-Za-z][A-Za-z0-9_]*$")
+
+
 def _identifier(name):
-    """The one identifier grammar: a letter, then letters/digits/underscores."""
-    return (isinstance(name, str) and len(name) > 0 and name[0].isalpha()
-            and all(c.isalnum() or c == "_" for c in name))
+    """The one identifier grammar: an ASCII letter, then ASCII letters,
+    digits, or underscores. Unicode letters and digits are not letters and
+    digits here, exactly as in the expression grammar and the schemas;
+    str.isalpha would accept what every engine rejects."""
+    return isinstance(name, str) and _IDENTIFIER.match(name) is not None
 
 
 def _semver(text):
@@ -106,8 +112,11 @@ def same_type(left, right):
 
 def type_accepts(declared, actual):
     """Whether a value of static type `actual` may appear where `declared`
-    is expected: same type, or an enum widening to string."""
+    is expected: same type, an int promoting to double, or an enum
+    widening to string."""
     if same_type(declared, actual):
+        return True
+    if declared.kind == "double" and actual.kind == "int":
         return True
     return declared.kind == "string" and actual.kind == "enum"
 
@@ -531,15 +540,27 @@ class Checker:
                 return Ty(right.kind, optional=True, members=right.members)
             if right.kind == "null":
                 return Ty(left.kind, optional=True, members=left.members)
-            if not same_type(left, right):
+            # Exactly the same type, optionality included: a T? branch is
+            # resolved with ?? before it can sit beside a T one; the null
+            # literal above is the only way an if makes an optional.
+            if not same_type(left, right) or left.optional != right.optional:
                 raise ExprError("if branches must share a type")
-            return Ty(left.kind, optional=left.optional or right.optional,
-                      members=left.members)
+            return left
         raise ExprError(f"unknown function {name!r}")
 
 
 def wrap64(value):
     return ((value - INT_MIN) % 2**64) + INT_MIN
+
+
+def double_remainder(left, right):
+    """IEEE 754 truncating remainder, what every platform's double `%`
+    computes: NaN when either operand is NaN, the divisor is zero, or the
+    dividend is infinite; the dividend itself when only the divisor is.
+    math.fmod agrees on the finite cases and raises on the rest."""
+    if math.isnan(left) or math.isnan(right) or right == 0.0 or math.isinf(left):
+        return math.nan
+    return math.fmod(left, right)
 
 
 class Evaluator:
@@ -620,8 +641,7 @@ class Evaluator:
                         return math.nan
                     return math.copysign(math.inf, left) * math.copysign(1.0, right)
                 return left / right
-            return math.fmod(left, right) if right != 0.0 or math.isnan(left) \
-                else math.nan
+            return double_remainder(left, right)
         if op == "+":
             return wrap64(left + right)
         if op == "-":
@@ -1026,7 +1046,13 @@ class ReferenceGate:
                     {"kind": kind, "node": ref})
                 evaluator = Evaluator(state, context, report)
                 ast = Parser(tokenize(value["$expr"])).parse()
-                properties[name] = evaluator.eval(ast)
+                result = evaluator.eval(ast)
+                # Canonicalize toward the declared type: an int expression
+                # in a double position is promoted, as a literal would be.
+                if ty.kind == "double" and isinstance(result, int) \
+                        and not isinstance(result, bool):
+                    result = float(result)
+                properties[name] = result
             elif ty.kind == "double" and json_kind(value) == "int":
                 properties[name] = float(value)
             else:

@@ -173,6 +173,18 @@ class NumericSemantics(GateHarness):
         self.assertEqual(self.value("str(1.0 / 0.0)"), "inf")
         self.assertEqual(self.value("str((0.0 - 1.0) / 0.0)"), "-inf")
 
+    def test_double_modulo_with_non_finite_operands_follows_ieee_754(self):
+        # An infinite dividend or a zero divisor is NaN; an infinite divisor
+        # leaves the dividend alone. math.fmod raises on the first two, and
+        # the checker used to crash where every engine answers nan.
+        self.assertEqual(self.value("str((1.0 / 0.0) % 2.0)"), "nan")
+        self.assertEqual(self.value("str(((0.0 - 1.0) / 0.0) % 2.0)"), "nan")
+        self.assertEqual(self.value("str(2.0 % 0.0)"), "nan")
+        self.assertEqual(self.value("str((0.0 / 0.0) % 2.0)"), "nan")
+        self.assertEqual(self.value("str(2.0 % (1.0 / 0.0))"), "2.0")
+        self.assertEqual(self.value("str((0.0 - 2.0) % (1.0 / 0.0))"), "-2.0")
+        self.assertEqual(self.occurrences("str((1.0 / 0.0) % 2.0)"), [])
+
     def test_double_division_by_zero_is_not_reported(self):
         # Only the integer case is an occurrence: the double case has an
         # IEEE answer, so there is nothing to warn about.
@@ -279,6 +291,47 @@ class TypeChecking(GateHarness):
         resolved, _ = self.build(doc, state={"role": "a"})
         self.assertEqual(resolved["properties"]["text"], "true")
 
+    def test_if_branches_must_agree_on_optionality(self):
+        # Spec 03: exactly the same T, optionality included. The null
+        # literal is the only way an if makes an optional; a T? branch is
+        # resolved with ?? before it can sit beside a T one. Swift and
+        # Kotlin always refused this; the checker used to widen instead.
+        doc = document("if(true, state.maybe, 'x') ?? ''",
+                       state={"maybe": "string?"})
+        self.assertEqual(self.refusal(doc)["rule"], "expression")
+        resolved = document("if(true, state.maybe ?? 'y', 'x')",
+                            state={"maybe": "string?"})
+        self.assertEqual(
+            self.build(resolved, state={"maybe": None})[0]["properties"]["text"],
+            "y")
+
+    def test_an_int_expression_is_promoted_where_a_double_is_declared(self):
+        # Spec 03: accepted at every declared position and promoted at
+        # evaluation, as an int literal or data value is. Every engine did
+        # this; the checker refused it.
+        vocabulary = {
+            "milano": "1.0.0", "name": "gauge", "version": "1.0.0",
+            "components": {"Gauge": {"properties": {"ratio": "double"}}},
+        }
+        doc = {"version": "1.0.0", "state": {"count": "int"},
+               "root": {"type": "Gauge", "id": "g",
+                        "properties": {"ratio": {"$expr": "state.count * 2"}}}}
+        resolved, _ = self.build(doc, state={"count": 3}, vocabulary=vocabulary)
+        ratio = resolved["properties"]["ratio"]
+        self.assertIsInstance(ratio, float)
+        self.assertEqual(ratio, 6.0)
+
+    def test_a_double_expression_is_refused_where_an_int_is_declared(self):
+        vocabulary = {
+            "milano": "1.0.0", "name": "gauge", "version": "1.0.0",
+            "components": {"Gauge": {"properties": {"count": "int"}}},
+        }
+        doc = {"version": "1.0.0",
+               "root": {"type": "Gauge", "id": "g",
+                        "properties": {"count": {"$expr": "1.5 * 2.0"}}}}
+        self.assertEqual(self.refusal(doc, vocabulary=vocabulary)["rule"],
+                         "expression")
+
 
 class GateValidation(GateHarness):
     """Spec 01: the fixed validation order and its typed refusals."""
@@ -320,6 +373,20 @@ class GateValidation(GateHarness):
         fields = self.refusal(doc)
         self.assertEqual(fields["rule"], "id-uniqueness")
         self.assertEqual(fields["found"], "same")
+
+    def test_declaration_keys_follow_the_ascii_identifier_grammar(self):
+        # Vocabulary schema spec, Naming: a letter is an ASCII letter. The
+        # checker used str.isalpha, which let a Unicode letter through where
+        # every engine and the schemas refuse it.
+        doc = document("str(1)", state={"caf\u00e9": "int"})
+        fields = self.refusal(doc)
+        self.assertEqual(fields["rule"], "state-declaration")
+        self.assertEqual(fields["found"], "caf\u00e9")
+        digits = document("str(1)", context={"a\u0663": "string"})
+        self.assertEqual(self.refusal(digits)["rule"], "context-declaration")
+        self.assertTrue(rc._identifier("a_1"))
+        self.assertFalse(rc._identifier("_a"))
+        self.assertFalse(rc._identifier(""))
 
     def test_a_literal_of_the_wrong_type_is_refused(self):
         doc = {"version": "1.0.0", "root": {

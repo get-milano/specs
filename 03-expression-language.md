@@ -105,14 +105,15 @@ The complete v1.0 set. All functions are pure and total. Arguments are evaluated
 | `startsWith` | string, string to bool | |
 | `endsWith` | string, string to bool | |
 | `trim` | string to string | Removes leading and trailing Unicode whitespace |
-| `if` | bool, T, T to T | Both branches type-check to the same T, where a single `null` branch makes T optional and two `null` branches are rejected (no T to infer); only the taken branch is evaluated, observable as the absence of the untaken branch's arithmetic reports |
+| `if` | bool, T, T to T | Both branches type-check to exactly the same T, optionality included: a `T?` branch beside a `T` branch is rejected (resolve the optional with `??` first), a single `null` branch makes T optional, and two `null` branches are rejected (no T to infer); only the taken branch is evaluated, observable as the absence of the untaken branch's arithmetic reports |
 
 There are no regular expressions in v1.0: string validation beyond these functions belongs to the producer or the host. There are no case-mapping functions in v1.0: case rules are locale-sensitive and belong to renderers.
 
 ## Typing and totality
 
 - Every expression has a static type, determined at the gate from literals, declared state and context types, event payload and action result types, operator rules, and function signatures. A property expression must type-check to the property's declared type; mismatches are a `SchemaViolation` at the gate.
-- A non-optional `T` is accepted wherever an optional `T` is expected; the reverse never holds.
+- A non-optional `T` is accepted wherever an optional `T` is expected; the reverse never holds. An `int` expression is accepted wherever a `double` is expected, and its value is promoted to `double` at evaluation, exactly as an `int` literal or data value is (document model spec); a `double` is never accepted where `int` is expected.
+- Both acceptances apply where a declared type meets an expression: property values, `$set` values, and action parameters. Neither applies between the two branches of `if`, which must have exactly the same type, optionality included; a producer resolves the optional branch with `??` first.
 
 Enum types follow four rules, all enforced at the gate:
 
