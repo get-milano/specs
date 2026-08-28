@@ -5,7 +5,7 @@ nav_order: 7
 
 # Milano Runtime API
 
-**Status:** Stable v1.0.0 · 2026-08-16
+**Status:** Stable · contract 2.0 · repository release 2.0.0 · 2026-08-29
 
 Defines the public API surface of the three runtimes: the types a consumer or host touches, their responsibilities, and their behavior. Type names and semantics are normative and identical in role on every platform; exact signatures are illustrative; names, roles, and behavior are normative. All public types are prefixed `Milano`.
 
@@ -29,7 +29,7 @@ A renderer receives a `MilanoNode` and returns platform UI (a SwiftUI view; a co
 | Member | Purpose |
 |---|---|
 | `type` | The component type name |
-| `reference` | The node's id, or canonical path when no id is declared |
+| `reference` | The node's id, or canonical path when no id is declared; for a `$repeat` instance, the template node's reference with the element index appended (`card[2]`) |
 | `property(name)` | The resolved value of a declared property, as `MilanoValue`, reactive: property changes drive recomposition/re-evaluation natively per platform |
 | `children` | The node's materialized children, ready to place; always empty for types that do not declare `children` |
 | `emit(event, payload)` | Emits a declared event into dispatch; invalid emissions are dropped and reported per Foundations |
@@ -88,11 +88,11 @@ The hosting container, for hosts that want the swap managed for them:
 | `unknownTypeSkipped`, `unknownTypePlaceholder` | the node | the type name | | |
 | `undeclaredProperty` | the node | the property name | | |
 | `droppedEvent` | the node | the event name | | |
-| `invalidEmission` | the node as emitted | the event name | `declared event`, the declared payload type, or `no payload` | `unknown node`, `undeclared event`, the payload's kind, or `null` |
+| `invalidEmission` | the node as emitted | the event name | `declared event`, the declared payload type, `no payload`, or `repeat element` | `unknown node`, `undeclared event`, the payload's kind, `index N` for a `$repeat` index that no longer exists, or `null` |
 | `invalidCompletion` | | the action name | the declared result type, `no result` (a success value for an action declaring none), or `no payload` (a value on a failure) | the value's kind, `null` when missing |
 | `duplicateCompletion`, `completionAfterTeardown` | | the action name | | |
-| `rejectedContextUpdate` | | the key | the declared type, or the value size limit | the value's kind, `missing`, or the size |
-| `rejectedMutation` | the node whose binding dispatched | the state key | the value size limit | the size |
+| `rejectedContextUpdate` | | the key (the last checked, for a node count rejection) | the declared type, or the limit's name (`maxValueSize`, `maxNodeCount`) | the value's kind, `missing`, the size, or the count |
+| `rejectedMutation` | the node whose binding dispatched | the state key | the limit's name (`maxValueSize`, `maxNodeCount`) | the size or the count |
 | `divisionByZero`, `saturation` | the node being resolved; none during action evaluation | the property being resolved; none otherwise | | |
 
 Absent cells are `null`. Detail vocabulary is the gate's: type names as the document model spells them, value kinds as `MilanoValue` names them.

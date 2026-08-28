@@ -113,15 +113,22 @@ class Specialization(unittest.TestCase):
         # different documents claim the same identity.
         self.assertNotIn("$id", self.schema)
 
-    def test_component_types_become_a_closed_sorted_enum(self):
-        self.assertEqual(self.schema["$defs"]["node"]["properties"]["type"], {"enum": ["Column", "Text"]})
+    def test_component_types_become_a_closed_sorted_enum_plus_the_construct(self):
+        self.assertEqual(
+            self.schema["$defs"]["node"]["properties"]["type"], {"enum": ["Column", "Text", "$repeat"]})
 
-    def test_one_conditional_per_component_in_a_fixed_order(self):
+    def test_one_conditional_per_component_in_a_fixed_order_then_the_construct(self):
         branches = self.schema["$defs"]["node"]["allOf"]
         self.assertEqual(
             [branch["if"]["properties"]["type"]["const"] for branch in branches],
-            ["Column", "Text"],
+            ["Column", "Text", "$repeat"],
         )
+
+    def test_the_construct_requires_its_own_keys_and_carries_no_component_keys(self):
+        branch = self.schema["$defs"]["node"]["allOf"][-1]["then"]
+        self.assertEqual(branch["required"], ["items", "as", "children"])
+        self.assertEqual(branch["properties"]["properties"], {"type": "object", "maxProperties": 0})
+        self.assertEqual(branch["properties"]["on"], {"type": "object", "maxProperties": 0})
 
     def test_childless_components_reject_children(self):
         branches = {b["if"]["properties"]["type"]["const"]: b["then"]["properties"] for b in self.schema["$defs"]["node"]["allOf"]}

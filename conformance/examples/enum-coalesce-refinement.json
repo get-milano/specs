@@ -2,7 +2,7 @@
   "name": "enum-coalesce-refinement",
   "description": "The expected enum type propagates through ?? and if branches, so member literals refine instead of reading as plain strings",
   "document": {
-    "version": "1.0.0",
+    "version": "2.0.0",
     "state": {
       "maybe": {
         "enum": [

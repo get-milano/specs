@@ -5,11 +5,11 @@ nav_order: 2
 
 # Milano Document Model
 
-**Status:** Stable v1.0.0 · 2026-08-16
+**Status:** Stable · contract 2.0 · repository release 2.0.0 · 2026-08-29
 
 Defines the abstract document model and its canonical JSON encoding: the top-level structure, the node envelope, values and expressions, core constructs, identity, validation, the error taxonomy, and resource limits. Everything here operates within the guarantees fixed by [Foundations](00-foundations.html).
 
-**Version 1.0 scope.** Per Foundations, v1.0 targets banners, interstitials, and simple document-defined forms.
+**Scope.** Per Foundations, the contract targets banners, interstitials, and simple document-defined forms.
 
 ## Document structure
 
@@ -95,6 +95,33 @@ Like component types, action types require host code (a handler that interprets 
 - Custom actions may carry `onSuccess` and `onFailure` keys, each an action or action list, bound to the handler's asynchronous completion. Built-ins complete synchronously and do not take them.
 - Dispatch semantics (ordering, concurrency, completion after view teardown, event payload rules) are fixed in the state and actions spec; this spec fixes only the encoding.
 
+## Constructs
+
+A construct is a node whose `type` is in the reserved `$` namespace. Constructs belong to the contract, not to the vocabulary: no renderer is registered for them and renderers never see them. Contract 2.0 defines one.
+
+### `$repeat`
+
+Repeats a template once per element of an array. The construct is transparent: its instances take its place in the parent's children, in order, so a vocabulary declares nothing for it and a parent that accepts children may hold one.
+
+| Key | Required | Purpose |
+|---|---|---|
+| `type` | yes | `$repeat` |
+| `id` | no | As for any node; the base of every instance's reference |
+| `items` | yes | An expression (never a literal, since documents carry no data) of a non-optional `array` type, evaluated at resolution |
+| `as` | yes | An identifier naming the element: it binds two expression roots in the template, `<as>` (the element, typed as the array's element type) and `<as>_index` (an `int`, zero-based) |
+| `children` | yes | The template: one or more nodes, instantiated together per element |
+
+Rules, all checked at the gate under rule `repeat` (detail `expected` names the requirement):
+
+- A `$repeat` is never the root and carries neither `properties` nor `on`.
+- `as` is an identifier that is not `state`, `context`, `event`, or `result`, and nested repeats bind distinct names; an inner template may read an outer element.
+- `items` must type-check to a non-optional array; the element type is what `<as>` has.
+- A document declaring contract 1.x may not use it: there it is the `construct` violation, as any `$` type.
+
+An instance's reference is the template node's reference followed by the element index in brackets, for every enclosing repeat from the outermost in: `card[2]`, and `line[2][0]` for a template node inside a repeat inside another. Renderers emit with the instance reference, and every report about an instance uses it. Ids inside a template are document-unique as ever; the suffix is what tells instances apart.
+
+The materialized tree, instances included, counts against the node count limit: at build, past the limit is `LimitExceeded` for `maxNodeCount` with the materialized count as `actual`; at runtime, an update that would grow past it is rejected whole (state and actions spec). Resolution re-materializes a repeat whenever `items`, or anything an instance reads, changes.
+
 ## Identity and paths
 
 - `id` is optional; when present it is a non-empty string, unique across the document. An empty `id` is an envelope violation (`MalformedDocument`), since it would be an empty reference in every report about the node.
@@ -106,7 +133,7 @@ Like component types, action types require host code (a handler that interprets 
 The gate validates in a fixed, conformance-tested order, so identical documents fail identically on every platform:
 
 1. Parse: well-formed JSON, correct envelope shapes.
-2. Version: declared major must be in the runtime's supported set.
+2. Version: the declared major must be one the runtime implements and the declared minor at most the highest minor it implements for that major (Foundations, Versioning); the patch is ignored.
 3. Vocabulary requirement: when the document declares one, the engine's vocabulary must carry the same `name`, and when `min` is present its `version` must be at least `min` (numeric comparison of major, minor, patch). A mismatch is a `SchemaViolation` with rule `vocabulary-requirement`, `expected` the document's demand, `found` what the engine holds. A document with no `vocabulary` section performs no check: binding stays positional, and the requirement is the producer's opt-in guard for staggered rollouts. The minimum-only form is sound because vocabulary evolution is additive within a major (see the vocabulary schema spec): any version at or above the minimum carries everything the document needs.
 4. Resource limits: document size (checked on the raw bytes before parsing, alongside step 1), tree depth, and node count against the limits below; expression length is checked per expression in step 5.
 5. Vocabulary walk: one pass over the tree, in document order. At each node, in order: `id` uniqueness, the reserved `$` type prefix, type resolution against the schema (unknown types trigger the unknown-type policy), properties (undeclared ones per the strict-mode rules from Foundations; declared ones type-checked, with expressions parsed and statically typed as they are encountered), children acceptance, then event bindings against the declared events and their action lists (built-in parameters against this spec, custom actions against the surface's granted action set: the vocabulary's declarations, narrowed and overridden by the builder). Because the walk is one pass, the first defect wins when a document violates several rules: document order among nodes and array elements, and the member order below within one object.
@@ -129,16 +156,17 @@ The closed set of typed errors the gate can throw, with the structured detail ea
 | Error | Raised when | Detail fields |
 |---|---|---|
 | `MalformedDocument` | Input is not well-formed JSON or violates envelope structure | Location of the defect (path when determinable) |
-| `UnsupportedVersion` | Declared major is outside the runtime's supported set | Declared version; the runtime's supported majors |
+| `UnsupportedVersion` | The declared major is not implemented, or the declared minor exceeds what the runtime implements for it | `declared`, the document's version; `supported`, the runtime's ranges as `major.minor` strings (`"1.0"`, `"2.0"`) |
 | `SchemaViolation` | Vocabulary, expression typing, action encoding, event, id, or namespace rules are violated; supplied context or initial-state values do not match declarations | The rule violated; expected; found; and the node reference (id or path) when the violation is anchored to a node (document-level violations, such as a data value not matching its declaration, carry none) |
 | `UnknownComponentType` | A type not declared in the vocabulary is found and the effective policy is *fail* | Node reference; the unknown type name |
-| `LimitExceeded` | Any resource limit is exceeded at the gate | The limit's name; its configured value; the actual value |
+| `LimitExceeded` | Any resource limit is exceeded at the gate, the node count measured on the materialized tree | The limit's name; its configured value; the actual value |
 
 The `rule` strings a `SchemaViolation` may carry are contract, pinned by the conformance suite, and so is the detail each carries (an absent cell is `null`):
 
 | Rule | Violation | `node` | `expected` | `found` |
 |---|---|---|---|---|
-| `construct` | A node `type` begins with the reserved `$` prefix | the node | `component type` | the type name |
+| `construct` | A node `type` begins with the reserved `$` prefix and names no construct the document's contract version admits | the node | `component type` | the type name |
+| `repeat` | A `$repeat` violates its encoding: at the root, carrying properties or bindings, without a template, `items` missing, a literal, or not a non-optional array, `as` missing, reserved, or shadowing an enclosing binding | the node | the requirement: `child position`, `items expression`, `array items`, `template`, `binding identifier`, `distinct binding` | what was found |
 | `id-uniqueness` | A node `id` appears more than once in the document | the repeated id | | the id |
 | `children` | A node carries `children` but its component type does not accept them | the node | `no children` | `children` |
 | `undeclared-property` | An undeclared property on a `strict` component type | the node | | the property name |

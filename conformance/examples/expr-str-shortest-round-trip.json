@@ -2,7 +2,7 @@
   "name": "expr-str-shortest-round-trip",
   "description": "str() uses the shortest round-trip digits, never the platform default: repeating decimals and near-int64 magnitudes",
   "document": {
-    "version": "1.0.0",
+    "version": "2.0.0",
     "root": {
       "type": "Text",
       "id": "r",

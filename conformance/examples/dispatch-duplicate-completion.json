@@ -2,7 +2,7 @@
   "name": "dispatch-duplicate-completion",
   "description": "A handler completing twice: the second completion is ignored and reported; onSuccess runs once",
   "document": {
-    "version": "1.0.0",
+    "version": "2.0.0",
     "state": {
       "done": "bool"
     },

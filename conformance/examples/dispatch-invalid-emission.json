@@ -2,7 +2,7 @@
   "name": "dispatch-invalid-emission",
   "description": "An undeclared event or a mis-typed payload never reaches dispatch; dropped and reported",
   "document": {
-    "version": "1.0.0",
+    "version": "2.0.0",
     "state": {
       "name": "string"
     },

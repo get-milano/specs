@@ -2,7 +2,7 @@
   "name": "gate-enum-property-nonmember",
   "description": "A string literal outside the declared members is a SchemaViolation at the gate, not a runtime fallback",
   "document": {
-    "version": "1.0.0",
+    "version": "2.0.0",
     "root": {
       "type": "Badge",
       "id": "b",

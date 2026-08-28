@@ -1,0 +1,75 @@
+{
+  "name": "repeat-items-from-context",
+  "description": "Items may come from context; a context update re-materializes the repeat with the new elements",
+  "document": {
+    "version": "2.0.0",
+    "context": {
+      "tags": {
+        "array": "string"
+      }
+    },
+    "root": {
+      "type": "Column",
+      "id": "list",
+      "children": [
+        {
+          "type": "$repeat",
+          "id": "t",
+          "items": {
+            "$expr": "context.tags"
+          },
+          "as": "tag",
+          "children": [
+            {
+              "type": "Text",
+              "id": "chip",
+              "properties": {
+                "text": {
+                  "$expr": "tag"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "context": {
+    "tags": [
+      "a"
+    ]
+  },
+  "steps": [
+    {
+      "contextUpdate": {
+        "tags": [
+          "b",
+          "c"
+        ]
+      }
+    }
+  ],
+  "expect": {
+    "view": {
+      "type": "Column",
+      "reference": "list",
+      "children": [
+        {
+          "type": "Text",
+          "reference": "chip[0]",
+          "properties": {
+            "text": "b"
+          }
+        },
+        {
+          "type": "Text",
+          "reference": "chip[1]",
+          "properties": {
+            "text": "c"
+          }
+        }
+      ]
+    },
+    "occurrences": []
+  }
+}

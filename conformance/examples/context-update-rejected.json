@@ -2,7 +2,7 @@
   "name": "context-update-rejected",
   "description": "A context update with a wrong-typed value is rejected whole; previous values stay; reported",
   "document": {
-    "version": "1.0.0",
+    "version": "2.0.0",
     "context": {
       "greeting": "string"
     },

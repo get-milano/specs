@@ -2,7 +2,7 @@
   "name": "gate-enum-distinct-comparison",
   "description": "Two enum types are the same exactly when their member sets are equal; comparing distinct enums is a SchemaViolation",
   "document": {
-    "version": "1.0.0",
+    "version": "2.0.0",
     "state": {
       "tone": {
         "enum": [

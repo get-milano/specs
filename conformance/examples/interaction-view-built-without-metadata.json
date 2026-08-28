@@ -2,7 +2,7 @@
   "name": "interaction-view-built-without-metadata",
   "description": "The impression record of a document without a metadata section carries a null value, not an empty record",
   "document": {
-    "version": "1.0.0",
+    "version": "2.0.0",
     "root": {
       "type": "Text",
       "id": "t",

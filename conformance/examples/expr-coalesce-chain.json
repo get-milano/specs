@@ -2,7 +2,7 @@
   "name": "expr-coalesce-chain",
   "description": "?? is right-associative: a chain of nulls falls through to the final default",
   "document": {
-    "version": "1.0.0",
+    "version": "2.0.0",
     "state": {
       "a": "string?",
       "b": "string?"

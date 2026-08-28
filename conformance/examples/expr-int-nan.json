@@ -2,7 +2,7 @@
   "name": "expr-int-nan",
   "description": "int(NaN) is 0 and reports saturation, like the finite saturating conversions",
   "document": {
-    "version": "1.0.0",
+    "version": "2.0.0",
     "root": {
       "type": "Text",
       "id": "t",

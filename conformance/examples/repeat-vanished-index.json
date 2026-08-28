@@ -1,0 +1,100 @@
+{
+  "name": "repeat-vanished-index",
+  "description": "An emission naming an index the items no longer have is an invalid emission: dropped and reported with the index found",
+  "document": {
+    "version": "2.0.0",
+    "state": {
+      "rows": {
+        "array": {
+          "record": {
+            "name": "string",
+            "url": "string"
+          }
+        }
+      }
+    },
+    "root": {
+      "type": "Column",
+      "id": "list",
+      "children": [
+        {
+          "type": "Button",
+          "id": "clear",
+          "properties": {
+            "label": "Clear",
+            "enabled": true
+          },
+          "on": {
+            "tap": [
+              {
+                "action": "$set",
+                "key": "rows",
+                "value": {
+                  "$expr": "state.rows"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "$repeat",
+          "id": "each",
+          "items": {
+            "$expr": "state.rows"
+          },
+          "as": "row",
+          "children": [
+            {
+              "type": "Button",
+              "id": "open",
+              "properties": {
+                "label": {
+                  "$expr": "row.name"
+                },
+                "enabled": true
+              },
+              "on": {
+                "tap": [
+                  {
+                    "action": "openUrl",
+                    "url": {
+                      "$expr": "row.url"
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "state": {
+    "rows": [
+      {
+        "name": "Alpha",
+        "url": "https://example.com/a"
+      }
+    ]
+  },
+  "steps": [
+    {
+      "event": {
+        "node": "open[1]",
+        "name": "tap"
+      }
+    }
+  ],
+  "expect": {
+    "dispatched": [],
+    "occurrences": [
+      {
+        "kind": "invalidEmission",
+        "node": "open[1]",
+        "name": "tap",
+        "expected": "repeat element",
+        "found": "index 1"
+      }
+    ]
+  }
+}

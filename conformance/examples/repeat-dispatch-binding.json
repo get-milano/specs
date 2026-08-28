@@ -1,0 +1,121 @@
+{
+  "name": "repeat-dispatch-binding",
+  "description": "An emission from an instance binds the element at that index at dispatch time: a custom action captures the element's field, a $set records the index, and the analytics record names the instance",
+  "document": {
+    "version": "2.0.0",
+    "state": {
+      "rows": {
+        "array": {
+          "record": {
+            "name": "string",
+            "url": "string"
+          }
+        }
+      },
+      "picked": "int"
+    },
+    "root": {
+      "type": "Column",
+      "id": "list",
+      "children": [
+        {
+          "type": "$repeat",
+          "id": "each",
+          "items": {
+            "$expr": "state.rows"
+          },
+          "as": "row",
+          "children": [
+            {
+              "type": "Button",
+              "id": "open",
+              "properties": {
+                "label": {
+                  "$expr": "row.name"
+                },
+                "enabled": true
+              },
+              "on": {
+                "tap": [
+                  {
+                    "action": "openUrl",
+                    "url": {
+                      "$expr": "row.url"
+                    }
+                  },
+                  {
+                    "action": "$set",
+                    "key": "picked",
+                    "value": {
+                      "$expr": "row_index"
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "state": {
+    "rows": [
+      {
+        "name": "Alpha",
+        "url": "https://example.com/a"
+      },
+      {
+        "name": "Beta",
+        "url": "https://example.com/b"
+      }
+    ],
+    "picked": -1
+  },
+  "steps": [
+    {
+      "event": {
+        "node": "open[1]",
+        "name": "tap"
+      }
+    }
+  ],
+  "expect": {
+    "state": {
+      "rows": [
+        {
+          "name": "Alpha",
+          "url": "https://example.com/a"
+        },
+        {
+          "name": "Beta",
+          "url": "https://example.com/b"
+        }
+      ],
+      "picked": 1
+    },
+    "dispatched": [
+      {
+        "action": "openUrl",
+        "parameters": {
+          "url": "https://example.com/b"
+        }
+      }
+    ],
+    "occurrences": [],
+    "interactions": [
+      {
+        "kind": "viewBuilt"
+      },
+      {
+        "kind": "event",
+        "node": "open[1]",
+        "name": "tap"
+      },
+      {
+        "kind": "actionDispatched",
+        "node": "open[1]",
+        "name": "openUrl"
+      }
+    ]
+  }
+}

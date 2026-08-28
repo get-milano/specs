@@ -1,0 +1,52 @@
+{
+  "name": "gate-repeat-no-template",
+  "description": "A $repeat needs a template: children with at least one node",
+  "document": {
+    "version": "2.0.0",
+    "state": {
+      "rows": {
+        "array": {
+          "record": {
+            "name": "string",
+            "url": "string"
+          }
+        }
+      }
+    },
+    "root": {
+      "type": "Column",
+      "id": "list",
+      "children": [
+        {
+          "type": "$repeat",
+          "id": "each",
+          "items": {
+            "$expr": "state.rows"
+          },
+          "as": "row"
+        }
+      ]
+    }
+  },
+  "state": {
+    "rows": [
+      {
+        "name": "Alpha",
+        "url": "https://example.com/a"
+      },
+      {
+        "name": "Beta",
+        "url": "https://example.com/b"
+      }
+    ]
+  },
+  "expect": {
+    "error": {
+      "type": "SchemaViolation",
+      "rule": "repeat",
+      "node": "each",
+      "expected": "template",
+      "found": "no children"
+    }
+  }
+}

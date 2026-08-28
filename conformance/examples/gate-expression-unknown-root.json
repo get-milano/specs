@@ -2,7 +2,7 @@
   "name": "gate-expression-unknown-root",
   "description": "A bare identifier that is not a reserved root is a SchemaViolation at the gate",
   "document": {
-    "version": "1.0.0",
+    "version": "2.0.0",
     "root": {
       "type": "Text",
       "id": "result",

@@ -2,7 +2,7 @@
   "name": "gate-order-id-before-expression",
   "description": "The vocabulary walk is one pass in document order: a duplicate id at a node's envelope wins over an ill-typed expression inside the same node",
   "document": {
-    "version": "1.0.0",
+    "version": "2.0.0",
     "root": {
       "type": "Column",
       "id": "dup",

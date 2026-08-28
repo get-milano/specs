@@ -5,7 +5,7 @@ nav_order: 8
 
 # Worked Examples
 
-The two v1.0 target capabilities, written end to end: a shared vocabulary, two documents, and the behavior each must produce. Both live as executable vectors in `conformance/`, in the format of the [conformance suite spec](05-conformance-suite.html). Together they exercise every v1.0 mechanic: context, expressions, state, events, built-in and custom actions, consent gating, and async completion.
+The two target capabilities, written end to end: a shared vocabulary, two documents, and the behavior each must produce. Both live as executable vectors in `conformance/`, in the format of the [conformance suite spec](05-conformance-suite.html). Together they exercise every mechanic of the contract: context, expressions, state, events, built-in and custom actions, consent gating, and async completion.
 
 ## Recommended integration architecture
 
@@ -48,7 +48,7 @@ A background image, a personalized title, a subtitle, and a call-to-action butto
 
 ```json
 {
-  "version": "1.0.0",
+  "version": "2.0.0",
   "context": { "userName": "string" },
   "root": {
     "type": "Banner",
@@ -90,7 +90,7 @@ Name, surname, email, optional phone, and a consent checkbox that gates submissi
 
 ```json
 {
-  "version": "1.0.0",
+  "version": "2.0.0",
   "state": {
     "name": "string",
     "surname": "string",

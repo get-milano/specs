@@ -2,7 +2,7 @@
   "name": "gate-unknown-keys-ignored",
   "description": "Unknown keys in every object the contract may grow (the top level, the vocabulary section, a type descriptor, the node envelope) are ignored per the tolerance rule in Foundations; the document builds as if they were absent",
   "document": {
-    "version": "1.0.0",
+    "version": "2.0.0",
     "vocabulary": {
       "name": "examples",
       "min": "1.0.0",

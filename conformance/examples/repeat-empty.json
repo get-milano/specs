@@ -1,0 +1,69 @@
+{
+  "name": "repeat-empty",
+  "description": "An empty array instantiates nothing: the construct leaves no trace in the parent's children",
+  "document": {
+    "version": "2.0.0",
+    "state": {
+      "rows": {
+        "array": {
+          "record": {
+            "name": "string",
+            "url": "string"
+          }
+        }
+      }
+    },
+    "root": {
+      "type": "Column",
+      "id": "list",
+      "children": [
+        {
+          "type": "$repeat",
+          "id": "each",
+          "items": {
+            "$expr": "state.rows"
+          },
+          "as": "row",
+          "children": [
+            {
+              "type": "Text",
+              "id": "name",
+              "properties": {
+                "text": {
+                  "$expr": "row.name"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "type": "Text",
+          "id": "tail",
+          "properties": {
+            "text": {
+              "$expr": "'end'"
+            }
+          }
+        }
+      ]
+    }
+  },
+  "state": {
+    "rows": []
+  },
+  "expect": {
+    "view": {
+      "type": "Column",
+      "reference": "list",
+      "children": [
+        {
+          "type": "Text",
+          "reference": "tail",
+          "properties": {
+            "text": "end"
+          }
+        }
+      ]
+    }
+  }
+}

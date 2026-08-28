@@ -1,0 +1,23 @@
+{
+  "name": "gate-version-2-accepted",
+  "description": "A document declaring contract 2.0.0 builds on a runtime implementing 2.0",
+  "document": {
+    "version": "2.0.0",
+    "root": {
+      "type": "Text",
+      "id": "t",
+      "properties": {
+        "text": "x"
+      }
+    }
+  },
+  "expect": {
+    "view": {
+      "type": "Text",
+      "reference": "t",
+      "properties": {
+        "text": "x"
+      }
+    }
+  }
+}

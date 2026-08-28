@@ -2,7 +2,7 @@
   "name": "gate-children-not-accepted",
   "description": "children are allowed only on component types the vocabulary declares as accepting them",
   "document": {
-    "version": "1.0.0",
+    "version": "2.0.0",
     "root": {
       "type": "Text",
       "id": "t",

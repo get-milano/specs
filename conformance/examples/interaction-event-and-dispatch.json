@@ -2,7 +2,7 @@
   "name": "interaction-event-and-dispatch",
   "description": "The user-interaction stream carries the build impression, every valid emission with its payload, the action dispatch with captured parameters anchored to the source node, and the settled completion",
   "document": {
-    "version": "1.0.0",
+    "version": "2.0.0",
     "metadata": {
       "campaign": "spring"
     },

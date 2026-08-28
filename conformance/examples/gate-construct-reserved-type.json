@@ -1,10 +1,10 @@
 {
   "name": "gate-construct-reserved-type",
-  "description": "The $ prefix in type names is reserved for the contract: v1 documents contain no construct nodes",
+  "description": "A node type in the reserved $ namespace that names no construct the document's contract version admits is the construct violation",
   "document": {
-    "version": "1.0.0",
+    "version": "2.0.0",
     "root": {
-      "type": "$repeat",
+      "type": "$widget",
       "id": "r"
     }
   },
@@ -13,7 +13,7 @@
       "type": "SchemaViolation",
       "rule": "construct",
       "node": "r",
-      "found": "$repeat"
+      "found": "$widget"
     }
   }
 }

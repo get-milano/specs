@@ -2,7 +2,7 @@
   "name": "gate-action-undeclared",
   "description": "Binding a custom action declared nowhere fails with SchemaViolation; documents cannot mint action names",
   "document": {
-    "version": "1.0.0",
+    "version": "2.0.0",
     "root": {
       "type": "Button",
       "id": "track",

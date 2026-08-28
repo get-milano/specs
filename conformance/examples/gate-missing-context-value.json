@@ -2,7 +2,7 @@
   "name": "gate-missing-context-value",
   "description": "A declared context key with no supplied value fails with SchemaViolation",
   "document": {
-    "version": "1.0.0",
+    "version": "2.0.0",
     "context": {
       "userName": "string"
     },

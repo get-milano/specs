@@ -2,7 +2,7 @@
   "name": "gate-strict-undeclared-property",
   "description": "On a strict component an undeclared property is a SchemaViolation with rule undeclared-property instead of ignored-and-reported",
   "document": {
-    "version": "1.0.0",
+    "version": "2.0.0",
     "root": {
       "type": "Meta",
       "id": "m",

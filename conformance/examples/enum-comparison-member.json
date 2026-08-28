@@ -2,7 +2,7 @@
   "name": "enum-comparison-member",
   "description": "Comparing an enum to a member literal is a bool; the comparison is by string value",
   "document": {
-    "version": "1.0.0",
+    "version": "2.0.0",
     "state": {
       "tone": {
         "enum": [

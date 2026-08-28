@@ -2,7 +2,7 @@
   "name": "expr-if-optional-branch-resolved",
   "description": "The idiom for an optional beside a non-optional in if(): resolve it with ?? so both branches are bool, and the bool result feeds the bool? property",
   "document": {
-    "version": "1.0.0",
+    "version": "2.0.0",
     "state": {
       "flag": "bool",
       "maybe": "bool?"

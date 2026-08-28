@@ -1,0 +1,119 @@
+{
+  "name": "repeat-set-items",
+  "description": "A $set replacing the items array re-materializes the repeat; instances that read state as well as the element see both",
+  "document": {
+    "version": "2.0.0",
+    "state": {
+      "rows": {
+        "array": {
+          "record": {
+            "name": "string",
+            "url": "string"
+          }
+        }
+      },
+      "prefix": "string"
+    },
+    "root": {
+      "type": "Column",
+      "id": "list",
+      "children": [
+        {
+          "type": "Button",
+          "id": "swap",
+          "properties": {
+            "label": "Swap",
+            "enabled": true
+          },
+          "on": {
+            "tap": [
+              {
+                "action": "$set",
+                "key": "rows",
+                "value": {
+                  "$expr": "state.rows"
+                }
+              },
+              {
+                "action": "$set",
+                "key": "prefix",
+                "value": "> "
+              }
+            ]
+          }
+        },
+        {
+          "type": "$repeat",
+          "id": "each",
+          "items": {
+            "$expr": "state.rows"
+          },
+          "as": "row",
+          "children": [
+            {
+              "type": "Text",
+              "id": "name",
+              "properties": {
+                "text": {
+                  "$expr": "concat(state.prefix, row.name)"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "state": {
+    "rows": [
+      {
+        "name": "Alpha",
+        "url": "https://example.com/a"
+      },
+      {
+        "name": "Beta",
+        "url": "https://example.com/b"
+      }
+    ],
+    "prefix": ""
+  },
+  "steps": [
+    {
+      "event": {
+        "node": "swap",
+        "name": "tap"
+      }
+    }
+  ],
+  "expect": {
+    "view": {
+      "type": "Column",
+      "reference": "list",
+      "children": [
+        {
+          "type": "Button",
+          "reference": "swap",
+          "properties": {
+            "label": "Swap",
+            "enabled": true
+          }
+        },
+        {
+          "type": "Text",
+          "reference": "name[0]",
+          "properties": {
+            "text": "> Alpha"
+          }
+        },
+        {
+          "type": "Text",
+          "reference": "name[1]",
+          "properties": {
+            "text": "> Beta"
+          }
+        }
+      ]
+    },
+    "occurrences": []
+  }
+}

@@ -2,7 +2,7 @@
   "name": "gate-result-undeclared",
   "description": "result is unavailable inside onSuccess of an action declaring no result",
   "document": {
-    "version": "1.0.0",
+    "version": "2.0.0",
     "state": {
       "label": "string"
     },

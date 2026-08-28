@@ -2,7 +2,7 @@
   "name": "gate-order-object-members-lexicographic",
   "description": "Within one object the gate visits members in lexicographic key order, never document order: a node whose `label` (written first) is mistyped and whose `enabled` (written second) has a bad expression reports `enabled`, because JSON does not order object members",
   "document": {
-    "version": "1.0.0",
+    "version": "2.0.0",
     "root": {
       "type": "Button",
       "id": "b",

@@ -7,7 +7,7 @@
     }
   },
   "document": {
-    "version": "1.0.0",
+    "version": "2.0.0",
     "context": {
       "who": "string"
     },
@@ -48,7 +48,7 @@
       {
         "kind": "rejectedContextUpdate",
         "name": "who",
-        "expected": "8",
+        "expected": "maxValueSize",
         "found": "16"
       }
     ]

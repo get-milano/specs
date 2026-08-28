@@ -349,10 +349,16 @@ class TypeChecking(GateHarness):
 class GateValidation(GateHarness):
     """Spec 01: the fixed validation order and its typed refusals."""
 
-    def test_unsupported_major_is_refused(self):
-        fields = self.refusal(document("str(1)", version="2.0.0"))
-        self.assertEqual(fields["type"], "UnsupportedVersion")
-        self.assertEqual(fields["declared"], "2.0.0")
+    def test_unsupported_versions_are_refused_with_the_ranges(self):
+        # Foundations, Versioning: an unknown major, or a minor above the
+        # ceiling of a known one; the patch never matters.
+        for declared in ("3.0.0", "2.1.0", "1.1.0"):
+            fields = self.refusal(document("str(1)", version=declared))
+            self.assertEqual(fields["type"], "UnsupportedVersion", declared)
+            self.assertEqual(fields["declared"], declared)
+            self.assertEqual(fields["supported"], ["1.0", "2.0"])
+        for declared in ("1.0.0", "2.0.0", "2.0.9"):
+            self.build(document("str(1)", version=declared))
 
     def test_unknown_component_type_fails_under_the_fail_policy(self):
         doc = {"version": "1.0.0", "root": {"type": "Nope", "id": "r"}}

@@ -5,7 +5,7 @@ nav_order: 3
 
 # Milano Vocabulary Schema
 
-**Status:** Stable v1.0.0 · 2026-08-16
+**Status:** Stable · contract 2.0 · repository release 2.0.0 · 2026-08-29
 
 Defines the machine-readable artifact in which a consumer declares their vocabulary: component types, events, and custom actions. The engine consumes this artifact; the gate validates every document against it. It is the contract between document producers and the client, kept in sync by tooling, not discipline.
 
@@ -73,7 +73,7 @@ An event declared with a payload type makes the `event` expression root availabl
 
 - A MilanoEngine is created with one vocabulary artifact and one registry.
 - Engine creation validates both, and fails fast with a typed error on developer mistakes: `InvalidVocabulary` when the artifact violates this spec, `IncompleteRegistry` when a declared component type has no registered renderer. These errors arise before any document is processed: at engine creation, or, for the per-surface placeholder override with no placeholder renderer registered (runtime API spec), at build. They can never occur during rendering or later.
-- The artifact's `milano` version follows the same rule as a document's `version`: an artifact targeting a contract major the engine does not support is rejected at creation (`InvalidVocabulary`, rule `milano-version`), never processed under mismatched rules.
+- The artifact's `milano` version follows the same rule as a document's `version` (Foundations, Versioning): an artifact targeting a contract version the engine does not implement, by major or by minor, is rejected at creation (`InvalidVocabulary`, rule `milano-version`, naming the supported ranges), never processed under mismatched rules.
 - A document's component type is *unknown* when it is not declared in the engine's vocabulary. Registry coverage of the vocabulary is total by construction, so unknown-at-gate and unrenderable are the same condition, handled by the unknown-type policy.
 
 ## Evolution
@@ -84,7 +84,7 @@ Within a vocabulary major version, changes are additive only:
 - A declared name is never removed, never changes type, and never changes meaning. Removing or renaming an enum member changes the type and requires a major bump; narrowing `string` to an enum, or an enum to fewer members, is likewise breaking. A semantic change ships under a new name; the old name keeps its old meaning until the next major. A property that changes unit, interpretation, or effect while keeping its name and type is a breaking change even though no validator can see it.
 - Removing a declaration, changing a type, changing an event payload, marking a component `strict`, or revoking `children` acceptance requires a major bump. Optionality is part of the type, in both directions: making a required property optional is breaking too, because a renderer, or a binding generated from the declaration, reads a non-optional property as a promise that a value is present and would now receive `null`; making an optional property required breaks every document that omits it.
 
-This rule governs consumer-owned vocabularies once they are depended on. Milano's own formats (this artifact format included) follow the same discipline: contract v1.0 is stable, and incompatible changes ship only under a new contract major.
+This rule governs consumer-owned vocabularies once they are depended on. Milano's own formats (this artifact format included) follow the same discipline: contract 2.0 is stable, and incompatible changes ship only under a new contract major.
 
 This rule is what makes a document's minimum-version requirement sound: any vocabulary version at or above the minimum, within the same major, carries everything the document needs with unchanged meaning. `tools/vocabulary_diff.py` in this repository classifies the changes between two artifact versions and verifies that the version bump matches; producers run it in CI before publishing a vocabulary. What no tool can detect is semantic repurposing with unchanged shape; that is exactly what this section forbids.
 

@@ -2,7 +2,7 @@
   "name": "enum-property-expression",
   "description": "An expression of the same enum type is accepted in an enum position and resolves to the member string",
   "document": {
-    "version": "1.0.0",
+    "version": "2.0.0",
     "state": {
       "tone": {
         "enum": [

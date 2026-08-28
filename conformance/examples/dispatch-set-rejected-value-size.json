@@ -7,7 +7,7 @@
     }
   },
   "document": {
-    "version": "1.0.0",
+    "version": "2.0.0",
     "state": {
       "s": "string",
       "n": "int"
@@ -92,7 +92,7 @@
         "kind": "rejectedMutation",
         "node": "double",
         "name": "s",
-        "expected": "8",
+        "expected": "maxValueSize",
         "found": "10"
       }
     ]

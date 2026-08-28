@@ -2,7 +2,7 @@
   "name": "completion-result-invalid-payload",
   "description": "A success value that does not match the declared result type is an invalid completion: consumed, no branch runs, reported",
   "document": {
-    "version": "1.0.0",
+    "version": "2.0.0",
     "state": {
       "code": "string"
     },

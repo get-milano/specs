@@ -2,7 +2,7 @@
   "name": "interaction-unbound-event",
   "description": "A declared-but-unbound emission reaches analytics before the binding lookup, while droppedEvent keeps its defect meaning on the observability stream",
   "document": {
-    "version": "1.0.0",
+    "version": "2.0.0",
     "root": {
       "type": "Button",
       "id": "b",

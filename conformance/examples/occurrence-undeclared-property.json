@@ -2,7 +2,7 @@
   "name": "occurrence-undeclared-property",
   "description": "On a non-strict component an undeclared property is ignored and reported, and the node still resolves",
   "document": {
-    "version": "1.0.0",
+    "version": "2.0.0",
     "root": {
       "type": "Text",
       "id": "t",

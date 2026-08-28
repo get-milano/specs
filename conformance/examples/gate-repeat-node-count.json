@@ -1,0 +1,80 @@
+{
+  "name": "gate-repeat-node-count",
+  "description": "The node count limit is measured on the materialized tree: three elements over a two-node template plus the column is seven, past a limit of six",
+  "document": {
+    "version": "2.0.0",
+    "state": {
+      "rows": {
+        "array": {
+          "record": {
+            "name": "string",
+            "url": "string"
+          }
+        }
+      }
+    },
+    "root": {
+      "type": "Column",
+      "id": "list",
+      "children": [
+        {
+          "type": "$repeat",
+          "id": "each",
+          "items": {
+            "$expr": "state.rows"
+          },
+          "as": "row",
+          "children": [
+            {
+              "type": "Text",
+              "id": "name",
+              "properties": {
+                "text": {
+                  "$expr": "row.name"
+                }
+              }
+            },
+            {
+              "type": "Text",
+              "id": "url",
+              "properties": {
+                "text": {
+                  "$expr": "row.url"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "state": {
+    "rows": [
+      {
+        "name": "Alpha",
+        "url": "https://example.com/a"
+      },
+      {
+        "name": "Beta",
+        "url": "https://example.com/b"
+      },
+      {
+        "name": "Gamma",
+        "url": "https://example.com/c"
+      }
+    ]
+  },
+  "expect": {
+    "error": {
+      "type": "LimitExceeded",
+      "limit": "maxNodeCount",
+      "value": 6,
+      "actual": 7
+    }
+  },
+  "config": {
+    "limits": {
+      "maxNodeCount": 6
+    }
+  }
+}

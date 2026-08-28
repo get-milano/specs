@@ -2,7 +2,7 @@
   "name": "expr-promotion-precision-cliff",
   "description": "Promotion crosses the 2^53 cliff: the int 2^53+1 converts to double by round-to-nearest and compares equal to 2^53",
   "document": {
-    "version": "1.0.0",
+    "version": "2.0.0",
     "root": {
       "type": "Text",
       "id": "r",

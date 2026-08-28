@@ -2,7 +2,7 @@
   "name": "enum-action-parameter",
   "description": "An enum-typed action parameter carries the member string to the handler",
   "document": {
-    "version": "1.0.0",
+    "version": "2.0.0",
     "root": {
       "type": "Badge",
       "id": "b",

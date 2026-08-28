@@ -28,7 +28,15 @@ from pathlib import Path
 
 INT_MIN = -(2**63)
 INT_MAX = 2**63 - 1
-SUPPORTED_MAJORS = {1}
+# Per contract major, the highest minor this checker implements (Foundations,
+# Versioning). A document's patch never matters.
+SUPPORTED_VERSIONS = {1: 0, 2: 0}
+SUPPORTED_MAJORS = set(SUPPORTED_VERSIONS)
+
+
+def supported_ranges():
+    """The error detail's spelling of the ranges: "1.0", "2.0"."""
+    return [f"{major}.{minor}" for major, minor in sorted(SUPPORTED_VERSIONS.items())]
 MAX_TREE_DEPTH = 32
 MAX_NODE_COUNT = 10_000
 MAX_EXPRESSION_LENGTH = 1_024
@@ -44,6 +52,11 @@ DEFAULT_LIMITS = {
     "maxExpressionLength": MAX_EXPRESSION_LENGTH,
     "maxValueSize": MAX_VALUE_SIZE,
 }
+
+
+def count_resolved(node):
+    """Nodes in a resolved tree, the node count limit's runtime measure."""
+    return 1 + sum(count_resolved(child) for child in node.get("children", []))
 
 
 def value_size(value):
@@ -384,9 +397,12 @@ class Checker:
     payload: within action expressions the bare `event` root has that type.
     """
 
-    def __init__(self, state, context, event=None, result=None):
+    def __init__(self, state, context, event=None, result=None, bindings=None):
         self.roots = {"state": state, "context": context}
         self.scalar_roots = {"event": event, "result": result}
+        # $repeat bindings (document model spec, Constructs): the element
+        # and its index, roots like event and result.
+        self.scalar_roots.update(bindings or {})
 
     def check(self, node, expecting=None):
         op = node[0]
@@ -610,16 +626,19 @@ class Evaluator:
     """Total evaluation per spec 03. Values: Python int (64-bit emulated),
     float, str, bool, None; report() receives arithmetic occurrences."""
 
-    def __init__(self, state, context, report, event=None):
+    def __init__(self, state, context, report, event=None, bindings=None):
         self.roots = {"state": state, "context": context}
         if event is not None:
             self.roots["event"] = event
+        self.roots.update(bindings or {})
         self.report = report
 
     def eval(self, node):
         op = node[0]
         if op == "lit":
             return node[2]
+        if op == "ref":
+            return self.roots[node[1]]
         if op == "field":
             _, base, name = node
             if base[0] == "ref":
@@ -818,9 +837,12 @@ class ReferenceGate:
 
         # 2. Version.
         version = document["version"]
-        if int(version.split(".")[0]) not in SUPPORTED_MAJORS:
+        major, minor = (int(part) for part in version.split(".")[:2])
+        if major not in SUPPORTED_VERSIONS or minor > SUPPORTED_VERSIONS[major]:
             raise GateError("UnsupportedVersion", declared=version,
-                            supported=sorted(SUPPORTED_MAJORS))
+                            supported=supported_ranges())
+        self.major = major
+        self.bindings = {}
 
         # Vocabulary requirement: when the document declares one, the
         # engine's vocabulary must match by name and be at least the
@@ -891,9 +913,13 @@ class ReferenceGate:
         state_values = self.check_supplied(
             vector.get("state", {}), state_decls, "state-declaration")
 
-        # Resolution.
+        # Resolution, and the node count limit on the materialized tree.
         resolved = self.resolve(document["root"], "root",
                                 state_values, context_values)
+        materialized = count_resolved(resolved)
+        if materialized > self.limits["maxNodeCount"]:
+            raise GateError("LimitExceeded", limit="maxNodeCount",
+                            value=self.limits["maxNodeCount"], actual=materialized)
         return resolved, state_values
 
     def check_envelope(self, document, node=None, path="root"):
@@ -943,8 +969,11 @@ class ReferenceGate:
                 raise GateError("SchemaViolation", rule="id-uniqueness",
                                 node=node_id, found=node_id)
             seen_ids.add(node_id)
-        # v1 documents contain no construct nodes: the $ prefix is reserved.
+        # Constructs live in the $ namespace; contract 2.0 admits $repeat.
         if node["type"].startswith("$"):
+            if node["type"] == "$repeat" and self.major >= 2:
+                self.validate_repeat(node, path, ref, checker, seen_ids)
+                return
             raise GateError("SchemaViolation", rule="construct", node=ref,
                             expected="component type", found=node["type"])
         declaration = self.vocabulary["components"].get(node["type"])
@@ -999,6 +1028,65 @@ class ReferenceGate:
             self.validate_node(child, f"{path}/children[{index}]", checker,
                                seen_ids)
 
+    RESERVED_ROOTS = {"state", "context", "event", "result"}
+
+    def element_type(self, repeat, bindings):
+        """The element type of a validated $repeat's items expression."""
+        checker = Checker(self.state_decls, self.context_decls, bindings=bindings)
+        return checker.check(Parser(tokenize(repeat["items"]["$expr"])).parse()).elem
+
+    def validate_repeat(self, node, path, ref, checker, seen_ids):
+        """The $repeat construct (document model spec, Constructs): never
+        the root, no properties or bindings, an array expression as items,
+        a fresh identifier as `as`, and a template validated with the
+        element and its index in scope."""
+        def violation(expected, found=None):
+            return GateError("SchemaViolation", rule="repeat", node=ref,
+                             expected=expected, found=found)
+        if path == "root":
+            raise violation("child position", "root")
+        if node.get("properties"):
+            raise violation("items, as, children", "properties")
+        if node.get("on"):
+            raise violation("items, as, children", "on")
+        items = node.get("items")
+        if not (isinstance(items, dict) and set(items) == {"$expr"}):
+            raise violation("items expression",
+                            json_kind(items) if items is not None else None)
+        alias = node.get("as")
+        if not isinstance(alias, str) or not _identifier(alias) \
+                or alias in self.RESERVED_ROOTS:
+            raise violation("binding identifier", alias)
+        if alias in self.bindings or f"{alias}_index" in self.bindings:
+            raise violation("distinct binding", alias)
+        if not node.get("children"):
+            raise violation("template", "no children")
+        text = items["$expr"]
+        if len(text) > self.limits["maxExpressionLength"]:
+            raise GateError("LimitExceeded", limit="maxExpressionLength",
+                            value=self.limits["maxExpressionLength"],
+                            actual=len(text))
+        try:
+            ast = Parser(tokenize(text)).parse()
+            items_ty = checker.check(ast)
+        except ExprError:
+            raise GateError("SchemaViolation", rule="expression", node=ref,
+                            expected="array")
+        if items_ty.kind != "array" or items_ty.optional:
+            raise violation("array items", repr(items_ty))
+        saved = self.bindings
+        self.bindings = dict(saved)
+        self.bindings[alias] = items_ty.elem
+        self.bindings[f"{alias}_index"] = Ty("int")
+        template_checker = Checker(self.state_decls, self.context_decls,
+                                   bindings=self.bindings)
+        try:
+            for index, child in enumerate(node["children"]):
+                self.validate_node(child, f"{path}/children[{index}]",
+                                   template_checker, seen_ids)
+        finally:
+            self.bindings = saved
+
     def validate_actions(self, bound, ref, event_ty=None, result_ty=None):
         """Custom action bindings must resolve against the surface's granted
         action set; built-in $ actions are always available. Expressions in
@@ -1010,7 +1098,8 @@ class ReferenceGate:
                 continue
             name = action.get("action")
             checker = Checker(self.state_decls, self.context_decls,
-                              event=event_ty, result=result_ty)
+                              event=event_ty, result=result_ty,
+                              bindings=self.bindings)
             custom = isinstance(name, str) and not name.startswith("$")
             if name == "$set":
                 key = action.get("key")
@@ -1112,8 +1201,30 @@ class ReferenceGate:
                                 value=self.limits["maxValueSize"], actual=size)
         return values  # Undeclared supplied keys are ignored.
 
-    def resolve(self, node, path, state, context):
-        ref = self.reference(node, path)
+    def resolve(self, node, path, state, context, bindings=None, suffix=""):
+        """A resolved snapshot; a $repeat resolves to the list of its
+        instances instead, each template node's reference suffixed with
+        the element index (document model spec, Constructs)."""
+        bindings = bindings or {}
+        if node["type"] == "$repeat":
+            alias = node["as"]
+            report = lambda kind: self.occurrences.append(
+                {"kind": kind, "node": self.reference(node, path) + suffix,
+                 "name": "items"})
+            ast = Parser(tokenize(node["items"]["$expr"])).parse()
+            elements = Evaluator(state, context, report, bindings=bindings).eval(ast)
+            instances = []
+            for index, element in enumerate(elements):
+                bound = dict(bindings)
+                bound[alias] = element
+                bound[f"{alias}_index"] = index
+                for child_index, child in enumerate(node["children"]):
+                    resolved = self.resolve(
+                        child, f"{path}/children[{child_index}]", state, context,
+                        bound, f"{suffix}[{index}]")
+                    instances.extend(resolved if isinstance(resolved, list) else [resolved])
+            return instances
+        ref = self.reference(node, path) + suffix
         snapshot = {"type": node["type"], "reference": ref}
         if node["type"] not in self.vocabulary["components"]:
             if self.policy == "placeholder":
@@ -1129,7 +1240,7 @@ class ReferenceGate:
             if isinstance(value, dict) and "$expr" in value:
                 report = lambda kind, name=name: self.occurrences.append(
                     {"kind": kind, "node": ref, "name": name})
-                evaluator = Evaluator(state, context, report)
+                evaluator = Evaluator(state, context, report, bindings=bindings)
                 ast = Parser(tokenize(value["$expr"])).parse()
                 result = evaluator.eval(ast)
                 # Canonicalize toward the declared type: an int expression
@@ -1149,9 +1260,11 @@ class ReferenceGate:
         for index, child in enumerate(node.get("children", [])):
             child_path = f"{path}/children[{index}]"
             if child["type"] not in self.vocabulary["components"] \
-                    and self.policy == "skip":
+                    and self.policy == "skip" and child["type"] != "$repeat":
                 continue  # Occurrence was already reported during validation.
-            children.append(self.resolve(child, child_path, state, context))
+            resolved = self.resolve(child, child_path, state, context,
+                                    bindings, suffix)
+            children.extend(resolved if isinstance(resolved, list) else [resolved])
         if children:
             snapshot["children"] = children
         return snapshot
@@ -1204,6 +1317,8 @@ class StepLinter:
                               for k, v in document.get("context", {}).items()}
         self.collect_actions(vector)
         self.nodes = {}
+        self.repeated = set()
+        self.bindings = {}
         self.lint_node(document["root"], "root")
         self.lint_steps(vector["steps"])
         for entry in expect.get("dispatched", []):
@@ -1249,6 +1364,20 @@ class StepLinter:
         ref = node.get("id") or path
         self.nodes[ref] = node
         self.nodes[path] = node
+        if node["type"] == "$repeat":
+            # The template's nodes are addressed as instances: base
+            # reference plus one index per enclosing repeat.
+            saved = self.bindings
+            self.bindings = dict(saved)
+            self.bindings[node["as"]] = self.gate.element_type(node, self.bindings)
+            self.bindings[f"{node['as']}_index"] = Ty("int")
+            for index, child in enumerate(node.get("children", [])):
+                self.lint_node(child, f"{path}/children[{index}]")
+            self.bindings = saved
+            return
+        if self.bindings:
+            self.repeated.add(ref)
+            self.repeated.add(path)
         declaration = self.vocabulary["components"].get(node["type"])
         if declaration is None:
             return  # Opaque subtree, same as validation.
@@ -1348,7 +1477,8 @@ class StepLinter:
     def lint_value(self, value, ty, ref, event_ty, what, result_ty=None):
         if isinstance(value, dict) and "$expr" in value:
             checker = Checker(self.state_decls, self.context_decls,
-                              event=event_ty, result=result_ty)
+                              event=event_ty, result=result_ty,
+                              bindings=self.bindings)
             try:
                 self.gate.check_expression(value["$expr"], ty, ref, checker)
             except GateError:
@@ -1410,6 +1540,12 @@ class StepLinter:
             self.problem(f"{label}: event takes a string 'node' and 'name'")
             return
         node = self.nodes.get(body["node"])
+        if node is None:
+            # An instance reference: the template node's reference plus
+            # bracketed indices, one per enclosing repeat.
+            base = re.sub(r"(\[\d+\])+$", "", body["node"])
+            if base != body["node"] and base in self.repeated:
+                node = self.nodes[base]
         if node is None:
             self.problem(f"{label}: event node {body['node']!r} does not "
                          f"exist in the document")
@@ -1540,6 +1676,7 @@ def synthesized_values(declarations):
 TOP_LEVEL_KEYS = {"version", "vocabulary", "context", "state", "root", "metadata"}
 VOCABULARY_KEYS = {"name", "min"}
 ENVELOPE_KEYS = {"type", "id", "properties", "children", "on"}
+REPEAT_KEYS = ENVELOPE_KEYS | {"items", "as"}
 DESCRIPTOR_KEYS = {"enum", "array", "record", "optional"}
 
 
@@ -1563,8 +1700,10 @@ def unknown_key_warnings(document):
     def node(entry, path):
         if not isinstance(entry, dict):
             return
+        # A $repeat carries its own keys; the gate rules on the rest.
+        known = REPEAT_KEYS if entry.get("type") == "$repeat" else ENVELOPE_KEYS
         for key in entry:
-            if key not in ENVELOPE_KEYS:
+            if key not in known:
                 warnings.append(f"{path}: unknown envelope key {key!r}")
         for index, child in enumerate(entry.get("children") or []):
             node(child, f"{path}/children[{index}]")

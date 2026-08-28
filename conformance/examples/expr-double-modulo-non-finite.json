@@ -2,7 +2,7 @@
   "name": "expr-double-modulo-non-finite",
   "description": "Double % follows IEEE 754 with non-finite operands: an infinite dividend or a zero divisor is nan, an infinite divisor leaves the dividend alone, and nothing is reported",
   "document": {
-    "version": "1.0.0",
+    "version": "2.0.0",
     "root": {
       "type": "Text",
       "id": "result",

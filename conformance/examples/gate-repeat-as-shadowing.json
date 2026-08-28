@@ -1,0 +1,73 @@
+{
+  "name": "gate-repeat-as-shadowing",
+  "description": "Nested repeats bind distinct names: an inner as equal to an outer one is rejected",
+  "document": {
+    "version": "2.0.0",
+    "state": {
+      "rows": {
+        "array": {
+          "record": {
+            "name": "string",
+            "url": "string"
+          }
+        }
+      }
+    },
+    "root": {
+      "type": "Column",
+      "id": "list",
+      "children": [
+        {
+          "type": "$repeat",
+          "id": "outer",
+          "items": {
+            "$expr": "state.rows"
+          },
+          "as": "row",
+          "children": [
+            {
+              "type": "$repeat",
+              "id": "inner",
+              "items": {
+                "$expr": "state.rows"
+              },
+              "as": "row",
+              "children": [
+                {
+                  "type": "Text",
+                  "id": "name",
+                  "properties": {
+                    "text": {
+                      "$expr": "row.name"
+                    }
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "state": {
+    "rows": [
+      {
+        "name": "Alpha",
+        "url": "https://example.com/a"
+      },
+      {
+        "name": "Beta",
+        "url": "https://example.com/b"
+      }
+    ]
+  },
+  "expect": {
+    "error": {
+      "type": "SchemaViolation",
+      "rule": "repeat",
+      "node": "inner",
+      "expected": "distinct binding",
+      "found": "row"
+    }
+  }
+}

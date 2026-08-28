@@ -2,7 +2,7 @@
   "name": "dispatch-set-independent-expression-not-reevaluated",
   "description": "Only dependent expressions re-evaluate: a $set of an unrelated key, or of the same value, leaves a dividing expression alone and its report unrepeated; a $set that changes the divisor re-evaluates it, and setting it back to zero reports again",
   "document": {
-    "version": "1.0.0",
+    "version": "2.0.0",
     "state": {
       "divisor": "int",
       "other": "int"

@@ -2,7 +2,7 @@
   "name": "gate-limit-expression-scalars-over",
   "description": "Expression length is counted in Unicode scalars, not grapheme clusters: 1,045 scalars of combining sequences (530 grapheme clusters) exceeds the limit",
   "document": {
-    "version": "1.0.0",
+    "version": "2.0.0",
     "root": {
       "type": "Text",
       "id": "t",

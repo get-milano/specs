@@ -2,7 +2,7 @@
   "name": "expr-double-modulo",
   "description": "Double % is the truncating remainder; the sign follows the dividend",
   "document": {
-    "version": "1.0.0",
+    "version": "2.0.0",
     "root": {
       "type": "Text",
       "id": "result",

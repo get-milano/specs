@@ -14,7 +14,11 @@
   "expect": {
     "error": {
       "type": "UnsupportedVersion",
-      "declared": "99.0.0"
+      "declared": "99.0.0",
+      "supported": [
+        "1.0",
+        "2.0"
+      ]
     }
   }
 }

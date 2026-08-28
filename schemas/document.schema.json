@@ -87,6 +87,15 @@
             "$ref": "#/$defs/node"
           }
         },
+        "items": {
+          "description": "$repeat only: the array expression the template is instantiated over.",
+          "$ref": "#/$defs/value"
+        },
+        "as": {
+          "description": "$repeat only: the name that binds each element inside the template; <as>_index binds its position.",
+          "type": "string",
+          "minLength": 1
+        },
         "on": {
           "type": "object",
           "propertyNames": {

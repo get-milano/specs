@@ -5,7 +5,7 @@ nav_order: 1
 
 # Milano Foundations
 
-**Status:** Stable v1.0.0 · 2026-08-16
+**Status:** Stable · contract 2.0 · repository release 2.0.0 · 2026-08-29
 
 ## Definition
 
@@ -27,9 +27,9 @@ Three things Milano is regularly mistaken for, and is not:
 
 The mechanics-level exclusions (no networking, no scripting, no app-wide state, and the rest) are listed in "What Milano does not do" below.
 
-## Version 1.0 scope
+## Scope
 
-Version 1.0 exists to model and ship exactly two things:
+The contract exists to model and ship exactly two things, since its first version:
 
 1. **Banners and interstitials**: document-defined promotional or informational surfaces, with conditional visibility, personalized content through context, and host-handled actions (dismiss, navigate, track).
 2. **Simple forms**: document-defined fields whose composition changes by changing the document; values pre-filled through the state data provider, edited through events and `$set`, submitted through a custom action with success and failure follow-ups.
@@ -174,7 +174,7 @@ flowchart LR
 - **Configuration split.** Engine-scoped: the vocabulary schema, the registry (renderers, placeholder renderer), the default unknown-type policy, and resource limits, fixed when the engine is created. Builder-scoped: what varies per view; the document, host context, action handlers, the surface's granted action set (an allowlist over the vocabulary's actions plus per-surface declarations and overrides), and an optional unknown-type policy override.
 - **Boundary contracts.** Everything the consumer or host plugs into Milano conforms to a Milano-defined contract type: renderers, the placeholder renderer, action handlers, the state data provider, and the host context source are implementations of Milano protocols (Swift) and interfaces (Kotlin, TypeScript). Milano never accepts arbitrary objects across the boundary; context values are typed data validated against the document's declaration, and actions reach handlers as data.
 - **Conformance suite.** A language-neutral set of test vectors: documents paired with expected outcomes (validation results, expression values, state transitions, dispatched actions), maintained alongside the specs. Every runtime must pass it; it is the definition of mechanics parity.
-- **Versioning.** Every document declares the contract version it targets. Each runtime release declares the set of major versions it supports; a document targeting a supported major is processed under that major's rules, and a document targeting an unsupported major (older or newer) fails at the gate with the unsupported-version error. Within a supported major, tolerance is split by ownership. Unknown *core document fields* (contract-governed) are ignored by rule, so minor contract additions do not break older runtimes. This is safe because of a normative constraint on contract evolution: a change qualifies as minor only if a runtime that ignores it still renders output whose semantics the producer must accept as correct; any change that alters interpretation when ignored is major. Undeclared *component properties* (vocabulary-governed) are ignored and reported by default; a vocabulary schema may mark a component type strict, making undeclared properties a validation error at the gate. Unknown component types follow the configured unknown-type policy.
+- **Versioning.** Every document declares the contract version it targets. Each runtime release declares, per contract major it implements, the highest minor it implements (this release: 1.0 and 2.0); a document is accepted when its major is declared and its minor is at most that ceiling, the patch never mattering, and is processed under its declared major's rules. Anything else fails at the gate with the unsupported-version error naming the declared version and the supported ranges, so a document written for a newer contract fails typed instead of rendering with rules its producer did not write for. Contract 2.0 is a superset of 1.0: every 1.x document is a valid 2.0 document with the same meaning, which is why both majors are declared. Within a supported version, tolerance is split by ownership. Unknown *core document fields* (contract-governed) are ignored by rule, so minor contract additions do not break older runtimes. This is safe because of a normative constraint on contract evolution: a change qualifies as minor only if a runtime that ignores it still renders output whose semantics the producer must accept as correct; any change that alters interpretation when ignored is major. Undeclared *component properties* (vocabulary-governed) are ignored and reported by default; a vocabulary schema may mark a component type strict, making undeclared properties a validation error at the gate. Unknown component types follow the configured unknown-type policy.
 
 ## What Milano does not do
 
@@ -182,7 +182,7 @@ flowchart LR
 - **No rendering, no visuals.** No default views, styles, themes, fonts, or colors. Milano never draws a pixel; consumer renderers do.
 - **No styling concepts.** The contract defines no visual properties. What a consumer's vocabulary carries is their choice; the spec recommends semantic properties (intent, emphasis) over concrete values (colors, dimensions) but does not enforce it. Accessibility follows the same rule: assistive-technology semantics are renderer territory, expressed through consumer-declared optional properties (a label, a decorative flag, a live-region politeness) that renderers map to platform accessibility APIs, never through contract concepts.
 - **No document delivery.** Milano does not fetch, cache, poll, or refresh documents. It receives a document from the host and materializes it. There is no server side of Milano at all.
-- **No scripting.** The expression language will not grow side effects, loops, or functions. Logic beyond pure derivation belongs in the document producer or the host.
+- **No scripting.** The expression language will not grow side effects, loops, or functions; `$repeat` is structure (a template per element of data the host supplied), not iteration in expressions. Logic beyond pure derivation belongs in the document producer or the host.
 - **No app architecture takeover.** Milano owns no navigation, DI, analytics, or feature flags. It emits actions; the host executes them.
 - **No app-wide state.** State beyond document state flows out through actions and in through host context. Milano is never the app's source of truth.
 - **No business logic.** The document author decides what to show; Milano materializes it; the host renders and executes effects. Milano decides nothing about the product.
@@ -196,7 +196,7 @@ flowchart LR
 
 | Axis | Decision |
 |---|---|
-| V1.0 scope | Banners, interstitials, and simple document-defined forms |
+| Scope | Banners, interstitials, and simple document-defined forms |
 | Position | Client-only; document source is the host's concern |
 | Render unit | Full screens and embedded fragments; a screen is a root node |
 | Component catalog | None; fully open, consumer-defined vocabulary |
@@ -217,19 +217,20 @@ flowchart LR
 | Boundary contracts | Renderers, placeholder, action handlers, and context source implement Milano-defined protocols/interfaces |
 | Resource limits | Enforced at the gate, and on every value entering state or context at runtime; safe defaults fixed by spec, adjustable per engine |
 | Host context shape | Declared by the document; initial context validated at the gate; updates validated atomically, rejected whole on failure |
-| Minor versions | Only changes that are semantics-preserving when ignored qualify; everything else is major |
+| Minor versions | Additive only, and gated: a runtime declares the highest minor it implements per major and rejects documents above it |
 | Unknown component types | Developer-configured policy (skip subtree, fail at the gate, or placeholder with raw subtree); engine default, per-view override |
 | Unknown-node subtrees | One opaque unit; vocabulary validation and expression/action evaluation stop at the unknown node |
 | Undeclared component properties | Ignored and reported by default; vocabulary schemas may mark a type strict |
 | Construction | MilanoView is created only through MilanoViewBuilder; building is the gate |
-| Supported majors | Each runtime release declares its supported set; documents outside it fail at the gate |
-| Invalid / unsupported-major documents | Building throws a typed error; the application handles it; nothing renders |
+| Supported versions | Each runtime release declares, per major, the highest minor it implements; documents above it fail at the gate |
+| Invalid / unsupported-version documents | Building throws a typed error; the application handles it; nothing renders |
 | Invalid renderer emissions | Dropped before dispatch and reported; a conformance case |
 | Errors | Small closed set of typed errors with structured details; no opaque failures |
 | Wire format | Abstract model, JSON canonical encoding |
 | Toolkits | SwiftUI, Compose, and React only |
 | Styling | No styling concepts in the contract; semantics recommended, not enforced |
 | Document lifecycle | Document binding is immutable, presentation is dynamic; new document means a new view at the gate; no reconciliation |
+| List rendering | The `$repeat` construct (contract 2.0): a template repeated per element of an array-typed expression, bound by name; transparent to vocabularies |
 | Composition | Out of scope for now: one document, one tree |
 | Runtimes | Independent pure-Swift, pure-Kotlin, and pure-TypeScript; parity enforced by the shared conformance suite |
 | Accessibility | Owned by consumer renderers; informed by semantic vocabulary properties |

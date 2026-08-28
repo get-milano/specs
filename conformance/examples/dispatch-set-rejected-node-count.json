@@ -1,0 +1,154 @@
+{
+  "name": "dispatch-set-rejected-node-count",
+  "description": "A $set whose new items would materialize past the node count limit assigns nothing, is reported as a rejected mutation naming the limit and the count, and ends the action list",
+  "config": {
+    "limits": {
+      "maxNodeCount": 6
+    }
+  },
+  "document": {
+    "version": "2.0.0",
+    "state": {
+      "rows": {
+        "array": {
+          "record": {
+            "name": "string",
+            "url": "string"
+          }
+        }
+      },
+      "more": {
+        "array": {
+          "record": {
+            "name": "string",
+            "url": "string"
+          }
+        }
+      },
+      "n": "int"
+    },
+    "root": {
+      "type": "Column",
+      "id": "list",
+      "children": [
+        {
+          "type": "Button",
+          "id": "grow",
+          "properties": {
+            "label": "Grow",
+            "enabled": true
+          },
+          "on": {
+            "tap": [
+              {
+                "action": "$set",
+                "key": "rows",
+                "value": {
+                  "$expr": "state.more"
+                }
+              },
+              {
+                "action": "$set",
+                "key": "n",
+                "value": 1
+              }
+            ]
+          }
+        },
+        {
+          "type": "$repeat",
+          "id": "each",
+          "items": {
+            "$expr": "state.rows"
+          },
+          "as": "row",
+          "children": [
+            {
+              "type": "Text",
+              "id": "name",
+              "properties": {
+                "text": {
+                  "$expr": "row.name"
+                }
+              }
+            },
+            {
+              "type": "Text",
+              "id": "url",
+              "properties": {
+                "text": {
+                  "$expr": "row.url"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "state": {
+    "rows": [
+      {
+        "name": "Alpha",
+        "url": "https://example.com/a"
+      }
+    ],
+    "more": [
+      {
+        "name": "Alpha",
+        "url": "https://example.com/a"
+      },
+      {
+        "name": "Beta",
+        "url": "https://example.com/b"
+      },
+      {
+        "name": "Gamma",
+        "url": "https://example.com/c"
+      }
+    ],
+    "n": 0
+  },
+  "steps": [
+    {
+      "event": {
+        "node": "grow",
+        "name": "tap"
+      }
+    }
+  ],
+  "expect": {
+    "state": {
+      "rows": [
+        {
+          "name": "Alpha",
+          "url": "https://example.com/a"
+        }
+      ],
+      "more": [
+        {
+          "name": "Alpha",
+          "url": "https://example.com/a"
+        },
+        {
+          "name": "Beta",
+          "url": "https://example.com/b"
+        },
+        {
+          "name": "Gamma",
+          "url": "https://example.com/c"
+        }
+      ],
+      "n": 0
+    },
+    "occurrences": [
+      {
+        "kind": "rejectedMutation",
+        "node": "grow",
+        "name": "rows",
+        "expected": "maxNodeCount",
+        "found": "8"
+      }
+    ]
+  }
+}

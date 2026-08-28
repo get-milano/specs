@@ -2,7 +2,7 @@
   "name": "form-contact-consent",
   "description": "End-to-end contact form: state provider, unidirectional flow via events and $set, $when consent gating, vocabulary-declared action, async submit completion, onSuccess",
   "document": {
-    "version": "1.0.0",
+    "version": "2.0.0",
     "state": {
       "name": "string",
       "surname": "string",

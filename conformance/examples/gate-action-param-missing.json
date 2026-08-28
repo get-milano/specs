@@ -2,7 +2,7 @@
   "name": "gate-action-param-missing",
   "description": "A missing non-optional custom action parameter fails at the gate",
   "document": {
-    "version": "1.0.0",
+    "version": "2.0.0",
     "root": {
       "type": "Button",
       "id": "go",

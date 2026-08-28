@@ -1,7 +1,7 @@
 {
   "name": "gate-context-key-invalid",
   "description": "Document context keys follow the identifier grammar: the $ prefix is reserved for the contract",
-  "documentText": "{\"version\": \"1.0.0\", \"context\": {\"$x\": \"string\"}, \"root\": {\"type\": \"Text\", \"properties\": {\"text\": \"x\"}}}",
+  "documentText": "{\"version\": \"2.0.0\", \"context\": {\"$x\": \"string\"}, \"root\": {\"type\": \"Text\", \"properties\": {\"text\": \"x\"}}}",
   "expect": {
     "error": {
       "type": "SchemaViolation",

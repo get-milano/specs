@@ -5,7 +5,7 @@ nav_order: 4
 
 # Milano Expression Language
 
-**Status:** Stable v1.0.0 · 2026-08-16
+**Status:** Stable · contract 2.0 · repository release 2.0.0 · 2026-08-29
 
 Defines the grammar and semantics of the expression strings carried by the `$expr` wrapper. Expressions are pure, statically typed, and total: after the gate accepts a document, evaluation can never fail. Every runtime implements this spec independently; the conformance suite is the arbiter of identical behavior.
 
@@ -36,15 +36,15 @@ identifier     = letter , { letter | digit | "_" } ;
 Notes:
 
 - `character` is any Unicode scalar other than `'` and `\`, which appear only through their escapes. `letter` is ASCII `A`-`Z` and `a`-`z`; `digit` is ASCII `0`-`9`. Non-ASCII letters and digits (including Unicode digit characters) are not part of the grammar and fail to tokenize.
-- A bare `identifier` in `primary` position must be a reserved root usable as a value: `event` or `result`, in their scopes. `state` and `context` are namespaces, valid only as the base of a field access; a bare `state` or `context`, and any other bare identifier, is a `SchemaViolation` at the gate. Function names appear only in `call` position.
+- A bare `identifier` in `primary` position must be a root usable as a value: `event` or `result` in their scopes, or a `$repeat` binding in its template. `state` and `context` are namespaces, valid only as the base of a field access; a bare `state` or `context`, and any other bare identifier, is a `SchemaViolation` at the gate. Function names appear only in `call` position.
 - Negative literals are the unary `-` operator applied to a number.
 - A `number` without a decimal point is an `int` literal; with one, a `double` literal.
 
 ## References
 
-- Reserved roots: `state`, `context`, `event` (only inside `on` bindings of events declaring a payload), and `result` (only inside `onSuccess` bindings of actions declaring a result).
+- Reserved roots: `state`, `context`, `event` (only inside `on` bindings of events declaring a payload), and `result` (only inside `onSuccess` bindings of actions declaring a result). Inside a `$repeat` template (document model spec), the names the construct binds are roots too: `<as>` is the element, `<as>_index` its position, both available in property expressions and in the template's action bindings, including follow-ups.
 - Record fields are accessed with `.` (dot). Field access requires a non-optional record type; an optional must be resolved with `??` first. This rule is checked at the gate, which is what makes null dereference impossible at runtime.
-- There is no array indexing in v1.0.
+- There is no array indexing in contract 2.0.
 
 ## Literals
 
@@ -64,7 +64,7 @@ In precedence order, tightest first. Parentheses group.
 | 2 | `*` `/` `%` | numeric |
 | 3 | `+` `-` | numeric; `+` also concatenates when both operands are strings |
 | 4 | `<` `<=` `>` `>=` | numeric only |
-| 5 | `==` `!=` | non-optional scalars of the same type after numeric promotion. An optional operand is comparable only to `null`: comparing it to anything else, including another optional, is a `SchemaViolation` at the gate, and a producer resolves it with `??` first, the same rule as field access and `if`. A non-optional operand beside `null`, or `null` beside `null`, is likewise a `SchemaViolation` (the comparison could only ever be constant). Arrays and records are not comparable in v1.0: comparing them is a `SchemaViolation` at the gate |
+| 5 | `==` `!=` | non-optional scalars of the same type after numeric promotion. An optional operand is comparable only to `null`: comparing it to anything else, including another optional, is a `SchemaViolation` at the gate, and a producer resolves it with `??` first, the same rule as field access and `if`. A non-optional operand beside `null`, or `null` beside `null`, is likewise a `SchemaViolation` (the comparison could only ever be constant). Arrays and records are not comparable in contract 2.0: comparing them is a `SchemaViolation` at the gate |
 | 6 | `&&` | bool, short-circuit |
 | 7 | `||` | bool, short-circuit |
 | 8 | `??` | optional T on the left, T on the right; result T; right-associative |
@@ -91,7 +91,7 @@ Fixed exactly, because independent runtimes must agree to the bit:
 
 ## Functions
 
-The complete v1.0 set. All functions are pure and total. Arguments are evaluated eagerly, with one exception: `if` evaluates only the taken branch, like `&&`, `||`, and `??`.
+The complete set in contract 2.0. All functions are pure and total. Arguments are evaluated eagerly, with one exception: `if` evaluates only the taken branch, like `&&`, `||`, and `??`.
 
 | Function | Signature | Notes |
 |---|---|---|
@@ -107,7 +107,7 @@ The complete v1.0 set. All functions are pure and total. Arguments are evaluated
 | `trim` | string to string | Removes leading and trailing Unicode whitespace |
 | `if` | bool, T, T to T | Both branches type-check to exactly the same T, optionality included: a `T?` branch beside a `T` branch is rejected (resolve the optional with `??` first), a single `null` branch makes T optional, and two `null` branches are rejected (no T to infer); only the taken branch is evaluated, observable as the absence of the untaken branch's arithmetic reports |
 
-There are no regular expressions in v1.0: string validation beyond these functions belongs to the producer or the host. There are no case-mapping functions in v1.0: case rules are locale-sensitive and belong to renderers.
+There are no regular expressions in contract 2.0: string validation beyond these functions belongs to the producer or the host. There are no case-mapping functions in contract 2.0: case rules are locale-sensitive and belong to renderers.
 
 ## Typing and totality
 

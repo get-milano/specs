@@ -2,7 +2,7 @@
   "name": "enum-widens-to-string",
   "description": "An enum value is usable wherever a string is expected: concatenation and string functions widen it",
   "document": {
-    "version": "1.0.0",
+    "version": "2.0.0",
     "state": {
       "tone": {
         "enum": [

@@ -2,7 +2,7 @@
   "name": "expr-int-expression-in-double-slot",
   "description": "An int expression is accepted where a double is declared and promoted at evaluation, in a property and in an action parameter declared by the builder",
   "document": {
-    "version": "1.0.0",
+    "version": "2.0.0",
     "state": {
       "count": "int"
     },

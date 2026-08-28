@@ -2,7 +2,7 @@
   "name": "enum-completion-result",
   "description": "An enum-typed completion result validates membership: a member binds result, a non-member is an invalid completion",
   "document": {
-    "version": "1.0.0",
+    "version": "2.0.0",
     "state": {
       "tone": {
         "enum": [

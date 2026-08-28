@@ -6,7 +6,7 @@
       "maxDocumentBytes": 64
     }
   },
-  "documentText": "{\"version\": \"1.0.0\", \"root\": {\"type\": \"Text\", \"id\": \"t\", \"properties\": {\"text\": \"hello\"}}}",
+  "documentText": "{\"version\": \"2.0.0\", \"root\": {\"type\": \"Text\", \"id\": \"t\", \"properties\": {\"text\": \"hello\"}}}",
   "expect": {
     "error": {
       "type": "LimitExceeded",

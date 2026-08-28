@@ -2,7 +2,7 @@
   "name": "gate-id-duplicate",
   "description": "Node ids are document-unique: a duplicate id is a SchemaViolation with rule id-uniqueness",
   "document": {
-    "version": "1.0.0",
+    "version": "2.0.0",
     "root": {
       "type": "Column",
       "id": "c",

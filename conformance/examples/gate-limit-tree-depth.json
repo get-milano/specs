@@ -2,7 +2,7 @@
   "name": "gate-limit-tree-depth",
   "description": "A tree deeper than the default depth limit fails with LimitExceeded",
   "document": {
-    "version": "1.0.0",
+    "version": "2.0.0",
     "root": {
       "type": "Column",
       "id": "c1",

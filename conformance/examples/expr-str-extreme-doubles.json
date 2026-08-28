@@ -2,7 +2,7 @@
   "name": "expr-str-extreme-doubles",
   "description": "str() shortest round-trip at the double extremes, carried through state: the smallest subnormal, the largest finite, and a carry-on-round value",
   "document": {
-    "version": "1.0.0",
+    "version": "2.0.0",
     "state": {
       "tiny": "double",
       "huge": "double",

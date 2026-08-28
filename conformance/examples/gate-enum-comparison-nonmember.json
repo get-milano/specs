@@ -2,7 +2,7 @@
   "name": "gate-enum-comparison-nonmember",
   "description": "A string literal compared to an enum must be a member: the typo is a SchemaViolation instead of a silently false condition",
   "document": {
-    "version": "1.0.0",
+    "version": "2.0.0",
     "state": {
       "tone": {
         "enum": [

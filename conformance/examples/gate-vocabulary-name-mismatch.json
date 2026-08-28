@@ -2,7 +2,7 @@
   "name": "gate-vocabulary-name-mismatch",
   "description": "A document requiring a differently named vocabulary fails with SchemaViolation",
   "document": {
-    "version": "1.0.0",
+    "version": "2.0.0",
     "vocabulary": {
       "name": "shop",
       "min": "1.0.0"

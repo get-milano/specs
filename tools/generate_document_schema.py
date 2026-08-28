@@ -94,8 +94,21 @@ def specialize(document_schema, vocabulary):
             "then": {"properties": constraints}
         })
 
+    # The $repeat construct (contract 2.0) belongs to every vocabulary: its
+    # own keys are required, a component's keys are not its to carry.
+    per_component.append({
+        "if": {"properties": {"type": {"const": "$repeat"}}},
+        "then": {
+            "required": ["items", "as", "children"],
+            "properties": {
+                "properties": {"type": "object", "maxProperties": 0},
+                "on": {"type": "object", "maxProperties": 0}
+            }
+        }
+    })
+
     node = schema["$defs"]["node"]
-    node["properties"]["type"] = {"enum": sorted(components)}
+    node["properties"]["type"] = {"enum": sorted(components) + ["$repeat"]}
     node["allOf"] = per_component
     return schema
 

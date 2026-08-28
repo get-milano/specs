@@ -1,0 +1,23 @@
+{
+  "name": "gate-version-1-accepted-under-2",
+  "description": "A document declaring contract 1.0.0 builds on a runtime implementing 1.0 and 2.0: 2.0 is a superset, so both majors are declared",
+  "document": {
+    "version": "1.0.0",
+    "root": {
+      "type": "Text",
+      "id": "t",
+      "properties": {
+        "text": "x"
+      }
+    }
+  },
+  "expect": {
+    "view": {
+      "type": "Text",
+      "reference": "t",
+      "properties": {
+        "text": "x"
+      }
+    }
+  }
+}

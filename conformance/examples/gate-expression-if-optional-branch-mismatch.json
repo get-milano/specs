@@ -2,7 +2,7 @@
   "name": "gate-expression-if-optional-branch-mismatch",
   "description": "if() branches must agree on optionality: a bool? branch beside a bool branch is a SchemaViolation even in a bool? position; the optional is resolved with ?? first",
   "document": {
-    "version": "1.0.0",
+    "version": "2.0.0",
     "state": {
       "flag": "bool",
       "maybe": "bool?"

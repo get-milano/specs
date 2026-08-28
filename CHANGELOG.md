@@ -13,7 +13,39 @@ The **contract version** is what documents and vocabularies declare
 Clarifications that describe behaviour every engine already implements do
 not move it; neither do tool or suite changes. Anything that changes what
 a conformant engine must do is a contract change, and comes with vectors.
-The contract has been at 1.0.0 since the first release.
+The contract was 1.0 from the first release through 1.3.1; repository
+release 2.0.0 moved it to 2.0, a superset under which every 1.x document
+stays valid.
+
+## 2.0.0
+
+### Added
+
+- **The `$repeat` construct.** A node of type `$repeat` instantiates its
+  template once per element of an array expression, binding the element
+  and its index by name (`as`, `<as>_index`); the instances replace the
+  construct in the parent's children, referenced by template reference
+  plus index (`card[2]`). Its rules are the `repeat` rule; the node count
+  limit is measured on the materialized tree, at build and at runtime,
+  where a growing update is rejected whole. 2.x documents only. Vectors:
+  `repeat-*`, `gate-repeat-*`, `dispatch-set-rejected-node-count`. The
+  document schema and its generator admit the construct.
+
+### Changed
+
+- **Contract 2.0, a superset of 1.0.** A runtime declares, per major, the
+  highest minor it implements (1.0 and 2.0 today); a document above that
+  is `UnsupportedVersion` naming the declared version and the supported
+  ranges as `major.minor` strings, where the detail listed bare majors.
+  The patch never matters. Every 1.x document stays valid with the same
+  meaning. The handwritten suite, the examples, and the vocabulary
+  artifact declare 2.0.0; the generated suites keep 1.0.0 and pin its
+  acceptance. Vectors: `gate-version-*`.
+- **Limit rejections name the limit.** A `rejectedMutation` or
+  `rejectedContextUpdate` past a limit carries the limit name as
+  `expected` (`maxValueSize`, `maxNodeCount`) and the measured value as
+  `found`. Vectors: `dispatch-set-rejected-value-size`,
+  `context-update-rejected-value-size`.
 
 ## 1.3.1
 

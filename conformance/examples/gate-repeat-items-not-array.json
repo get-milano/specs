@@ -1,0 +1,47 @@
+{
+  "name": "gate-repeat-items-not-array",
+  "description": "items must type-check to a non-optional array; a string is rejected naming the type found",
+  "document": {
+    "version": "2.0.0",
+    "state": {
+      "rows": "string"
+    },
+    "root": {
+      "type": "Column",
+      "id": "list",
+      "children": [
+        {
+          "type": "$repeat",
+          "id": "each",
+          "items": {
+            "$expr": "state.rows"
+          },
+          "as": "row",
+          "children": [
+            {
+              "type": "Text",
+              "id": "name",
+              "properties": {
+                "text": {
+                  "$expr": "'x'"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "state": {
+    "rows": "x"
+  },
+  "expect": {
+    "error": {
+      "type": "SchemaViolation",
+      "rule": "repeat",
+      "node": "each",
+      "expected": "array items",
+      "found": "string"
+    }
+  }
+}

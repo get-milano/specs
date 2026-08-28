@@ -1,0 +1,23 @@
+{
+  "name": "gate-version-patch-ignored",
+  "description": "The patch component never affects acceptance: 2.0.7 is accepted by a runtime implementing 2.0",
+  "document": {
+    "version": "2.0.7",
+    "root": {
+      "type": "Text",
+      "id": "t",
+      "properties": {
+        "text": "x"
+      }
+    }
+  },
+  "expect": {
+    "view": {
+      "type": "Text",
+      "reference": "t",
+      "properties": {
+        "text": "x"
+      }
+    }
+  }
+}

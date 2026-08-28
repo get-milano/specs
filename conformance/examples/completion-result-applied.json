@@ -2,7 +2,7 @@
   "name": "completion-result-applied",
   "description": "A success completion carries the handler's returned value: result binds inside onSuccess with the declared type",
   "document": {
-    "version": "1.0.0",
+    "version": "2.0.0",
     "state": {
       "code": "string"
     },

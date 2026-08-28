@@ -1,0 +1,109 @@
+{
+  "name": "repeat-basic",
+  "description": "A $repeat instantiates its template once per element, in order, with the element and its index bound by name; the instances replace the construct in the parent's children, referenced by the template id plus the index",
+  "document": {
+    "version": "2.0.0",
+    "state": {
+      "rows": {
+        "array": {
+          "record": {
+            "name": "string",
+            "url": "string"
+          }
+        }
+      }
+    },
+    "root": {
+      "type": "Column",
+      "id": "list",
+      "children": [
+        {
+          "type": "Text",
+          "id": "head",
+          "properties": {
+            "text": {
+              "$expr": "'Rows: ' + str(length(state.rows))"
+            }
+          }
+        },
+        {
+          "type": "$repeat",
+          "id": "each",
+          "items": {
+            "$expr": "state.rows"
+          },
+          "as": "row",
+          "children": [
+            {
+              "type": "Text",
+              "id": "name",
+              "properties": {
+                "text": {
+                  "$expr": "concat(str(row_index), '. ', row.name)"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "type": "Text",
+          "id": "tail",
+          "properties": {
+            "text": {
+              "$expr": "'end'"
+            }
+          }
+        }
+      ]
+    }
+  },
+  "state": {
+    "rows": [
+      {
+        "name": "Alpha",
+        "url": "https://example.com/a"
+      },
+      {
+        "name": "Beta",
+        "url": "https://example.com/b"
+      }
+    ]
+  },
+  "expect": {
+    "view": {
+      "type": "Column",
+      "reference": "list",
+      "children": [
+        {
+          "type": "Text",
+          "reference": "head",
+          "properties": {
+            "text": "Rows: 2"
+          }
+        },
+        {
+          "type": "Text",
+          "reference": "name[0]",
+          "properties": {
+            "text": "0. Alpha"
+          }
+        },
+        {
+          "type": "Text",
+          "reference": "name[1]",
+          "properties": {
+            "text": "1. Beta"
+          }
+        },
+        {
+          "type": "Text",
+          "reference": "tail",
+          "properties": {
+            "text": "end"
+          }
+        }
+      ]
+    },
+    "occurrences": []
+  }
+}

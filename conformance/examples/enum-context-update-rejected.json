@@ -2,7 +2,7 @@
   "name": "enum-context-update-rejected",
   "description": "A context update with a non-member value for an enum declaration is rejected atomically and reported",
   "document": {
-    "version": "1.0.0",
+    "version": "2.0.0",
     "context": {
       "tone": {
         "enum": [

@@ -5,7 +5,7 @@ nav_order: 6
 
 # Milano Conformance Suite
 
-**Status:** Stable v1.0.0 · 2026-08-16
+**Status:** Stable · contract 2.0 · repository release 2.0.0 · 2026-08-29
 
 The conformance suite is the operational definition of mechanics parity: a language-neutral set of test vectors that every runtime must pass, maintained in this repository alongside the specs. A runtime that passes the suite conforms; there is no other definition.
 
@@ -48,6 +48,7 @@ The suite must include vectors for every normative statement in specs 01 through
 - **Types and data**: every descriptor form, optionality and null, context and provider values that match and mismatch, atomic rejection of partial context updates.
 - **Expressions**: every operator at its type boundaries, promotion cases including precision edges, integer wrapping, division by zero, saturation, every function, `??` and `null` comparisons, short-circuit behavior.
 - **Actions and state**: `$set` visibility ordering, nested `$sequence`, `$when` branches, parameter capture including `event`, no-await sequencing, completion interleaving, duplicate and post-teardown completions, FIFO across events.
+- **Constructs**: every `repeat` rule, empty, nested, and context-driven instantiation, instance emissions and vanished indices, and the node count measured on the materialized tree at build and under `$set`.
 - **Observability**: every reported occurrence kind.
 
 ## Harness

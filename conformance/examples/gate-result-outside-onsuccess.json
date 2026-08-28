@@ -2,7 +2,7 @@
   "name": "gate-result-outside-onsuccess",
   "description": "result is scoped to onSuccess: referencing it in an action's own parameters is a SchemaViolation",
   "document": {
-    "version": "1.0.0",
+    "version": "2.0.0",
     "root": {
       "type": "Button",
       "id": "b",

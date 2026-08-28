@@ -1,0 +1,64 @@
+{
+  "name": "gate-repeat-items-literal",
+  "description": "items must be an expression: documents carry structure, and an array literal would be data",
+  "document": {
+    "version": "2.0.0",
+    "state": {
+      "rows": {
+        "array": {
+          "record": {
+            "name": "string",
+            "url": "string"
+          }
+        }
+      }
+    },
+    "root": {
+      "type": "Column",
+      "id": "list",
+      "children": [
+        {
+          "type": "$repeat",
+          "id": "each",
+          "items": [
+            1,
+            2
+          ],
+          "as": "row",
+          "children": [
+            {
+              "type": "Text",
+              "id": "name",
+              "properties": {
+                "text": {
+                  "$expr": "'x'"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "state": {
+    "rows": [
+      {
+        "name": "Alpha",
+        "url": "https://example.com/a"
+      },
+      {
+        "name": "Beta",
+        "url": "https://example.com/b"
+      }
+    ]
+  },
+  "expect": {
+    "error": {
+      "type": "SchemaViolation",
+      "rule": "repeat",
+      "node": "each",
+      "expected": "items expression",
+      "found": "array"
+    }
+  }
+}

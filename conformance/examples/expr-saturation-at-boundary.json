@@ -2,7 +2,7 @@
   "name": "expr-saturation-at-boundary",
   "description": "The double written as int64 max rounds to 2^63, which saturates int() at int64 max with a report",
   "document": {
-    "version": "1.0.0",
+    "version": "2.0.0",
     "root": {
       "type": "Text",
       "id": "r",
