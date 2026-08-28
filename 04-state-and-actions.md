@@ -47,7 +47,7 @@ Actions bound to an event execute synchronously, in document order, on the main 
 ## Context updates
 
 - The host may post context updates from any thread; they are validated and applied on the main thread, serialized with dispatch: an update never lands mid-action-list.
-- An update is atomic: all keys validate against the declarations and fit the value size limit (document model spec), or the whole update is rejected, reported, and the previous values stay.
+- An update is atomic: all keys validate against the declarations and fit the value size limit (document model spec), or the whole update is rejected, reported, and the previous values stay. Keys are checked in lexicographic order, so the rejection reported is the first failing key in that order.
 - After application, dependent expressions re-evaluate before anything else runs: those reading a key whose value changed, under the same rule as `$set`. An update that supplies the values already held changes nothing.
 
 ## User interaction records
