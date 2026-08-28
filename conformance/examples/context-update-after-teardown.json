@@ -1,0 +1,43 @@
+{
+  "name": "context-update-after-teardown",
+  "description": "The context subscription is cancelled at teardown: an update posted afterwards reaches nothing, so there is no occurrence and no record; the lifecycle stream ends with viewTornDown",
+  "document": {
+    "version": "1.0.0",
+    "context": {
+      "who": "string"
+    },
+    "root": {
+      "type": "Text",
+      "id": "t",
+      "properties": {
+        "text": {
+          "$expr": "context.who"
+        }
+      }
+    }
+  },
+  "context": {
+    "who": "Ada"
+  },
+  "steps": [
+    {
+      "teardown": true
+    },
+    {
+      "contextUpdate": {
+        "who": "Grace"
+      }
+    }
+  ],
+  "expect": {
+    "occurrences": [],
+    "interactions": [
+      {
+        "kind": "viewBuilt"
+      },
+      {
+        "kind": "viewTornDown"
+      }
+    ]
+  }
+}

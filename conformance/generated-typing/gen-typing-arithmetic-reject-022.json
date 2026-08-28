@@ -1,0 +1,33 @@
+{
+  "name": "gen-typing-arithmetic-reject-022",
+  "description": "Generated (exhaustive): state.iOpt + 1 in a string position is rejected at the gate",
+  "document": {
+    "version": "1.0.0",
+    "state": {
+      "iOpt": "int?"
+    },
+    "root": {
+      "type": "Column",
+      "id": "root",
+      "children": [
+        {
+          "type": "Probe",
+          "id": "p",
+          "properties": {
+            "s": {
+              "$expr": "state.iOpt + 1"
+            }
+          }
+        }
+      ]
+    }
+  },
+  "expect": {
+    "error": {
+      "type": "SchemaViolation",
+      "rule": "expression",
+      "node": "p",
+      "expected": "string"
+    }
+  }
+}

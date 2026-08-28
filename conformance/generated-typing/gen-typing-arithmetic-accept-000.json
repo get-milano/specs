@@ -1,0 +1,229 @@
+{
+  "name": "gen-typing-arithmetic-accept-000",
+  "description": "Generated (exhaustive): accepted in their declared positions. p0: state.s + state.s in s; p1: state.s + state.s in sOpt; p2: state.s + state.e in s; p3: state.s + state.e in sOpt; p4: state.s + 'x' in s; p5: state.s + 'x' in sOpt; p6: state.e + state.e in s; p7: state.e + state.e in sOpt; p8: state.e + 'x' in s; p9: state.e + 'x' in sOpt; p10: state.i + state.i in i; p11: state.i + state.i in iOpt",
+  "document": {
+    "version": "1.0.0",
+    "state": {
+      "e": {
+        "enum": [
+          "a",
+          "b"
+        ]
+      },
+      "i": "int",
+      "s": "string"
+    },
+    "root": {
+      "type": "Column",
+      "id": "root",
+      "children": [
+        {
+          "type": "Probe",
+          "id": "p0",
+          "properties": {
+            "s": {
+              "$expr": "state.s + state.s"
+            }
+          }
+        },
+        {
+          "type": "Probe",
+          "id": "p1",
+          "properties": {
+            "sOpt": {
+              "$expr": "state.s + state.s"
+            }
+          }
+        },
+        {
+          "type": "Probe",
+          "id": "p2",
+          "properties": {
+            "s": {
+              "$expr": "state.s + state.e"
+            }
+          }
+        },
+        {
+          "type": "Probe",
+          "id": "p3",
+          "properties": {
+            "sOpt": {
+              "$expr": "state.s + state.e"
+            }
+          }
+        },
+        {
+          "type": "Probe",
+          "id": "p4",
+          "properties": {
+            "s": {
+              "$expr": "state.s + 'x'"
+            }
+          }
+        },
+        {
+          "type": "Probe",
+          "id": "p5",
+          "properties": {
+            "sOpt": {
+              "$expr": "state.s + 'x'"
+            }
+          }
+        },
+        {
+          "type": "Probe",
+          "id": "p6",
+          "properties": {
+            "s": {
+              "$expr": "state.e + state.e"
+            }
+          }
+        },
+        {
+          "type": "Probe",
+          "id": "p7",
+          "properties": {
+            "sOpt": {
+              "$expr": "state.e + state.e"
+            }
+          }
+        },
+        {
+          "type": "Probe",
+          "id": "p8",
+          "properties": {
+            "s": {
+              "$expr": "state.e + 'x'"
+            }
+          }
+        },
+        {
+          "type": "Probe",
+          "id": "p9",
+          "properties": {
+            "sOpt": {
+              "$expr": "state.e + 'x'"
+            }
+          }
+        },
+        {
+          "type": "Probe",
+          "id": "p10",
+          "properties": {
+            "i": {
+              "$expr": "state.i + state.i"
+            }
+          }
+        },
+        {
+          "type": "Probe",
+          "id": "p11",
+          "properties": {
+            "iOpt": {
+              "$expr": "state.i + state.i"
+            }
+          }
+        }
+      ]
+    }
+  },
+  "state": {
+    "e": "a",
+    "i": 7,
+    "s": "x"
+  },
+  "expect": {
+    "view": {
+      "type": "Column",
+      "reference": "root",
+      "children": [
+        {
+          "type": "Probe",
+          "reference": "p0",
+          "properties": {
+            "s": "xx"
+          }
+        },
+        {
+          "type": "Probe",
+          "reference": "p1",
+          "properties": {
+            "sOpt": "xx"
+          }
+        },
+        {
+          "type": "Probe",
+          "reference": "p2",
+          "properties": {
+            "s": "xa"
+          }
+        },
+        {
+          "type": "Probe",
+          "reference": "p3",
+          "properties": {
+            "sOpt": "xa"
+          }
+        },
+        {
+          "type": "Probe",
+          "reference": "p4",
+          "properties": {
+            "s": "xx"
+          }
+        },
+        {
+          "type": "Probe",
+          "reference": "p5",
+          "properties": {
+            "sOpt": "xx"
+          }
+        },
+        {
+          "type": "Probe",
+          "reference": "p6",
+          "properties": {
+            "s": "aa"
+          }
+        },
+        {
+          "type": "Probe",
+          "reference": "p7",
+          "properties": {
+            "sOpt": "aa"
+          }
+        },
+        {
+          "type": "Probe",
+          "reference": "p8",
+          "properties": {
+            "s": "ax"
+          }
+        },
+        {
+          "type": "Probe",
+          "reference": "p9",
+          "properties": {
+            "sOpt": "ax"
+          }
+        },
+        {
+          "type": "Probe",
+          "reference": "p10",
+          "properties": {
+            "i": 14
+          }
+        },
+        {
+          "type": "Probe",
+          "reference": "p11",
+          "properties": {
+            "iOpt": 14
+          }
+        }
+      ]
+    },
+    "occurrences": []
+  }
+}

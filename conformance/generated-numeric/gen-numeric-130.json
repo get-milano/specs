@@ -1,6 +1,6 @@
 {
   "name": "gen-numeric-130",
-  "description": "Generated (seed 20260816): str(double(4611686018427387904))",
+  "description": "Generated (seed 20260816): str(double(((0 - 7) * 3)))",
   "document": {
     "version": "1.0.0",
     "root": {
@@ -8,7 +8,7 @@
       "id": "r",
       "properties": {
         "text": {
-          "$expr": "str(double(4611686018427387904))"
+          "$expr": "str(double(((0 - 7) * 3)))"
         }
       }
     }
@@ -18,7 +18,7 @@
       "type": "Text",
       "reference": "r",
       "properties": {
-        "text": "4.611686018427388e18"
+        "text": "-21.0"
       }
     },
     "occurrences": []

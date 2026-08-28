@@ -1,0 +1,35 @@
+{
+  "name": "gate-limit-value-size-state",
+  "description": "An initial state value past the value size limit is a LimitExceeded at the gate, naming the limit, its configured value, and the size found; a string counts its Unicode scalars",
+  "config": {
+    "limits": {
+      "maxValueSize": 8
+    }
+  },
+  "document": {
+    "version": "1.0.0",
+    "state": {
+      "label": "string"
+    },
+    "root": {
+      "type": "Text",
+      "id": "t",
+      "properties": {
+        "text": {
+          "$expr": "state.label"
+        }
+      }
+    }
+  },
+  "state": {
+    "label": "nine char"
+  },
+  "expect": {
+    "error": {
+      "type": "LimitExceeded",
+      "limit": "maxValueSize",
+      "value": 8,
+      "actual": 9
+    }
+  }
+}

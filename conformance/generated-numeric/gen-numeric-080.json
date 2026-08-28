@@ -1,6 +1,6 @@
 {
   "name": "gen-numeric-080",
-  "description": "Generated (seed 20260816): str(((0.0 - 1.0) / 0.0 / 9223372036854775807.0) * 3.0)",
+  "description": "Generated (seed 20260816): str(double(1))",
   "document": {
     "version": "1.0.0",
     "root": {
@@ -8,7 +8,7 @@
       "id": "r",
       "properties": {
         "text": {
-          "$expr": "str(((0.0 - 1.0) / 0.0 / 9223372036854775807.0) * 3.0)"
+          "$expr": "str(double(1))"
         }
       }
     }
@@ -18,7 +18,7 @@
       "type": "Text",
       "reference": "r",
       "properties": {
-        "text": "-inf"
+        "text": "1.0"
       }
     },
     "occurrences": []

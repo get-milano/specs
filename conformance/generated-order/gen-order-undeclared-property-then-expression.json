@@ -1,0 +1,38 @@
+{
+  "name": "gen-order-undeclared-property-then-expression",
+  "description": "Generated (order): undeclared-property on node a, then expression on node b; the first defect in document order wins",
+  "document": {
+    "version": "1.0.0",
+    "root": {
+      "type": "Column",
+      "id": "root",
+      "children": [
+        {
+          "type": "Meta",
+          "id": "a",
+          "properties": {
+            "key": "k",
+            "extra": 1
+          }
+        },
+        {
+          "type": "Button",
+          "id": "b",
+          "properties": {
+            "label": {
+              "$expr": "state.nope"
+            },
+            "enabled": true
+          }
+        }
+      ]
+    }
+  },
+  "expect": {
+    "error": {
+      "type": "SchemaViolation",
+      "rule": "undeclared-property",
+      "node": "a"
+    }
+  }
+}

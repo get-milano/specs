@@ -22,7 +22,7 @@ A document is a single JSON object, encoded in UTF-8, with reserved top-level se
 | `context` | no | Declaration of the context keys the document reads: name and type |
 | `state` | no | Document-level state declarations: name and type |
 | `root` | yes | The single root node |
-| `metadata` | no | Free-form producer data; validated as JSON, never interpreted by Milano, passed through to the host |
+| `metadata` | no | Free-form producer data as a JSON object (any other shape is `MalformedDocument`); never interpreted by Milano, passed through to the host |
 
 Documents separate structure from data. The `context` and `state` sections declare shapes only; no section of a document ever carries a variable data value, so a document is cacheable independently of the data it renders. Context values are supplied by the host's context source; every declared key is required, and values are validated at the gate and on every update. State initial values are supplied by the host's asynchronous state data provider, awaited during building and validated against the declarations. Provider failures propagate to the caller unchanged: they are host errors, not Milano errors.
 
@@ -47,7 +47,7 @@ Two enum types are the same exactly when their member sets are equal: enum ident
 
 Integer and floating-point behavior (ranges, overflow, coercion rules in expressions) is fixed by the expression language spec and conformance-tested; a JSON number with a fractional part never satisfies an `int` declaration.
 
-Validation of data values (supplied context, provider state, literal properties and parameters) against declarations follows two further rules, identical in both runtimes:
+Validation of data values (supplied context, provider state, literal properties and parameters) against declarations follows two further rules, identical in every runtime:
 
 - An `int` value satisfies a `double` declaration and is canonicalized to `double`, mirroring expression promotion. A `double` value never satisfies an `int` declaration.
 - Record values are validated strictly against their declared shape: an undeclared field is a mismatch; a missing optional field canonicalizes to `null`; a missing non-optional field is a mismatch.
@@ -60,7 +60,7 @@ Every node is a JSON object with reserved keys. The envelope belongs to the cont
 | Key | Required | Purpose |
 |---|---|---|
 | `type` | yes | Component type name from the vocabulary, or a core construct name |
-| `id` | no | Document-unique identifier; uniqueness validated at the gate |
+| `id` | no | Document-unique identifier: a non-empty string, else `MalformedDocument`; uniqueness validated at the gate |
 | `properties` | no | Map of property name to value (literal or expression) |
 | `children` | no | Ordered list of child nodes |
 | `on` | no | Map of event name to one action or an ordered list of actions |
@@ -97,20 +97,20 @@ Like component types, action types require host code (a handler that interprets 
 
 ## Identity and paths
 
-- `id` is optional and must be unique across the document.
+- `id` is optional; when present it is a non-empty string, unique across the document. An empty `id` is an envelope violation (`MalformedDocument`), since it would be an empty reference in every report about the node.
 - Every node also has a canonical structural path computed from its position: the root node's path is `root`, and each child appends `/children[i]` with its zero-based index (for example `root/children[2]/children[0]`).
 - Observer reports and error details reference nodes by `id` when present, canonical path otherwise.
 
 ## Validation
 
-The gate validates in a fixed, conformance-tested order, so identical documents fail identically on both platforms:
+The gate validates in a fixed, conformance-tested order, so identical documents fail identically on every platform:
 
 1. Parse: well-formed JSON, correct envelope shapes.
 2. Version: declared major must be in the runtime's supported set.
 3. Vocabulary requirement: when the document declares one, the engine's vocabulary must carry the same `name`, and when `min` is present its `version` must be at least `min` (numeric comparison of major, minor, patch). A mismatch is a `SchemaViolation` with rule `vocabulary-requirement`, `expected` the document's demand, `found` what the engine holds. A document with no `vocabulary` section performs no check: binding stays positional, and the requirement is the producer's opt-in guard for staggered rollouts. The minimum-only form is sound because vocabulary evolution is additive within a major (see the vocabulary schema spec): any version at or above the minimum carries everything the document needs.
 4. Resource limits: document size (checked on the raw bytes before parsing, alongside step 1), tree depth, and node count against the limits below; expression length is checked per expression in step 5.
 5. Vocabulary walk: one pass over the tree, in document order. At each node, in order: `id` uniqueness, the reserved `$` type prefix, type resolution against the schema (unknown types trigger the unknown-type policy), properties (undeclared ones per the strict-mode rules from Foundations; declared ones type-checked, with expressions parsed and statically typed as they are encountered), children acceptance, then event bindings against the declared events and their action lists (built-in parameters against this spec, custom actions against the surface's granted action set: the vocabulary's declarations, narrowed and overridden by the builder). Because the walk is one pass, the first defect in document order wins when a document violates several rules.
-6. Data checks: context declarations versus supplied values, state declarations versus the values returned by the state data provider.
+6. Data checks: context declarations versus supplied values, state declarations versus the values returned by the state data provider; every value also within the value size limit below.
 
 Steps 1 through 5 need only the document and the engine. Building is asynchronous overall: the gate then awaits the state data provider and completes the cross-checks. A provider failure propagates to the caller unchanged; values that do not match the declarations are a `SchemaViolation`.
 
@@ -132,25 +132,25 @@ The closed set of typed errors the gate can throw, with the structured detail ea
 | `UnknownComponentType` | A type not declared in the vocabulary is found and the effective policy is *fail* | Node reference; the unknown type name |
 | `LimitExceeded` | Any resource limit is exceeded at the gate | The limit's name; its configured value; the actual value |
 
-The `rule` strings a `SchemaViolation` may carry are contract, pinned by the conformance suite:
+The `rule` strings a `SchemaViolation` may carry are contract, pinned by the conformance suite, and so is the detail each carries (an absent cell is `null`):
 
-| Rule | Violation |
-|---|---|
-| `construct` | A node `type` begins with the reserved `$` prefix |
-| `id-uniqueness` | A node `id` appears more than once in the document |
-| `children` | A node carries `children` but its component type does not accept them |
-| `undeclared-property` | An undeclared property on a `strict` component type |
-| `property-type` | A literal property value does not match the declared type |
-| `event-binding` | An `on` entry names an event the component type does not declare |
-| `expression` | An expression fails to parse or type-check against the expected type |
-| `action-encoding` | A built-in or custom action violates its encoding: unknown or missing parameters, ill-typed values, an undeclared `$set` target |
-| `action-capability` | A custom action outside the surface's granted set |
-| `vocabulary-requirement` | The document's declared vocabulary requirement is not met by the engine's vocabulary |
-| `context-declaration` | A context declaration is malformed (non-identifier key, invalid descriptor) or a supplied context value does not match it |
-| `state-declaration` | A state declaration is malformed (non-identifier key, invalid descriptor), a provided state value does not match it, or the document declares state and the surface configured no state data provider |
-| `action-handler` | The document binds custom actions and the surface configured no action handler (raised by the builder at build, before dispatch exists) |
+| Rule | Violation | `node` | `expected` | `found` |
+|---|---|---|---|---|
+| `construct` | A node `type` begins with the reserved `$` prefix | the node | `component type` | the type name |
+| `id-uniqueness` | A node `id` appears more than once in the document | the repeated id | | the id |
+| `children` | A node carries `children` but its component type does not accept them | the node | `no children` | `children` |
+| `undeclared-property` | An undeclared property on a `strict` component type | the node | | the property name |
+| `property-type` | A literal property value does not match the declared type | the node | the declared type, or `enum member` | the literal's kind, or the non-member string |
+| `event-binding` | An `on` entry names an event the component type does not declare | the node | `declared event` | the event name |
+| `expression` | An expression fails to parse or type-check against the expected type | the node | the type the position expects | |
+| `action-encoding` | A built-in or custom action violates its encoding: unknown or missing parameters, ill-typed values, an undeclared `$set` target | the node | `declared state key`, `declared parameter`, or the name of the missing required parameter | the undeclared key or parameter; none for a missing one |
+| `action-capability` | A custom action outside the surface's granted set | the node | `granted action` | the action name |
+| `vocabulary-requirement` | The document's declared vocabulary requirement is not met by the engine's vocabulary | | the required name, or `>=` the required minimum | the held name or version |
+| `context-declaration` | A context declaration is malformed (non-identifier key, invalid descriptor) or a supplied context value does not match it | | `identifier`, the missing key, or the declared type | the malformed key, or the value's kind |
+| `state-declaration` | A state declaration is malformed (non-identifier key, invalid descriptor), a provided state value does not match it, or the document declares state and the surface configured no state data provider | | `identifier`, the declared type, or `state data provider` | the malformed key, or the value's kind (`null` when the provider omitted a required value) |
+| `action-handler` | The document binds custom actions and the surface configured no action handler (raised by the builder at build, before dispatch exists) | | `action handler` | |
 
-Runtime occurrences (rejected context updates, dropped events, skipped or placeholder nodes) are not errors: they flow to the engine observer as defined in Foundations.
+Occurrences (rejected context updates and dropped events at runtime, skipped or placeholder nodes at the gate) are not errors: they flow to the engine observer as defined in Foundations.
 
 ## Resource limits
 
@@ -162,14 +162,18 @@ Defaults, adjustable per engine.
 | Maximum node count | 10,000 |
 | Maximum document size | 1 MiB |
 | Maximum expression length | 1,024 Unicode scalars |
+| Maximum value size | 65,536 |
 
-Gate limits bound the document; because the tree, its expressions, and their lengths are all fixed at the gate, no update can grow past them at runtime.
+The first four are gate limits: the tree, its expressions, and their lengths are fixed at the gate, and no update can grow them. Values are not fixed at the gate, so the value size limit applies wherever a value enters state or context: at the gate, to the supplied context values and the initial state values (step 6, a `LimitExceeded` with limit `maxValueSize`), and at runtime, to every context update and every `$set`, where a value past the limit rejects the update or the mutation whole and reports it (state and actions spec). Event payloads and completion results are not bounded: they live for one dispatch, and whatever a document keeps from them passes through `$set`.
+
+The size of a value counts one for a bool, an int, a double, or null; one per Unicode scalar for a string; and, for an array or a record, one plus the sizes of its elements or fields. Record shapes and nesting are fixed by declarations, so one number bounds every value.
 
 Limits are denial-of-service bounds for untrusted input, not performance budgets: a document within every limit can still be a poor fit for an interactive surface. Measured guidance lives in the runtime documentation.
 
 ## Notes
 
 - An official schema, `schemas/document.schema.json` in this repository, validates the canonical encoding's structure (envelope shapes, type descriptors, expression wrappers, action encoding). Semantic rules stay with the gate: vocabulary resolution, expression typing, id uniqueness, and resource limits are not schema-checkable.
+- The schemas are open wherever the contract may grow (the top level, the node envelope, the `vocabulary` section, type descriptors), because the tolerance rule in Foundations makes unknown keys there ignorable rather than invalid; the `$expr` wrapper is the one closed object, since this model defines it as exactly single-key. Strictness against typos in those objects is producer tooling's job, not the contract's: the reference checker's `--document` mode warns about unknown keys in contract-governed objects, and the vocabulary-specialized document schema is strict about component properties, which are vocabulary-governed and therefore fixed.
 - `metadata` is host-only: it is never visible to expressions.
 - The identifier grammar for state keys, context keys, and all vocabulary names is defined in the [vocabulary schema spec](02-vocabulary-schema.html).
 - Custom action and event payload declarations are owned by the [vocabulary schema spec](02-vocabulary-schema.html). Expression grammar and semantics are owned by the [expression language spec](03-expression-language.html). Dispatch semantics are owned by the [state and actions spec](04-state-and-actions.html).

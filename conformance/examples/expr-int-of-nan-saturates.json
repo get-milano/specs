@@ -24,7 +24,8 @@
     "occurrences": [
       {
         "kind": "saturation",
-        "node": "result"
+        "node": "result",
+        "name": "text"
       }
     ]
   }

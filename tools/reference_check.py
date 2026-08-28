@@ -33,6 +33,31 @@ MAX_TREE_DEPTH = 32
 MAX_NODE_COUNT = 10_000
 MAX_EXPRESSION_LENGTH = 1_024
 MAX_DOCUMENT_BYTES = 1_048_576
+MAX_VALUE_SIZE = 65_536
+
+# The document model's defaults, by the names the error detail and a
+# vector's config.limits use.
+DEFAULT_LIMITS = {
+    "maxTreeDepth": MAX_TREE_DEPTH,
+    "maxNodeCount": MAX_NODE_COUNT,
+    "maxDocumentBytes": MAX_DOCUMENT_BYTES,
+    "maxExpressionLength": MAX_EXPRESSION_LENGTH,
+    "maxValueSize": MAX_VALUE_SIZE,
+}
+
+
+def value_size(value):
+    """The document model's value size: one per scalar or null, one per
+    Unicode scalar of a string, and one plus the sizes of the elements or
+    fields for an array or record. Python strings are sequences of code
+    points, so len() is the scalar count."""
+    if isinstance(value, str):
+        return len(value)
+    if isinstance(value, list):
+        return 1 + sum(value_size(element) for element in value)
+    if isinstance(value, dict):
+        return 1 + sum(value_size(field) for field in value.values())
+    return 1
 
 # The explicit Unicode White_Space table from the expression spec.
 WHITE_SPACE = set(
@@ -423,7 +448,13 @@ class Checker:
                 if ty.kind in ("array", "record"):
                     raise ExprError("arrays and records are not comparable")
             if left.kind == "null" or right.kind == "null":
-                if not (left.optional or right.optional):
+                # The null literal's own type is optional, so the test is
+                # on the other operand: it must be an optional, and there
+                # must be one. A non-optional compared to null, or null to
+                # null, could only ever be constant, and is refused like an
+                # enum compared to a non-member.
+                other = right if left.kind == "null" else left
+                if other.kind == "null" or not other.optional:
                     raise ExprError("null compares only to optionals")
                 return Ty("bool")
             if left.optional or right.optional:
@@ -727,10 +758,20 @@ def format_scalar(value):
 
 
 class ReferenceGate:
-    def __init__(self, vocabulary, policy, actions_config=None):
+    def __init__(self, vocabulary, policy, actions_config=None, limits=None,
+                 surface=None):
         self.vocabulary = vocabulary
         self.policy = policy
         self.occurrences = []
+        # The surface's inputs: a vector's config may build without a state
+        # data provider or an action handler to pin the builder-level rules.
+        surface = surface or {}
+        self.state_data_provider = surface.get("stateDataProvider", True)
+        self.action_handler = surface.get("actionHandler", True)
+        self.uses_custom_actions = False
+        # Engine limits: the defaults, overridden by a vector's config.
+        self.limits = dict(DEFAULT_LIMITS)
+        self.limits.update(limits or {})
         # The surface's granted action set: the vocabulary's declarations,
         # overridden by builder declarations, narrowed by the allowlist.
         # Built-in $ actions are contract, not capabilities.
@@ -747,9 +788,10 @@ class ReferenceGate:
         # 1. Parse; document size is checked on the raw bytes first.
         if "documentText" in vector:
             raw = vector["documentText"].encode("utf-8")
-            if len(raw) > MAX_DOCUMENT_BYTES:
+            if len(raw) > self.limits["maxDocumentBytes"]:
                 raise GateError("LimitExceeded", limit="maxDocumentBytes",
-                                value=MAX_DOCUMENT_BYTES, actual=len(raw))
+                                value=self.limits["maxDocumentBytes"],
+                                actual=len(raw))
             try:
                 document = json.loads(vector["documentText"])
             except ValueError:
@@ -791,12 +833,12 @@ class ReferenceGate:
 
         # Resource limits.
         depth, count = self.measure(document["root"], 1)
-        if depth > MAX_TREE_DEPTH:
+        if depth > self.limits["maxTreeDepth"]:
             raise GateError("LimitExceeded", limit="maxTreeDepth",
-                            value=MAX_TREE_DEPTH, actual=depth)
-        if count > MAX_NODE_COUNT:
+                            value=self.limits["maxTreeDepth"], actual=depth)
+        if count > self.limits["maxNodeCount"]:
             raise GateError("LimitExceeded", limit="maxNodeCount",
-                            value=MAX_NODE_COUNT, actual=count)
+                            value=self.limits["maxNodeCount"], actual=count)
 
         # Declaration keys follow the identifier grammar (vocabulary
         # schema spec, Naming): a letter, then letters, digits, or
@@ -820,9 +862,18 @@ class ReferenceGate:
         checker = Checker(state_decls, context_decls)
         self.validate_node(document["root"], "root", checker)
 
+        # A document binding custom actions needs somewhere to send them:
+        # raised by the builder, before dispatch exists.
+        if self.uses_custom_actions and not self.action_handler:
+            raise GateError("SchemaViolation", rule="action-handler",
+                            expected="action handler")
+
         # 6. Data checks.
         context_values = self.check_supplied(
             vector.get("context", {}), context_decls, "context-declaration")
+        if state_decls and not self.state_data_provider:
+            raise GateError("SchemaViolation", rule="state-declaration",
+                            expected="state data provider")
         state_values = self.check_supplied(
             vector.get("state", {}), state_decls, "state-declaration")
 
@@ -838,7 +889,15 @@ class ReferenceGate:
                     or not isinstance(document["version"], str):
                 raise GateError("MalformedDocument")
             return self.check_envelope(document, document["root"], "root")
+        if node is document["root"] and path == "root" and "metadata" in document \
+                and not isinstance(document["metadata"], dict):
+            # metadata is a JSON object: hosts read it as a map.
+            raise GateError("MalformedDocument")
         if not isinstance(node, dict) or not isinstance(node.get("type"), str):
+            raise GateError("MalformedDocument", node=path)
+        # An id, when present, is a non-empty string: an empty one would be
+        # an empty reference in every report about the node.
+        if "id" in node and (not isinstance(node["id"], str) or not node["id"]):
             raise GateError("MalformedDocument", node=path)
         if not isinstance(node.get("properties", {}), dict) \
                 or not isinstance(node.get("children", []), list) \
@@ -881,7 +940,7 @@ class ReferenceGate:
                                 unknownType=node["type"])
             kind = "unknownTypeSkipped" if self.policy == "skip" \
                 else "unknownTypePlaceholder"
-            self.occurrences.append({"kind": kind, "node": ref})
+            self.occurrences.append({"kind": kind, "node": ref, "name": node["type"]})
             return  # Opaque subtree: validation stops here.
 
         declared = {name: parse_type(descriptor) for name, descriptor
@@ -892,7 +951,7 @@ class ReferenceGate:
                     raise GateError("SchemaViolation", rule="undeclared-property",
                                     node=ref, found=name)
                 self.occurrences.append(
-                    {"kind": "undeclaredProperty", "node": ref})
+                    {"kind": "undeclaredProperty", "node": ref, "name": name})
                 continue
             ty = declared[name]
             if isinstance(value, dict) and "$expr" in value:
@@ -918,7 +977,7 @@ class ReferenceGate:
         for event, bound in node.get("on", {}).items():
             if event not in declared_events:
                 raise GateError("SchemaViolation", rule="event-binding",
-                                node=ref, expected=node["type"], found=event)
+                                node=ref, expected="declared event", found=event)
             descriptor = declared_events[event]
             event_ty = parse_type(descriptor) if descriptor is not None else None
             self.validate_actions(bound, ref, event_ty)
@@ -956,6 +1015,7 @@ class ReferenceGate:
                     raise GateError("SchemaViolation", rule="action-capability",
                                     node=ref, expected="granted action", found=name)
                 declaration = self.granted_actions[name]
+                self.uses_custom_actions = True
                 declared = declaration.get("parameters", {})
                 for parameter in action:
                     if parameter in ("action", "onSuccess", "onFailure"):
@@ -998,9 +1058,10 @@ class ReferenceGate:
     def check_expression(self, text, declared_ty, ref, checker):
         error = GateError("SchemaViolation", rule="expression", node=ref,
                           expected=repr(declared_ty))
-        if len(text) > MAX_EXPRESSION_LENGTH:
+        if len(text) > self.limits["maxExpressionLength"]:
             raise GateError("LimitExceeded", limit="maxExpressionLength",
-                            value=MAX_EXPRESSION_LENGTH, actual=len(text))
+                            value=self.limits["maxExpressionLength"],
+                            actual=len(text))
         try:
             ast = Parser(tokenize(text)).parse()
             result = checker.check(ast, expecting=declared_ty)
@@ -1023,8 +1084,18 @@ class ReferenceGate:
                 if ty.optional:
                     values[name] = None
                     continue
-                raise GateError("SchemaViolation", rule=rule, expected=name)
+                # A missing context key is the key's absence; a missing state
+                # value is the provider answering null (an omitted value is
+                # null), so the shape is the type mismatch's.
+                if rule == "context-declaration":
+                    raise GateError("SchemaViolation", rule=rule, expected=name)
+                supplied = {**supplied, name: None}
             values[name] = validate_value(supplied[name], ty, rule)
+            # A value entering state or context fits the value size limit.
+            size = value_size(values[name])
+            if size > self.limits["maxValueSize"]:
+                raise GateError("LimitExceeded", limit="maxValueSize",
+                                value=self.limits["maxValueSize"], actual=size)
         return values  # Undeclared supplied keys are ignored.
 
     def resolve(self, node, path, state, context):
@@ -1042,8 +1113,8 @@ class ReferenceGate:
                 continue
             ty = parse_type(declared[name])
             if isinstance(value, dict) and "$expr" in value:
-                report = lambda kind: self.occurrences.append(
-                    {"kind": kind, "node": ref})
+                report = lambda kind, name=name: self.occurrences.append(
+                    {"kind": kind, "node": ref, "name": name})
                 evaluator = Evaluator(state, context, report)
                 ast = Parser(tokenize(value["$expr"])).parse()
                 result = evaluator.eval(ast)
@@ -1103,7 +1174,8 @@ class StepLinter:
 
         config = vector.get("config", {})
         policy = config.get("unknownTypePolicy", "fail")
-        self.gate = ReferenceGate(self.vocabulary, policy, config.get("actions"))
+        self.gate = ReferenceGate(self.vocabulary, policy, config.get("actions"),
+                                  config.get("limits"), config)
         try:
             self.gate.build(vector)
         except GateError as error:
@@ -1395,7 +1467,8 @@ def run_vector(vector, vocabulary):
     """Returns a list of mismatch strings, empty when the vector agrees."""
     config = vector.get("config", {})
     policy = config.get("unknownTypePolicy", "fail")
-    gate = ReferenceGate(vocabulary, policy, config.get("actions"))
+    gate = ReferenceGate(vocabulary, policy, config.get("actions"),
+                         config.get("limits"), config)
     expect = vector["expect"]
     try:
         resolved, state = gate.build(vector)
@@ -1450,12 +1523,65 @@ def synthesized_values(declarations):
     return values
 
 
+TOP_LEVEL_KEYS = {"version", "vocabulary", "context", "state", "root", "metadata"}
+VOCABULARY_KEYS = {"name", "min"}
+ENVELOPE_KEYS = {"type", "id", "properties", "children", "on"}
+DESCRIPTOR_KEYS = {"enum", "array", "record", "optional"}
+
+
+def unknown_key_warnings(document):
+    """Producer lint, non-normative: keys the contract does not define, in
+    the objects it governs. The gate ignores them by the tolerance rule
+    (Foundations), which is exactly why a typo there is silent."""
+    warnings = []
+
+    def descriptor(value, where):
+        if not isinstance(value, dict):
+            return
+        for key in value:
+            if key not in DESCRIPTOR_KEYS:
+                warnings.append(f"{where}: unknown type descriptor key {key!r}")
+        descriptor(value.get("array"), where)
+        if isinstance(value.get("record"), dict):
+            for name, field in value["record"].items():
+                descriptor(field, f"{where}.{name}")
+
+    def node(entry, path):
+        if not isinstance(entry, dict):
+            return
+        for key in entry:
+            if key not in ENVELOPE_KEYS:
+                warnings.append(f"{path}: unknown envelope key {key!r}")
+        for index, child in enumerate(entry.get("children") or []):
+            node(child, f"{path}/children[{index}]")
+
+    if not isinstance(document, dict):
+        return warnings
+    for key in document:
+        if key not in TOP_LEVEL_KEYS:
+            warnings.append(f"document: unknown top-level key {key!r}")
+    if isinstance(document.get("vocabulary"), dict):
+        for key in document["vocabulary"]:
+            if key not in VOCABULARY_KEYS:
+                warnings.append(f"vocabulary: unknown key {key!r}")
+    for section in ("context", "state"):
+        if isinstance(document.get(section), dict):
+            for name, value in document[section].items():
+                descriptor(value, f"{section}.{name}")
+    node(document.get("root"), "root")
+    return warnings
+
+
 def validate_document(document_path, vocabulary_path, context_path, state_path):
     """Producer CLI: run one document through the full gate. Undeclared
     context and state values are synthesized as zero-values so validation
-    is one command; supplied files override per key."""
+    is one command; supplied files override per key. Unknown keys in
+    contract-governed objects are warnings on stderr: the gate ignores
+    them by rule, and a producer wants to hear about the typo anyway."""
     vocabulary = json.loads(Path(vocabulary_path).read_text())
     document = json.loads(Path(document_path).read_text())
+    for warning in unknown_key_warnings(document):
+        print(f"{document_path}: warning: {warning}", file=sys.stderr)
 
     context = synthesized_values(document.get("context", {}))
     if context_path:

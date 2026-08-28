@@ -1,0 +1,36 @@
+{
+  "description": "Normative statements no conformance vector can express, pinned by a named test in every runtime they apply to. Each runtime's test references the id verbatim; the SDK's consistency check asserts the reference exists. See the conformance suite spec, Harness.",
+  "statements": [
+    {
+      "id": "teardown-during-action-list",
+      "spec": "04-state-and-actions.md",
+      "section": "Completion",
+      "statement": "Teardown observed while an action list is executing does not interrupt it: the list runs to completion, and only work arriving afterwards is refused.",
+      "applies": [
+        "swiftui",
+        "compose",
+        "typescript"
+      ]
+    },
+    {
+      "id": "deallocation-counts-as-teardown",
+      "spec": "04-state-and-actions.md",
+      "section": "Completion",
+      "statement": "On platforms with deterministic lifetimes, deallocation of the view counts as teardown: a completion arriving afterwards is dropped and reported.",
+      "applies": [
+        "swiftui"
+      ]
+    },
+    {
+      "id": "default-limits-node-count-and-document-size",
+      "spec": "01-document-model.md",
+      "section": "Resource limits",
+      "statement": "The default node count (10,000) and document size (1 MiB) limits hold at their exact boundaries: at the limit builds, one over is LimitExceeded.",
+      "applies": [
+        "swiftui",
+        "compose",
+        "typescript"
+      ]
+    }
+  ]
+}

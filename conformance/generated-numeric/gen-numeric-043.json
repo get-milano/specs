@@ -1,6 +1,6 @@
 {
   "name": "gen-numeric-043",
-  "description": "Generated (seed 20260816): str(3 * (9223372036854775807 / 1))",
+  "description": "Generated (seed 20260816): str(0.1 >= 10)",
   "document": {
     "version": "1.0.0",
     "root": {
@@ -8,7 +8,7 @@
       "id": "r",
       "properties": {
         "text": {
-          "$expr": "str(3 * (9223372036854775807 / 1))"
+          "$expr": "str(0.1 >= 10)"
         }
       }
     }
@@ -18,7 +18,7 @@
       "type": "Text",
       "reference": "r",
       "properties": {
-        "text": "9223372036854775805"
+        "text": "false"
       }
     },
     "occurrences": []

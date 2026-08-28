@@ -1,0 +1,50 @@
+{
+  "name": "gen-order-value-size-and-expression",
+  "description": "Generated (order): value-size beside expression on node a; the gate's order decides which error wins",
+  "config": {
+    "limits": {
+      "maxValueSize": 4
+    }
+  },
+  "document": {
+    "version": "1.0.0",
+    "root": {
+      "type": "Column",
+      "id": "root",
+      "children": [
+        {
+          "type": "Button",
+          "id": "a",
+          "properties": {
+            "label": {
+              "$expr": "state.nope"
+            },
+            "enabled": true
+          }
+        },
+        {
+          "type": "Button",
+          "id": "b",
+          "properties": {
+            "label": "B",
+            "enabled": true
+          }
+        }
+      ]
+    },
+    "context": {
+      "big": "string"
+    }
+  },
+  "context": {
+    "big": "0123456789"
+  },
+  "expect": {
+    "error": {
+      "type": "SchemaViolation",
+      "rule": "expression",
+      "node": "a",
+      "expected": "string"
+    }
+  }
+}

@@ -1,0 +1,64 @@
+{
+  "name": "gate-unknown-keys-ignored",
+  "description": "Unknown keys in every object the contract may grow (the top level, the vocabulary section, a type descriptor, the node envelope) are ignored per the tolerance rule in Foundations; the document builds as if they were absent",
+  "document": {
+    "version": "1.0.0",
+    "vocabulary": {
+      "name": "examples",
+      "min": "1.0.0",
+      "max": "9.0.0"
+    },
+    "state": {
+      "tone": {
+        "enum": [
+          "info",
+          "danger"
+        ],
+        "note": "a future key"
+      },
+      "count": "int"
+    },
+    "future": {
+      "anything": true
+    },
+    "root": {
+      "type": "Column",
+      "id": "root",
+      "style": {
+        "padding": 8
+      },
+      "children": [
+        {
+          "type": "Text",
+          "id": "t",
+          "properties": {
+            "text": {
+              "$expr": "concat(state.tone, str(state.count))"
+            }
+          },
+          "hint": "ignored"
+        }
+      ]
+    }
+  },
+  "state": {
+    "tone": "info",
+    "count": 3
+  },
+  "expect": {
+    "view": {
+      "type": "Column",
+      "reference": "root",
+      "children": [
+        {
+          "type": "Text",
+          "reference": "t",
+          "properties": {
+            "text": "info3"
+          }
+        }
+      ]
+    },
+    "occurrences": []
+  }
+}

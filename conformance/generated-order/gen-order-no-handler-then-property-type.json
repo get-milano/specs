@@ -1,0 +1,48 @@
+{
+  "name": "gen-order-no-handler-then-property-type",
+  "description": "Generated (order): no-handler on node a, then property-type on node b; the first defect in document order wins",
+  "config": {
+    "actionHandler": false
+  },
+  "document": {
+    "version": "1.0.0",
+    "root": {
+      "type": "Column",
+      "id": "root",
+      "children": [
+        {
+          "type": "Button",
+          "id": "a",
+          "properties": {
+            "label": "A",
+            "enabled": true
+          },
+          "on": {
+            "tap": [
+              {
+                "action": "openUrl",
+                "url": "https://example.com"
+              }
+            ]
+          }
+        },
+        {
+          "type": "Button",
+          "id": "b",
+          "properties": {
+            "label": 1,
+            "enabled": true
+          }
+        }
+      ]
+    }
+  },
+  "expect": {
+    "error": {
+      "type": "SchemaViolation",
+      "rule": "property-type",
+      "node": "b",
+      "expected": "string"
+    }
+  }
+}

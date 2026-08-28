@@ -1,0 +1,100 @@
+{
+  "name": "dispatch-set-rejected-value-size",
+  "description": "A $set whose value exceeds the value size limit assigns nothing, is reported as a rejected mutation anchored to the dispatching node, and ends the action list: the $set before it stays applied, the $set after it never runs",
+  "config": {
+    "limits": {
+      "maxValueSize": 8
+    }
+  },
+  "document": {
+    "version": "1.0.0",
+    "state": {
+      "s": "string",
+      "n": "int"
+    },
+    "root": {
+      "type": "Column",
+      "id": "form",
+      "children": [
+        {
+          "type": "Text",
+          "id": "text",
+          "properties": {
+            "text": {
+              "$expr": "state.s"
+            }
+          }
+        },
+        {
+          "type": "Text",
+          "id": "count",
+          "properties": {
+            "text": {
+              "$expr": "str(state.n)"
+            }
+          }
+        },
+        {
+          "type": "Button",
+          "id": "double",
+          "properties": {
+            "label": "Double",
+            "enabled": true
+          },
+          "on": {
+            "tap": [
+              {
+                "action": "$set",
+                "key": "n",
+                "value": {
+                  "$expr": "state.n + 1"
+                }
+              },
+              {
+                "action": "$set",
+                "key": "s",
+                "value": {
+                  "$expr": "concat(state.s, state.s)"
+                }
+              },
+              {
+                "action": "$set",
+                "key": "n",
+                "value": {
+                  "$expr": "state.n + 10"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    }
+  },
+  "state": {
+    "s": "abcde",
+    "n": 0
+  },
+  "steps": [
+    {
+      "event": {
+        "node": "double",
+        "name": "tap"
+      }
+    }
+  ],
+  "expect": {
+    "state": {
+      "s": "abcde",
+      "n": 1
+    },
+    "occurrences": [
+      {
+        "kind": "rejectedMutation",
+        "node": "double",
+        "name": "s",
+        "expected": "8",
+        "found": "10"
+      }
+    ]
+  }
+}

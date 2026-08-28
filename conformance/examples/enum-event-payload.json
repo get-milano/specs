@@ -58,7 +58,10 @@
     "occurrences": [
       {
         "kind": "invalidEmission",
-        "node": "b"
+        "node": "b",
+        "name": "select",
+        "expected": "enum",
+        "found": "string"
       }
     ]
   }

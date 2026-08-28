@@ -1,6 +1,6 @@
 {
   "name": "gen-numeric-131",
-  "description": "Generated (seed 20260816): str((((0 - 7) / 0) * 0.0) + (0 - 1))",
+  "description": "Generated (seed 20260816): str((-(0.0) * ((0.0 / 0.0) - 123.456)) + 4611686018427387904)",
   "document": {
     "version": "1.0.0",
     "root": {
@@ -8,7 +8,7 @@
       "id": "r",
       "properties": {
         "text": {
-          "$expr": "str((((0 - 7) / 0) * 0.0) + (0 - 1))"
+          "$expr": "str((-(0.0) * ((0.0 / 0.0) - 123.456)) + 4611686018427387904)"
         }
       }
     }
@@ -18,14 +18,9 @@
       "type": "Text",
       "reference": "r",
       "properties": {
-        "text": "-1.0"
+        "text": "nan"
       }
     },
-    "occurrences": [
-      {
-        "kind": "divisionByZero",
-        "node": "r"
-      }
-    ]
+    "occurrences": []
   }
 }

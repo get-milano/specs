@@ -1,0 +1,42 @@
+{
+  "name": "gate-limit-value-size-context",
+  "description": "A supplied context value past the value size limit is a LimitExceeded at the gate; an array counts one plus its elements, so four two-scalar strings are nine",
+  "config": {
+    "limits": {
+      "maxValueSize": 8
+    }
+  },
+  "document": {
+    "version": "1.0.0",
+    "context": {
+      "tags": {
+        "array": "string"
+      }
+    },
+    "root": {
+      "type": "Text",
+      "id": "t",
+      "properties": {
+        "text": {
+          "$expr": "str(length(context.tags))"
+        }
+      }
+    }
+  },
+  "context": {
+    "tags": [
+      "ab",
+      "cd",
+      "ef",
+      "gh"
+    ]
+  },
+  "expect": {
+    "error": {
+      "type": "LimitExceeded",
+      "limit": "maxValueSize",
+      "value": 8,
+      "actual": 9
+    }
+  }
+}

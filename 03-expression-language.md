@@ -7,7 +7,7 @@ nav_order: 4
 
 **Status:** Stable v1.0.0 · 2026-08-16
 
-Defines the grammar and semantics of the expression strings carried by the `$expr` wrapper. Expressions are pure, statically typed, and total: after the gate accepts a document, evaluation can never fail. Both runtimes implement this spec independently; the conformance suite is the arbiter of identical behavior.
+Defines the grammar and semantics of the expression strings carried by the `$expr` wrapper. Expressions are pure, statically typed, and total: after the gate accepts a document, evaluation can never fail. Every runtime implements this spec independently; the conformance suite is the arbiter of identical behavior.
 
 ## Grammar
 
@@ -35,7 +35,7 @@ identifier     = letter , { letter | digit | "_" } ;
 
 Notes:
 
-- `letter` is ASCII `A`-`Z` and `a`-`z`; `digit` is ASCII `0`-`9`. Non-ASCII letters and digits (including Unicode digit characters) are not part of the grammar and fail to tokenize.
+- `character` is any Unicode scalar other than `'` and `\`, which appear only through their escapes. `letter` is ASCII `A`-`Z` and `a`-`z`; `digit` is ASCII `0`-`9`. Non-ASCII letters and digits (including Unicode digit characters) are not part of the grammar and fail to tokenize.
 - A bare `identifier` in `primary` position must be a reserved root usable as a value: `event` or `result`, in their scopes. `state` and `context` are namespaces, valid only as the base of a field access; a bare `state` or `context`, and any other bare identifier, is a `SchemaViolation` at the gate. Function names appear only in `call` position.
 - Negative literals are the unary `-` operator applied to a number.
 - A `number` without a decimal point is an `int` literal; with one, a `double` literal.
@@ -64,7 +64,7 @@ In precedence order, tightest first. Parentheses group.
 | 2 | `*` `/` `%` | numeric |
 | 3 | `+` `-` | numeric; `+` also concatenates when both operands are strings |
 | 4 | `<` `<=` `>` `>=` | numeric only |
-| 5 | `==` `!=` | scalars of the same type after numeric promotion; optionals comparable to `null`. Arrays and records are not comparable in v1.0: comparing them is a `SchemaViolation` at the gate |
+| 5 | `==` `!=` | non-optional scalars of the same type after numeric promotion. An optional operand is comparable only to `null`: comparing it to anything else, including another optional, is a `SchemaViolation` at the gate, and a producer resolves it with `??` first, the same rule as field access and `if`. A non-optional operand beside `null`, or `null` beside `null`, is likewise a `SchemaViolation` (the comparison could only ever be constant). Arrays and records are not comparable in v1.0: comparing them is a `SchemaViolation` at the gate |
 | 6 | `&&` | bool, short-circuit |
 | 7 | `||` | bool, short-circuit |
 | 8 | `??` | optional T on the left, T on the right; result T; right-associative |
@@ -73,7 +73,7 @@ Binary operators associate left except `??`, which associates right.
 
 ## Numeric semantics
 
-Fixed exactly, because two independent runtimes must agree to the bit:
+Fixed exactly, because independent runtimes must agree to the bit:
 
 - **Promotion.** When `int` and `double` meet in an arithmetic or comparison operator, the `int` converts to `double` (IEEE 754 round-to-nearest) and the operation is a double operation. `int` with `int` stays `int`.
 - **Integer arithmetic.** 64-bit two's complement, wrapping on overflow. Division truncates toward zero; the sign of `%` follows the dividend.
@@ -87,7 +87,7 @@ Fixed exactly, because two independent runtimes must agree to the bit:
 - `str(x)` converts scalars to strings, locale-independently: ints in decimal; bools as `true` / `false`. Doubles use a Milano-defined format, never the platform default: non-finite values are `nan`, `inf`, `-inf`; finite values use the shortest round-trip digits, rendered as plain decimal (integral values keep one fractional digit: `5.0`) while the normalized exponent is within [-4, 15], otherwise as scientific notation `d[.ddd]e[-]NN` with a lowercase `e`, no plus sign, no zero padding.
 - Ordering operators do not apply to strings; equality does.
 - Substring functions (`contains`, `startsWith`, `endsWith`) compare Unicode scalar sequences literally: no normalization, no grapheme clustering. String values are Unicode scalar sequences by definition; host-constructed values containing unpaired surrogates are outside the contract.
-- `trim` removes exactly the characters with the Unicode White_Space property, from an explicit table both runtimes share; platform whitespace helpers are not used.
+- `trim` removes exactly the characters with the Unicode White_Space property, from an explicit table every runtime shares; platform whitespace helpers are not used.
 
 ## Functions
 
@@ -113,7 +113,7 @@ There are no regular expressions in v1.0: string validation beyond these functio
 
 - Every expression has a static type, determined at the gate from literals, declared state and context types, event payload and action result types, operator rules, and function signatures. A property expression must type-check to the property's declared type; mismatches are a `SchemaViolation` at the gate.
 - A non-optional `T` is accepted wherever an optional `T` is expected; the reverse never holds. An `int` expression is accepted wherever a `double` is expected, and its value is promoted to `double` at evaluation, exactly as an `int` literal or data value is (document model spec); a `double` is never accepted where `int` is expected.
-- Both acceptances apply where a declared type meets an expression: property values, `$set` values, and action parameters. Neither applies between the two branches of `if`, which must have exactly the same type, optionality included; a producer resolves the optional branch with `??` first.
+- Both acceptances apply where a declared type meets an expression: property values, `$set` values, and action parameters. Neither applies between the two branches of `if`, which must have exactly the same type, optionality included, with the one exception the function table grants: a single `null` branch beside a `T` branch makes the result `T?`. Otherwise a producer resolves the optional branch with `??` first.
 
 Enum types follow four rules, all enforced at the gate:
 

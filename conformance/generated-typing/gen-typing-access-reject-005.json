@@ -1,0 +1,38 @@
+{
+  "name": "gen-typing-access-reject-005",
+  "description": "Generated (exhaustive): state.r.h in a string position is rejected at the gate",
+  "document": {
+    "version": "1.0.0",
+    "state": {
+      "r": {
+        "record": {
+          "f": "string",
+          "g": "int?"
+        }
+      }
+    },
+    "root": {
+      "type": "Column",
+      "id": "root",
+      "children": [
+        {
+          "type": "Probe",
+          "id": "p",
+          "properties": {
+            "s": {
+              "$expr": "state.r.h"
+            }
+          }
+        }
+      ]
+    }
+  },
+  "expect": {
+    "error": {
+      "type": "SchemaViolation",
+      "rule": "expression",
+      "node": "p",
+      "expected": "string"
+    }
+  }
+}

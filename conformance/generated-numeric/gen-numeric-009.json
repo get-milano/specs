@@ -1,6 +1,6 @@
 {
   "name": "gen-numeric-009",
-  "description": "Generated (seed 20260816): str(double(7))",
+  "description": "Generated (seed 20260816): str(1000000000000000.0 >= (-(0.0) * 3.0))",
   "document": {
     "version": "1.0.0",
     "root": {
@@ -8,7 +8,7 @@
       "id": "r",
       "properties": {
         "text": {
-          "$expr": "str(double(7))"
+          "$expr": "str(1000000000000000.0 >= (-(0.0) * 3.0))"
         }
       }
     }
@@ -18,7 +18,7 @@
       "type": "Text",
       "reference": "r",
       "properties": {
-        "text": "7.0"
+        "text": "true"
       }
     },
     "occurrences": []

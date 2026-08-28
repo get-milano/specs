@@ -1,6 +1,6 @@
 {
   "name": "gen-numeric-095",
-  "description": "Generated (seed 20260816): str(int(0.5))",
+  "description": "Generated (seed 20260816): str(((10 + 0) / 123.456) - 3)",
   "document": {
     "version": "1.0.0",
     "root": {
@@ -8,7 +8,7 @@
       "id": "r",
       "properties": {
         "text": {
-          "$expr": "str(int(0.5))"
+          "$expr": "str(((10 + 0) / 123.456) - 3)"
         }
       }
     }
@@ -18,7 +18,7 @@
       "type": "Text",
       "reference": "r",
       "properties": {
-        "text": "0"
+        "text": "-2.9189994815966824"
       }
     },
     "occurrences": []

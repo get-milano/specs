@@ -1,0 +1,40 @@
+{
+  "name": "gen-order-event-binding-then-id-duplicate",
+  "description": "Generated (order): event-binding on node a, then id-duplicate on node b; the first defect in document order wins",
+  "document": {
+    "version": "1.0.0",
+    "root": {
+      "type": "Column",
+      "id": "root",
+      "children": [
+        {
+          "type": "Button",
+          "id": "a",
+          "properties": {
+            "label": "A",
+            "enabled": true
+          },
+          "on": {
+            "nope": []
+          }
+        },
+        {
+          "type": "Button",
+          "id": "root",
+          "properties": {
+            "label": "B",
+            "enabled": true
+          }
+        }
+      ]
+    }
+  },
+  "expect": {
+    "error": {
+      "type": "SchemaViolation",
+      "rule": "event-binding",
+      "node": "a",
+      "expected": "declared event"
+    }
+  }
+}

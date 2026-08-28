@@ -1,0 +1,28 @@
+{
+  "name": "gate-state-value-missing",
+  "description": "A required state value the provider omitted counts as null, so the data check reports the declared type against null, the same shape as any mismatch",
+  "document": {
+    "version": "1.0.0",
+    "state": {
+      "n": "int"
+    },
+    "root": {
+      "type": "Text",
+      "id": "t",
+      "properties": {
+        "text": {
+          "$expr": "str(state.n)"
+        }
+      }
+    }
+  },
+  "state": {},
+  "expect": {
+    "error": {
+      "type": "SchemaViolation",
+      "rule": "state-declaration",
+      "expected": "int",
+      "found": "null"
+    }
+  }
+}

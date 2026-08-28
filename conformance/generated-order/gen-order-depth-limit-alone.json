@@ -1,0 +1,42 @@
+{
+  "name": "gen-order-depth-limit-alone",
+  "description": "Generated (order): depth-limit alone",
+  "config": {
+    "limits": {
+      "maxTreeDepth": 1
+    }
+  },
+  "document": {
+    "version": "1.0.0",
+    "root": {
+      "type": "Column",
+      "id": "root",
+      "children": [
+        {
+          "type": "Button",
+          "id": "a",
+          "properties": {
+            "label": "A",
+            "enabled": true
+          }
+        },
+        {
+          "type": "Button",
+          "id": "b",
+          "properties": {
+            "label": "B",
+            "enabled": true
+          }
+        }
+      ]
+    }
+  },
+  "expect": {
+    "error": {
+      "type": "LimitExceeded",
+      "limit": "maxTreeDepth",
+      "value": 1,
+      "actual": 2
+    }
+  }
+}

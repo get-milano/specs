@@ -1,0 +1,29 @@
+{
+  "name": "gate-state-declaration-no-provider",
+  "description": "A document declaring state built on a surface with no state data provider is a SchemaViolation with rule state-declaration, raised before the provider would be awaited",
+  "config": {
+    "stateDataProvider": false
+  },
+  "document": {
+    "version": "1.0.0",
+    "state": {
+      "n": "int"
+    },
+    "root": {
+      "type": "Text",
+      "id": "t",
+      "properties": {
+        "text": {
+          "$expr": "str(state.n)"
+        }
+      }
+    }
+  },
+  "expect": {
+    "error": {
+      "type": "SchemaViolation",
+      "rule": "state-declaration",
+      "expected": "state data provider"
+    }
+  }
+}

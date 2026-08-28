@@ -1,6 +1,6 @@
 {
   "name": "gen-numeric-054",
-  "description": "Generated (seed 20260816): str((-(0.0) - 0.00001) + (9007199254740992.0 * 0.00001))",
+  "description": "Generated (seed 20260816): str((100 + 100) >= (3 % 4611686018427387904))",
   "document": {
     "version": "1.0.0",
     "root": {
@@ -8,7 +8,7 @@
       "id": "r",
       "properties": {
         "text": {
-          "$expr": "str((-(0.0) - 0.00001) + (9007199254740992.0 * 0.00001))"
+          "$expr": "str((100 + 100) >= (3 % 4611686018427387904))"
         }
       }
     }
@@ -18,7 +18,7 @@
       "type": "Text",
       "reference": "r",
       "properties": {
-        "text": "90071992547.40991"
+        "text": "true"
       }
     },
     "occurrences": []

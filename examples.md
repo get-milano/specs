@@ -5,6 +5,8 @@ nav_order: 8
 
 # Worked Examples
 
+The two v1.0 target capabilities, written end to end: a shared vocabulary, two documents, and the behavior each must produce. Both live as executable vectors in `conformance/`, in the format of the [conformance suite spec](05-conformance-suite.html). Together they exercise every v1.0 mechanic: context, expressions, state, events, built-in and custom actions, consent gating, and async completion.
+
 ## Recommended integration architecture
 
 Non-normative, but strongly recommended and followed by the sample apps: keep the design system pure, and give Milano exactly one doorway into it.
@@ -15,22 +17,21 @@ Non-normative, but strongly recommended and followed by the sample apps: keep th
 
 The result: Milano never leaks into the components, the components never learn about documents, and replacing either side leaves the other untouched.
 
-The two v1.0 target capabilities, written end to end: a shared vocabulary, two documents, and the behavior each must produce. Both live as executable vectors in `conformance/`, in the format of the [conformance suite spec](05-conformance-suite.html). Together they exercise every v1.0 mechanic: context, expressions, state, events, built-in and custom actions, consent gating, and async completion.
-
 ## The vocabulary
 
-A minimal consumer vocabulary, `examples 1.0.0`, with eight component types and two custom actions:
+A minimal consumer vocabulary, `examples 1.0.0`, with nine component types and two custom actions:
 
 | Component | Properties | Events | Children |
 |---|---|---|---|
 | `Banner` | `backgroundImageUrl: string` | | yes |
 | `Column` | | | yes |
-| `Text` | `text: string` | | |
+| `Text` | `text: string`, `visible: bool?` | | |
 | `Button` | `label: string`, `enabled: bool` | `tap` (no payload) | |
 | `TextField` | `label: string`, `value: string` | `change: string` | |
 | `NumberField` | `label: string`, `value: double` | `change: double` | |
 | `Checkbox` | `label: string`, `checked: bool` | `change: bool` | |
 | `Badge` | `label: string`, `tone: enum(info, warning, danger)` | `select: enum(info, warning, danger)` | |
+| `Meta` | `key: string`; strict, so an undeclared property is rejected at the gate | | |
 
 | Action | Declared | Parameters |
 |---|---|---|

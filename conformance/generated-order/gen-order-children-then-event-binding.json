@@ -1,0 +1,49 @@
+{
+  "name": "gen-order-children-then-event-binding",
+  "description": "Generated (order): children on node a, then event-binding on node b; the first defect in document order wins",
+  "document": {
+    "version": "1.0.0",
+    "root": {
+      "type": "Column",
+      "id": "root",
+      "children": [
+        {
+          "type": "Button",
+          "id": "a",
+          "properties": {
+            "label": "A",
+            "enabled": true
+          },
+          "children": [
+            {
+              "type": "Text",
+              "id": "a-child",
+              "properties": {
+                "text": "x"
+              }
+            }
+          ]
+        },
+        {
+          "type": "Button",
+          "id": "b",
+          "properties": {
+            "label": "B",
+            "enabled": true
+          },
+          "on": {
+            "nope": []
+          }
+        }
+      ]
+    }
+  },
+  "expect": {
+    "error": {
+      "type": "SchemaViolation",
+      "rule": "children",
+      "node": "a",
+      "expected": "no children"
+    }
+  }
+}

@@ -1,0 +1,47 @@
+{
+  "name": "gate-limit-node-count",
+  "description": "A tree with more nodes than the node count limit is a LimitExceeded naming the limit, its value, and the count found; pinned at a configured limit of three with four nodes",
+  "config": {
+    "limits": {
+      "maxNodeCount": 3
+    }
+  },
+  "document": {
+    "version": "1.0.0",
+    "root": {
+      "type": "Column",
+      "id": "root",
+      "children": [
+        {
+          "type": "Text",
+          "id": "a",
+          "properties": {
+            "text": "a"
+          }
+        },
+        {
+          "type": "Text",
+          "id": "b",
+          "properties": {
+            "text": "b"
+          }
+        },
+        {
+          "type": "Text",
+          "id": "c",
+          "properties": {
+            "text": "c"
+          }
+        }
+      ]
+    }
+  },
+  "expect": {
+    "error": {
+      "type": "LimitExceeded",
+      "limit": "maxNodeCount",
+      "value": 3,
+      "actual": 4
+    }
+  }
+}
