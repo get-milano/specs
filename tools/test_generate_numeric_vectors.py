@@ -121,6 +121,24 @@ class VectorShape(unittest.TestCase):
         self.assertEqual(vector["expect"]["occurrences"],
                          [{"kind": "divisionByZero", "node": "r"}])
 
+    def test_a_checker_defect_is_not_swallowed(self):
+        # Only a type mismatch is a reason to skip a composition. A bare
+        # except once hid a crash on `inf % x`, and with it every vector
+        # that would have pinned the case; the generator has to fail.
+        original = gnv.vector_for
+        gnv.vector_for = lambda name, expression: (_ for _ in ()).throw(
+            RuntimeError("checker defect"))
+        with tempfile.TemporaryDirectory() as directory:
+            root, suite = gnv.ROOT, gnv.SUITE
+            gnv.ROOT = Path(directory)
+            gnv.SUITE = Path(directory) / "conformance" / "generated-numeric"
+            try:
+                with self.assertRaises(RuntimeError):
+                    gnv.main()
+            finally:
+                gnv.ROOT, gnv.SUITE = root, suite
+                gnv.vector_for = original
+
     def test_an_ill_typed_composition_raises_rather_than_emitting(self):
         # main() relies on this to skip compositions the pool produced by
         # chance; if it silently emitted instead, the suite would carry a

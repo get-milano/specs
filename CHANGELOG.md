@@ -15,6 +15,43 @@ not move it; neither do tool or suite changes. Anything that changes what
 a conformant engine must do is a contract change, and comes with vectors.
 The contract has been at 1.0.0 since the first release.
 
+## Unreleased
+
+### Clarified
+
+- **`if` branches agree on optionality.** Both branches type-check to
+  exactly the same T: a `T?` branch beside a `T` branch is rejected, and
+  the optional is resolved with `??` first. The Swift and Kotlin engines
+  always behaved this way; the TypeScript engine and the reference
+  checker widened the result to `T?` instead, so the same document built
+  on one platform and failed on another. Pinned by
+  `gate-expression-if-optional-branch-mismatch` and
+  `expr-if-optional-branch-resolved`.
+- **An `int` expression is accepted where a `double` is declared** and
+  promoted at evaluation, exactly as an `int` literal or data value is.
+  Every engine did this; the prose only promised it for values and the
+  reference checker refused it. Pinned by
+  `expr-int-expression-in-double-slot`.
+
+### Added
+
+- `expr-double-modulo-non-finite`: double `%` with an infinite or zero
+  operand, per IEEE 754.
+- `gate-state-key-non-ascii`: declaration keys follow the ASCII identifier
+  grammar; a Unicode letter is not a letter here.
+
+### Fixed
+
+- **`reference_check.py` crashed on `inf % x`** (`math.fmod` raises on an
+  infinite dividend) where every engine answers `nan`, and
+  `generate_numeric_vectors.py` swallowed the crash with a bare `except`,
+  so no generated vector could ever pin the case. The remainder is now
+  computed per IEEE 754, and the generator skips only type mismatches.
+- **`reference_check.py` accepted Unicode letters in identifiers**
+  (`str.isalpha`) where the schemas and every engine are ASCII only, so
+  the `--document` CLI validated state and context keys the engines
+  reject.
+
 ## 1.2.0
 
 ### Clarified
