@@ -15,7 +15,7 @@ not move it; neither do tool or suite changes. Anything that changes what
 a conformant engine must do is a contract change, and comes with vectors.
 The contract has been at 1.0.0 since the first release.
 
-## 1.3.0 (unreleased)
+## 1.3.0
 
 ### Clarified
 
