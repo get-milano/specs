@@ -1,0 +1,26 @@
+{
+  "name": "string-split-basic",
+  "description": "split gives the pieces between the separators",
+  "document": {
+    "version": "2.1.0",
+    "root": {
+      "type": "Text",
+      "id": "r",
+      "properties": {
+        "text": {
+          "$expr": "$join($split('a,b,c', ','), '|')"
+        }
+      }
+    }
+  },
+  "expect": {
+    "view": {
+      "type": "Text",
+      "reference": "r",
+      "properties": {
+        "text": "a|b|c"
+      }
+    },
+    "occurrences": []
+  }
+}

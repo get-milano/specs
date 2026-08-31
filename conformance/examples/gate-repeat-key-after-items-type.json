@@ -1,0 +1,17 @@
+{
+  "name": "gate-repeat-key-after-items-type",
+  "description": "The repeat rules apply in order: an items expression that is not an array is reported before a defective key",
+  "documentText": "{\"version\": \"2.1.0\", \"state\": {\"count\": \"int\"}, \"root\": {\"type\": \"Column\", \"id\": \"list\", \"children\": [{\"type\": \"$repeat\", \"id\": \"each\", \"items\": {\"$expr\": \"state.count\"}, \"as\": \"row\", \"key\": \"abc\", \"children\": [{\"type\": \"Text\", \"id\": \"name\", \"properties\": {\"text\": \"x\"}}]}]}}",
+  "state": {
+    "count": 3
+  },
+  "expect": {
+    "error": {
+      "type": "SchemaViolation",
+      "rule": "repeat",
+      "node": "each",
+      "expected": "array items",
+      "found": "int"
+    }
+  }
+}

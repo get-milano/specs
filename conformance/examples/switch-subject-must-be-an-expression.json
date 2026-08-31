@@ -1,0 +1,55 @@
+{
+  "name": "switch-subject-must-be-an-expression",
+  "description": "A $switch subject is an expression, never a literal: a literal subject would pick the same branch forever",
+  "document": {
+    "version": "2.1.0",
+    "root": {
+      "type": "Column",
+      "id": "c",
+      "children": [
+        {
+          "type": "$switch",
+          "subject": "state.status",
+          "cases": {
+            "ok": [
+              {
+                "type": "Text",
+                "properties": {
+                  "text": "x"
+                }
+              }
+            ],
+            "late": [
+              {
+                "type": "Text",
+                "properties": {
+                  "text": "x"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "state": {
+      "status": {
+        "enum": [
+          "ok",
+          "late"
+        ]
+      }
+    }
+  },
+  "state": {
+    "status": "ok"
+  },
+  "expect": {
+    "error": {
+      "type": "SchemaViolation",
+      "rule": "switch",
+      "node": "root/children[0]",
+      "expected": "subject expression",
+      "found": "string"
+    }
+  }
+}

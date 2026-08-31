@@ -1,0 +1,30 @@
+{
+  "name": "gen-typing-numeric-reject-025",
+  "description": "Generated (exhaustive): $ceil(1) in a double position is rejected at the gate",
+  "document": {
+    "version": "2.1.0",
+    "root": {
+      "type": "Column",
+      "id": "root",
+      "children": [
+        {
+          "type": "Probe",
+          "id": "p",
+          "properties": {
+            "d": {
+              "$expr": "$ceil(1)"
+            }
+          }
+        }
+      ]
+    }
+  },
+  "expect": {
+    "error": {
+      "type": "SchemaViolation",
+      "rule": "expression",
+      "node": "p",
+      "expected": "double"
+    }
+  }
+}

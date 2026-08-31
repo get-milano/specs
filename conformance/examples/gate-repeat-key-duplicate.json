@@ -1,0 +1,69 @@
+{
+  "name": "gate-repeat-key-duplicate",
+  "description": "Two elements rendering the same key are a data defect at build: the repeat rule with the repeated key found",
+  "document": {
+    "version": "2.1.0",
+    "state": {
+      "rows": {
+        "array": {
+          "record": {
+            "id": "string",
+            "name": "string",
+            "url": "string"
+          }
+        }
+      }
+    },
+    "root": {
+      "type": "Column",
+      "id": "list",
+      "children": [
+        {
+          "type": "$repeat",
+          "id": "each",
+          "items": {
+            "$expr": "state.rows"
+          },
+          "as": "row",
+          "key": {
+            "$expr": "row.id"
+          },
+          "children": [
+            {
+              "type": "Text",
+              "id": "name",
+              "properties": {
+                "text": {
+                  "$expr": "row.name"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "state": {
+    "rows": [
+      {
+        "id": "alpha",
+        "name": "Alpha",
+        "url": "https://example.com/a"
+      },
+      {
+        "id": "alpha",
+        "name": "Alpha again",
+        "url": "https://example.com/a"
+      }
+    ]
+  },
+  "expect": {
+    "error": {
+      "type": "SchemaViolation",
+      "rule": "repeat",
+      "node": "each",
+      "expected": "distinct key",
+      "found": "alpha"
+    }
+  }
+}

@@ -1,0 +1,50 @@
+{
+  "name": "lookup-follows-the-subject",
+  "description": "A different member reads a different field",
+  "document": {
+    "version": "2.1.0",
+    "state": {
+      "status": {
+        "enum": [
+          "ok",
+          "late",
+          "failed"
+        ]
+      },
+      "labels": {
+        "record": {
+          "ok": "string",
+          "late": "string",
+          "failed": "string"
+        }
+      }
+    },
+    "root": {
+      "type": "Text",
+      "id": "t",
+      "properties": {
+        "text": {
+          "$expr": "state.labels[state.status]"
+        }
+      }
+    }
+  },
+  "state": {
+    "status": "ok",
+    "labels": {
+      "ok": "Ready",
+      "late": "Running late",
+      "failed": "Failed"
+    }
+  },
+  "expect": {
+    "view": {
+      "type": "Text",
+      "reference": "t",
+      "properties": {
+        "text": "Ready"
+      }
+    },
+    "occurrences": []
+  }
+}

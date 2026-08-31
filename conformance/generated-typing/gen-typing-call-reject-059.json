@@ -1,6 +1,6 @@
 {
   "name": "gen-typing-call-reject-059",
-  "description": "Generated (exhaustive): concat(state.sOpt, 'y') in a string position is rejected at the gate",
+  "description": "Generated (exhaustive): $concat(state.sOpt, 'y') in a string position is rejected at the gate",
   "document": {
     "version": "1.0.0",
     "state": {
@@ -15,7 +15,7 @@
           "id": "p",
           "properties": {
             "s": {
-              "$expr": "concat(state.sOpt, 'y')"
+              "$expr": "$concat(state.sOpt, 'y')"
             }
           }
         }

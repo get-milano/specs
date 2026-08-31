@@ -1,0 +1,73 @@
+{
+  "name": "switch-validates-every-branch",
+  "description": "Every branch is validated, not just the one this build takes",
+  "document": {
+    "version": "2.1.0",
+    "state": {
+      "status": {
+        "enum": [
+          "ok",
+          "late",
+          "failed"
+        ]
+      },
+      "labels": {
+        "record": {
+          "ok": "string",
+          "late": "string",
+          "failed": "string"
+        }
+      }
+    },
+    "root": {
+      "type": "Column",
+      "id": "c",
+      "children": [
+        {
+          "type": "$switch",
+          "subject": {
+            "$expr": "state.status"
+          },
+          "cases": {
+            "ok": [
+              {
+                "type": "Text",
+                "properties": {
+                  "text": "Ready"
+                }
+              }
+            ],
+            "late": [
+              {
+                "type": "Text",
+                "properties": {
+                  "text": "Running late"
+                }
+              }
+            ],
+            "failed": [
+              {
+                "type": "Nope"
+              }
+            ]
+          }
+        }
+      ]
+    }
+  },
+  "state": {
+    "status": "ok",
+    "labels": {
+      "ok": "Ready",
+      "late": "Running late",
+      "failed": "Failed"
+    }
+  },
+  "expect": {
+    "error": {
+      "type": "UnknownComponentType",
+      "node": "root/children[0]/cases[failed][0]",
+      "unknownType": "Nope"
+    }
+  }
+}

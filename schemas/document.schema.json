@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "document.schema.json",
   "title": "Milano Document",
-  "description": "Validates the canonical JSON encoding of a Milano document per the document model spec: top-level structure, node envelope, values and expressions, and action encoding. Every object the contract may grow (the top level, the node envelope, the vocabulary section, type descriptors) is open, matching the contract's tolerance rules; only the $expr wrapper is closed, since the model defines it as exactly single-key. Semantic rules (vocabulary resolution, expression typing, id uniqueness, resource limits) belong to the gate, not this schema.",
+  "description": "Validates the canonical JSON encoding of a Milano document per the document model spec: top-level structure, node envelope, lifecycle bindings, values and expressions, and action encoding. Every object the contract may grow (the top level, the node envelope, the vocabulary section, type descriptors) is open, matching the contract's tolerance rules; only the $expr wrapper is closed, since the model defines it as exactly single-key. Semantic rules (vocabulary resolution, expression typing, id uniqueness, resource limits) belong to the gate, not this schema.",
   "type": "object",
   "required": [
     "version",
@@ -49,8 +49,31 @@
     "root": {
       "$ref": "#/$defs/node"
     },
+    "on": {
+      "description": "Lifecycle bindings (contract 2.1): action lists bound to the appear and disappear signals.",
+      "type": "object",
+      "propertyNames": {
+        "enum": [
+          "appear",
+          "disappear"
+        ]
+      },
+      "additionalProperties": {
+        "$ref": "#/$defs/actionOrList"
+      }
+    },
     "metadata": {
       "type": "object"
+    },
+    "watch": {
+      "description": "Watch bindings (contract 2.2): action lists bound to changes of declared state keys.",
+      "type": "object",
+      "propertyNames": {
+        "$ref": "#/$defs/identifier"
+      },
+      "additionalProperties": {
+        "$ref": "#/$defs/actionOrList"
+      }
     }
   },
   "$defs": {
@@ -96,6 +119,10 @@
           "type": "string",
           "minLength": 1
         },
+        "key": {
+          "description": "$repeat only (contract 2.1): an expression identifying each instance; its rendering replaces the element index in the instance's reference.",
+          "$ref": "#/$defs/expression"
+        },
         "on": {
           "type": "object",
           "propertyNames": {
@@ -103,6 +130,48 @@
           },
           "additionalProperties": {
             "$ref": "#/$defs/actionOrList"
+          }
+        },
+        "condition": {
+          "description": "$if only (contract 2.1): the bool expression choosing the branch.",
+          "$ref": "#/$defs/value"
+        },
+        "then": {
+          "description": "$if only (contract 2.1): the nodes materialized when the condition holds.",
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/node"
+          }
+        },
+        "else": {
+          "description": "$if only (contract 2.1): the nodes materialized when it does not; absent materializes nothing.",
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/node"
+          }
+        },
+        "subject": {
+          "description": "$switch only (contract 2.1): the enum expression choosing the branch.",
+          "$ref": "#/$defs/value"
+        },
+        "cases": {
+          "description": "$switch only (contract 2.1): the nodes each enum member materializes.",
+          "type": "object",
+          "propertyNames": {
+            "$ref": "#/$defs/identifier"
+          },
+          "additionalProperties": {
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/node"
+            }
+          }
+        },
+        "default": {
+          "description": "$switch only (contract 2.1): the nodes every member without a case materializes.",
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/node"
           }
         }
       }
@@ -164,7 +233,7 @@
       "properties": {
         "action": {
           "type": "string",
-          "pattern": "^(\\$set|\\$sequence|\\$when|[A-Za-z][A-Za-z0-9_]*)$"
+          "pattern": "^(\\$set|\\$append|\\$remove|\\$update|\\$sequence|\\$when|[A-Za-z][A-Za-z0-9_]*)$"
         },
         "onSuccess": {
           "$ref": "#/$defs/actionOrList"
@@ -192,6 +261,71 @@
             ],
             "properties": {
               "key": {
+                "$ref": "#/$defs/identifier"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "action": {
+                "const": "$append"
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "key",
+              "value"
+            ],
+            "properties": {
+              "key": {
+                "$ref": "#/$defs/identifier"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "action": {
+                "const": "$remove"
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "key",
+              "at"
+            ],
+            "properties": {
+              "key": {
+                "$ref": "#/$defs/identifier"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "action": {
+                "const": "$update"
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "key",
+              "at",
+              "field",
+              "value"
+            ],
+            "properties": {
+              "key": {
+                "$ref": "#/$defs/identifier"
+              },
+              "field": {
                 "$ref": "#/$defs/identifier"
               }
             }

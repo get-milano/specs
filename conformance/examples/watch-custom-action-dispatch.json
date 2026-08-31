@@ -1,0 +1,129 @@
+{
+  "name": "watch-custom-action-dispatch",
+  "description": "A custom action dispatched from a watch list is anchored to no node, numbered like any dispatch, and its follow-ups run",
+  "document": {
+    "version": "2.1.0",
+    "state": {
+      "a": "int",
+      "b": "int",
+      "c": "int"
+    },
+    "root": {
+      "type": "Column",
+      "id": "c",
+      "children": [
+        {
+          "type": "Text",
+          "id": "a",
+          "properties": {
+            "text": {
+              "$expr": "$str(state.a)"
+            }
+          }
+        },
+        {
+          "type": "Text",
+          "id": "b",
+          "properties": {
+            "text": {
+              "$expr": "$str(state.b)"
+            }
+          }
+        },
+        {
+          "type": "Button",
+          "id": "go",
+          "properties": {
+            "label": "Go",
+            "enabled": true
+          },
+          "on": {
+            "tap": [
+              {
+                "action": "$set",
+                "key": "a",
+                "value": 7
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "watch": {
+      "a": [
+        {
+          "action": "openUrl",
+          "url": {
+            "$expr": "$concat('u', $str(state.a))"
+          },
+          "onSuccess": [
+            {
+              "action": "$set",
+              "key": "c",
+              "value": 1
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "state": {
+    "a": 0,
+    "b": 0,
+    "c": 0
+  },
+  "steps": [
+    {
+      "event": {
+        "node": "go",
+        "name": "tap"
+      }
+    },
+    {
+      "complete": {
+        "dispatch": 0,
+        "outcome": "success"
+      }
+    }
+  ],
+  "expect": {
+    "state": {
+      "a": 7,
+      "b": 0,
+      "c": 1
+    },
+    "dispatched": [
+      {
+        "action": "openUrl",
+        "parameters": {
+          "url": "u7"
+        },
+        "dispatch": 0
+      }
+    ],
+    "occurrences": [],
+    "interactions": [
+      {
+        "kind": "viewBuilt"
+      },
+      {
+        "kind": "event",
+        "node": "go",
+        "name": "tap"
+      },
+      {
+        "kind": "actionDispatched",
+        "name": "openUrl",
+        "dispatch": 0,
+        "value": {
+          "url": "u7"
+        }
+      },
+      {
+        "kind": "completionSucceeded",
+        "name": "openUrl",
+        "dispatch": 0
+      }
+    ]
+  }
+}

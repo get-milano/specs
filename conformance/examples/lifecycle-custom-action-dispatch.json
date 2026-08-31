@@ -1,0 +1,95 @@
+{
+  "name": "lifecycle-custom-action-dispatch",
+  "description": "A custom action dispatched from a lifecycle binding is anchored to no node, numbered like any dispatch, and its completion runs the follow-ups",
+  "document": {
+    "version": "2.1.0",
+    "state": {
+      "seen": "bool"
+    },
+    "root": {
+      "type": "Text",
+      "id": "t",
+      "properties": {
+        "text": {
+          "$expr": "$if(state.seen, 'seen', 'fresh')"
+        }
+      }
+    },
+    "on": {
+      "appear": [
+        {
+          "action": "track",
+          "surface": "home",
+          "onSuccess": [
+            {
+              "action": "$set",
+              "key": "seen",
+              "value": true
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "state": {
+    "seen": false
+  },
+  "steps": [
+    {
+      "appear": true
+    },
+    {
+      "complete": {
+        "dispatch": 0,
+        "outcome": "success"
+      }
+    }
+  ],
+  "expect": {
+    "state": {
+      "seen": true
+    },
+    "dispatched": [
+      {
+        "action": "track",
+        "parameters": {
+          "surface": "home"
+        },
+        "dispatch": 0
+      }
+    ],
+    "occurrences": [],
+    "interactions": [
+      {
+        "kind": "viewBuilt"
+      },
+      {
+        "kind": "viewAppeared"
+      },
+      {
+        "kind": "actionDispatched",
+        "name": "track",
+        "dispatch": 0,
+        "value": {
+          "surface": "home"
+        }
+      },
+      {
+        "kind": "completionSucceeded",
+        "name": "track",
+        "dispatch": 0
+      }
+    ]
+  },
+  "config": {
+    "actions": {
+      "declare": {
+        "track": {
+          "parameters": {
+            "surface": "string"
+          }
+        }
+      }
+    }
+  }
+}

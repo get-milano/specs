@@ -1,0 +1,26 @@
+{
+  "name": "gen-string-090",
+  "description": "Generated (seed 20260831): $replace($join($split('\\'quoted\\'', ','), '-'), 'zz', 'X')",
+  "document": {
+    "version": "2.1.0",
+    "root": {
+      "type": "Text",
+      "id": "r",
+      "properties": {
+        "text": {
+          "$expr": "$replace($join($split('\\'quoted\\'', ','), '-'), 'zz', 'X')"
+        }
+      }
+    }
+  },
+  "expect": {
+    "view": {
+      "type": "Text",
+      "reference": "r",
+      "properties": {
+        "text": "'quoted'"
+      }
+    },
+    "occurrences": []
+  }
+}

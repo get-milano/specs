@@ -1,0 +1,40 @@
+{
+  "name": "function-nested-in-builtin",
+  "description": "A host function's value feeds built-ins like any expression",
+  "document": {
+    "version": "2.1.0",
+    "root": {
+      "type": "Text",
+      "id": "t",
+      "properties": {
+        "text": {
+          "$expr": "$str($length(shout('abc')))"
+        }
+      }
+    }
+  },
+  "config": {
+    "functions": {
+      "results": {
+        "shout": [
+          {
+            "arguments": [
+              "abc"
+            ],
+            "returns": "ABC"
+          }
+        ]
+      }
+    }
+  },
+  "expect": {
+    "view": {
+      "type": "Text",
+      "reference": "t",
+      "properties": {
+        "text": "3"
+      }
+    },
+    "occurrences": []
+  }
+}

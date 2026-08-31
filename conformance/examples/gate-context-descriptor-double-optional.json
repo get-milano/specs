@@ -1,0 +1,16 @@
+{
+  "name": "gate-context-descriptor-double-optional",
+  "description": "The optional marker appears once: `string??` is not a type name",
+  "documentText": "{\"version\": \"2.0.0\", \"context\": {\"x\": \"string??\"}, \"root\": {\"type\": \"Text\", \"id\": \"r\", \"properties\": {\"text\": \"x\"}}}",
+  "context": {
+    "x": "v"
+  },
+  "expect": {
+    "error": {
+      "type": "SchemaViolation",
+      "rule": "context-declaration",
+      "expected": "type descriptor",
+      "found": "x"
+    }
+  }
+}

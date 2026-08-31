@@ -1,0 +1,24 @@
+{
+  "name": "gate-abs-string-argument",
+  "description": "abs takes an int or a double, never a string",
+  "document": {
+    "version": "2.1.0",
+    "root": {
+      "type": "Text",
+      "id": "t",
+      "properties": {
+        "text": {
+          "$expr": "$abs('x')"
+        }
+      }
+    }
+  },
+  "expect": {
+    "error": {
+      "type": "SchemaViolation",
+      "rule": "expression",
+      "node": "t",
+      "expected": "string"
+    }
+  }
+}

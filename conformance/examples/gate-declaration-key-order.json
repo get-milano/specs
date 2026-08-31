@@ -1,0 +1,13 @@
+{
+  "name": "gate-declaration-key-order",
+  "description": "Declarations are checked one whole declaration at a time, in lexicographic key order: `a` has a malformed descriptor and sorts before `zz!`, whose key is not an identifier, so the descriptor wins and the key order decides, not the document order",
+  "documentText": "{\"version\": \"2.0.0\", \"state\": {\"a\": \"bogus\", \"zz!\": \"string\"}, \"root\": {\"type\": \"Text\", \"id\": \"r\", \"properties\": {\"text\": \"x\"}}}",
+  "expect": {
+    "error": {
+      "type": "SchemaViolation",
+      "rule": "state-declaration",
+      "expected": "type descriptor",
+      "found": "a"
+    }
+  }
+}

@@ -1,0 +1,53 @@
+{
+  "name": "gate-failure-in-onsuccess",
+  "description": "failure never binds inside onSuccess: success completions carry a result, not a failure",
+  "document": {
+    "version": "2.1.0",
+    "state": {
+      "label": "string"
+    },
+    "root": {
+      "type": "Button",
+      "id": "b",
+      "properties": {
+        "label": "Go",
+        "enabled": true
+      },
+      "on": {
+        "tap": [
+          {
+            "action": "fetchCode",
+            "onSuccess": [
+              {
+                "action": "$set",
+                "key": "label",
+                "value": {
+                  "$expr": "failure"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "state": {
+    "label": ""
+  },
+  "expect": {
+    "error": {
+      "type": "SchemaViolation",
+      "rule": "expression",
+      "node": "b"
+    }
+  },
+  "config": {
+    "actions": {
+      "declare": {
+        "fetchCode": {
+          "failure": "string"
+        }
+      }
+    }
+  }
+}

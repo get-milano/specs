@@ -1,0 +1,78 @@
+{
+  "name": "switch-refuses-a-non-member-case",
+  "description": "A case naming something outside the enum is an encoding violation",
+  "document": {
+    "version": "2.1.0",
+    "state": {
+      "status": {
+        "enum": [
+          "ok",
+          "late",
+          "failed"
+        ]
+      },
+      "labels": {
+        "record": {
+          "ok": "string",
+          "late": "string",
+          "failed": "string"
+        }
+      }
+    },
+    "root": {
+      "type": "Column",
+      "id": "c",
+      "children": [
+        {
+          "type": "$switch",
+          "subject": {
+            "$expr": "state.status"
+          },
+          "cases": {
+            "ok": [
+              {
+                "type": "Text",
+                "properties": {
+                  "text": "Ready"
+                }
+              }
+            ],
+            "late": [
+              {
+                "type": "Text",
+                "properties": {
+                  "text": "Running late"
+                }
+              }
+            ],
+            "failed": [
+              {
+                "type": "Text",
+                "properties": {
+                  "text": "Failed"
+                }
+              }
+            ],
+            "nope": [
+              {
+                "type": "Text",
+                "properties": {
+                  "text": "x"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    }
+  },
+  "expect": {
+    "error": {
+      "type": "SchemaViolation",
+      "rule": "switch",
+      "node": "root/children[0]",
+      "expected": "declared member",
+      "found": "nope"
+    }
+  }
+}

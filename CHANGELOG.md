@@ -17,6 +17,272 @@ The contract was 1.0 from the first release through 1.3.1; repository
 release 2.0.0 moved it to 2.0, a superset under which every 1.x document
 stays valid.
 
+## 2.1.0
+
+Contract 2.1, a superset of 2.0: every 2.0 document stays valid with the
+same meaning, and a document must declare 2.1 to use what this release
+adds.
+
+### Added
+
+- **`key` on `$repeat`.** An expression of a non-optional `string`, `int`,
+  or enum type, evaluated per element with the template's roots in scope,
+  whose rendering replaces the element index in the instance's reference
+  (`card[abc]`), so identity follows the element through reorderings; an
+  emission from a keyed instance binds the element whose key matches at
+  dispatch time. Keys are distinct within a materialization: a repeat is
+  the `repeat` rule at build (`distinct key`) and a rejected mutation or
+  context update at runtime. Vectors: `repeat-key-*`, `gate-repeat-key-*`,
+  `dispatch-set-rejected-duplicate-key`,
+  `context-update-rejected-duplicate-key`.
+- **Typed failure payloads.** An action may declare a `failure` type; the
+  handler fails with a value of that type, validated like a result, bound
+  to the `failure` root inside that action's `onFailure`, rebinding at
+  each nesting. A missing value is `null`, so it satisfies an optional
+  declaration and violates a non-optional one; an action declaring none
+  keeps the 2.0 rule. Vectors: `completion-failure-*`, `gate-failure-*`.
+  The vocabulary meta-schema, the bindings generator (a nominal type per
+  failure site, a doc note per action), and the vocabulary diff (adding
+  is additive, removing or retyping breaking) follow.
+- **Lifecycle bindings.** A top-level `on` section binds action lists to
+  the `appear` and `disappear` signals the host delivers to a view;
+  accepted signals dispatch in FIFO order with events, carry no payload,
+  flip the view's appeared state, and emit `viewAppeared` /
+  `viewDisappeared` interaction records; redundant and post-teardown
+  signals are ignored silently. Vector steps `appear` and `disappear`.
+  Vectors: `lifecycle-*`, `gate-lifecycle-*`.
+- **Dispatch identity.** Every custom action delivered to a handler
+  carries `dispatch`, its zero-based number among the view's dispatches
+  in delivery order, and `dispatchId`, a string unique across every
+  dispatch of every view in the process; `actionDispatched`,
+  `completionSucceeded`, and `completionFailed` records carry the number,
+  and completion records now carry the validated result or failure
+  payload as their value. Vectors: `dispatch-numbering`,
+  `interaction-completion-values`; `expect.dispatched` and
+  `expect.interactions` entries may state `dispatch`. Uniqueness is
+  engine-pinned (`dispatch-id-unique-across-views`).
+- **Numeric functions**: `abs`, `min`, `max`, `floor`, `ceil`, `round`,
+  specified to the bit (wrapping `abs`, leftmost-wins extrema with NaN
+  propagation, ties away from zero, signed zeros preserved). Vectors:
+  `expr-abs`, `expr-min-max`, `expr-rounding`, the `numeric` and
+  `contract` families of the typing suite, and a second batch of the
+  numeric suite (`gen-numeric-fn-*`) in 2.1 documents.
+- **Array actions.** `$append` (`key`, `value`), `$remove` (`key`, `at`),
+  and `$update` (`key`, `at`, `field`, `value`) change one element of an
+  array-typed state key under exactly the rules of `$set` (visibility,
+  dependent re-evaluation, the no-change rule, the three requirements and
+  their rejected-mutation reports, ending the list on rejection); an index
+  outside the array is a rejected mutation with `expected` `index in
+  range`. Encoding rules are `action-encoding` violations naming `array
+  state key`, `record element`, `declared field`, or the missing
+  parameter. Vectors: `array-*`, `gate-array-*`.
+- **Watch bindings.** A top-level `watch` section binds action lists to
+  changes of a state key; the list runs as part of the mutation that
+  changed the key, before the next action of the list that applied it,
+  with no `event` root; mutations made inside a watch list never trigger
+  a watch, so there is no cascade and no loop by rule; a rejection inside
+  a watch ends the watch list only. An undeclared key is the new `watch`
+  rule. Vectors: `watch-*`, `gate-watch-*`.
+- **Host functions.** A vocabulary's `functions` section (or the builder)
+  declares typed functions the host computes; expressions call them like
+  built-ins, the gate types the calls as declared positions, and the
+  engine's synchronous function handler answers at evaluation. Functions
+  are pure over their arguments. A mismatched or thrown result is the
+  `invalidFunctionResult` occurrence and the zero value of the return
+  type. A document calling one on an engine without a handler is the
+  `function-handler` rule. The vocabulary meta-schema and the vocabulary
+  diff (adding additive, removing or retyping breaking) follow; the
+  bindings generator does not yet emit function signatures. Vector config
+  `functions.declare`, `functions.results`, `functionHandler`. Vectors:
+  `function-*`, `gate-function-*`.
+- **Document replacement.** `MilanoView.replace(document)` rebuilds the
+  view's binding through the gate: state carries over where the
+  declaration is unchanged and comes from the provider otherwise; a failed
+  replacement leaves the view untouched; identity, dispatch numbering, and
+  the appeared state persist; pending completions of the old document are
+  dropped as `completionAfterReplace`; a `viewReplaced` record is
+  contributed. Vector step `replace`. Vectors: `replace-*`. Engine-pinned:
+  `replace-provider-failure-propagates`.
+- **`contract-feature`** also covers: `$append`, `$remove`,
+  `$update`, `watch`, and every declared function by name; a `functions`
+  section in a vocabulary declaring `milano` below 2.1 is the
+  `InvalidVocabulary` form.
+
+### Changed
+
+- **`tools/generate_bindings.py` wraps what would overflow**: doc comments
+  at 100 columns, and the declarations that render long (a TypeScript union
+  arm or decode case, a record accessor in any language, a Kotlin factory
+  signature or map entry, a Swift computed property). An action declaring a
+  record or a long enum used to render a line past the limits the generated
+  files are linted against downstream, and the Kotlin now satisfies
+  ktlint's indent and function-signature rules as well. The goldens under
+  `tools/testdata/` are regenerated; nothing but formatting moved.
+
+- **Built-in functions moved into the `$` namespace.** Every function of
+  the expression language is now called as `$name`: `$str`, `$int`,
+  `$double`, `$concat`, `$length`, `$isEmpty`, `$contains`, `$startsWith`,
+  `$endsWith`, `$trim`, `$if`, `$abs`, `$min`, `$max`, `$floor`, `$ceil`,
+  `$round`. A bare name in call position is a host function the surface
+  declares, and the two namespaces never fall back to one another: a
+  vocabulary may declare `round` or `concat` and get its own function
+  beside the contract's, which is why the rule refusing a built-in's name
+  is gone. It also means a later minor can add a built-in without
+  invalidating a vocabulary that already declares the name. The grammar
+  gains `builtin = "$" , identifier`; a `$` name the contract does not
+  define, and a built-in's name outside call position, are the
+  `expression` violation. The `contract-feature` detail for the numeric
+  functions carries the sigil (`$abs`). Vectors: `function-named-like-a-builtin`,
+  `gate-unknown-builtin-function`, `gate-builtin-without-arguments`,
+  `gate-host-function-not-declared`, and every expression in the suite.
+
+- **The scope is document-driven UI, not two surfaces.** Foundations no
+  longer names banners, interstitials, and forms as the contract's
+  targets or as the rule deciding inclusion; a mechanic enters the
+  contract by need, under a version, with vectors. The banner and the
+  form remain the worked examples.
+- **Features are gated by the declared version.** A document is processed
+  under the rules of the `major.minor` it declares; using a feature a
+  later minor introduced is a `SchemaViolation` under the new rule
+  `contract-feature` (`expected` the version that introduced it, `found`
+  the feature's name: `key`, `on`, `failure`, or a function). A
+  vocabulary declaring `milano` below 2.1 may not declare `failure`
+  (`InvalidVocabulary`, rule `contract-feature`). Vectors:
+  `gate-*-in-2-0-document`, `gen-typing-contract-*`, the
+  `contract-feature` injector of the order suite.
+- **Runtimes declare 1.0 and 2.1.** `UnsupportedVersion.supported` reads
+  `["1.0", "2.1"]`; a 2.2 document is refused. The examples vocabulary
+  declares `milano` 2.1.0, gives `submitContact` a failure type, which
+  the contact form binds, and declares three host functions
+  (`formatMoney`, `shout`, `parseInt`) that its vectors call.
+- `event-binding` also covers an unknown lifecycle signal name (no node,
+  `expected` `lifecycle event`); `repeat` gains the `key expression`,
+  `key type`, and `distinct key` requirements; `invalidEmission` may find
+  `key K`; `rejectedMutation` and `rejectedContextUpdate` may expect
+  `distinct key`; `invalidCompletion` may expect the declared failure
+  type.
+- Clarified that an enum's declaration order, while never part of its
+  identity, is what the zero value reads, so a runtime keeps that order
+  beside the member set: a representation storing an unordered set alone
+  cannot answer for the zero. No behaviour changes; this is what every
+  engine already had to do.
+- **`reference_check.synthesized_values` had no enum branch**, so an
+  enum-declared state or context key synthesized to an empty record, a
+  value the gate would refuse. It now returns `zero_value` per key, which
+  is the same rule the contract uses for an invalid function result:
+  one definition of a type's zero, not two.
+- **Lookups: `record[key]`.** A record field chosen by an enum, so a code
+  becomes a label without a chain of comparisons. The enum's members and
+  the record's fields must be the same set, which makes the lookup total
+  and its coverage exhaustive: a member added later leaves the record not
+  covering it, and the gate refuses the document instead of the view
+  showing the wrong label. The key must be an enum, every field must
+  share one type, and the grammar's postfix gains `"[" expression "]"`.
+  Seven vectors; the feature is spelled `[]` in a `contract-feature`
+  report.
+- **The `$switch` construct.** A third construct beside `$repeat` and
+  `$if`, transparent the same way, keyed on an enum: `cases` names the
+  nodes each member materializes, `default` covers the rest. **Every
+  member must be covered**, by a case or a default, which is its reason
+  to exist over nested `$if`s: a member added to the enum fails the build
+  naming the one missed. Eleven vectors, rule `switch`.
+- Two step vectors, `conditional-emission-from-a-branch` and
+  `switch-emission-from-a-branch`: a node inside a branch dispatches like
+  any other. Every engine walked only `children` to index its bindings, so
+  all three dropped the emission; the vectors are what say they must not.
+- **The `$if` construct.** A second construct node type beside `$repeat`,
+  and transparent the same way: `condition` chooses between `then` and
+  `else`, and the chosen branch's nodes take the construct's place in the
+  parent. It is the tree-level counterpart of the `$if` function and the
+  `$when` action, and the three do not collide because node types, action
+  names, and function names are separate namespaces. Both branches are
+  validated whichever one a build takes, so a condition flipping at
+  runtime never reveals a document the gate has not seen, and ids stay
+  unique across both; only the taken branch is resolved, so the other
+  costs nothing in reports or against the node count. It carries no
+  `properties`, `on`, or `id`, is never the root, and a node in a branch
+  is pathed `root/children[2]/then[0]`, so a report says which branch it
+  came from. Eighteen vectors, rule `conditional`.
+- **Five string functions**, in the contract's `$` namespace like the
+  rest: `$substring` (both indices clamped to the string, so no index is
+  out of range), `$indexOf` (`-1` when absent), `$replace` (every
+  non-overlapping occurrence), `$split` (always at least one element) and
+  `$join` (the only fold in the language). Total like the numeric ones:
+  none of them reports. Two guards keep every result bounded by its
+  inputs, an empty needle in `$replace` and an empty separator in
+  `$split`, each returning its subject. Indices count Unicode scalars, as
+  `$length` does. Gated like the other 2.1 functions: a 2.0 document
+  calling one fails with `contract-feature`.
+- **A generated string suite**, `conformance/generated-string/`: 220
+  vectors composed from subjects and needles chosen for their edges,
+  empty strings, separators at the ends, adjacent separators, needles
+  that overlap themselves, indices outside the string, and text outside
+  the Basic Multilingual Plane where a scalar count and a UTF-16 code
+  unit count disagree. Seeded and deterministic, like the numeric
+  generator, with the reference checker as the oracle. Forty further
+  named vectors in `conformance/examples/` pin each documented rule on
+  its own.
+- The `examples` vocabulary is at 1.1.0: three components (`Row`, `Card`
+  with a `tap` event, `Icon` with an enum `name`) and two actions
+  (`navigate` with an enum `screen`, `logEvent`) were added for the quick
+  actions example. Additive only, so every existing vector and every
+  document declaring `min` 1.0.0 is unaffected.
+- A fourth worked example, **quick actions**: a keyed `$repeat` of tiles
+  whose tap records the tapped element's position through `<as>_index` and
+  then navigates. It shows enums declared in `state` satisfying an enum
+  property, and why an instance's reference carries the key rather than
+  the index once a `$repeat` is keyed. No contract change: every rule it
+  demonstrates was already in 2.1.
+
+### Fixed
+
+- **The reference checker's node count and tree depth walked only
+  `children`**, so a document whose nodes sat inside `$if` branches or
+  `$switch` cases measured smaller for the oracle than for every engine: a
+  document 53 nodes over the limit built for the checker and failed with
+  `LimitExceeded` on all three runtimes. The walk now counts every branch,
+  which is what the engines always did, and three vectors pin it at
+  configured limits. The document model spec said the opposite in passing
+  ("only what is materialized counts"); it now separates the two checks
+  that share `maxNodeCount`: the document walk sees every branch, as it
+  validates every branch, and the materialized count sees only the branch
+  a build took.
+- **The reference checker did not validate type descriptors.** Any string
+  was accepted as a scalar type name, `string??` was accepted outright, an
+  empty or duplicated `enum` passed, and `{}` or a number crashed the tool
+  with a Python traceback. Malformed descriptors now raise the section's
+  own violation with `expected` `type descriptor`, matching what every
+  engine already produced, and five vectors pin it.
+- **Declarations were visited in document order by the checker**, though
+  the validation rules require lexicographic key order for every object's
+  members. Each declaration is now checked whole (key, then descriptor) in
+  key order.
+- **The suite lint did not walk construct branches**, so a vector whose
+  step emitted from a node inside an `$if` or `$switch` was reported as
+  emitting from a node that does not exist.
+- **Error vectors under-asserted.** Eighteen vectors named a rule without
+  the detail fields the rule tables promise, which left `identifier`,
+  `enum member`, `no children`, `declared event` and others unpinned; they
+  now carry them. Tightening them surfaced two engine defects, fixed in
+  the SDK release alongside this one: a non-identifier declaration key was
+  reported as a bad `type descriptor`, and a string that is not a member of
+  a declared enum was reported as an `enum`/`string` type mismatch rather
+  than naming the rejected string.
+- Vectors for `$startsWith` and `$endsWith`, which had no conformance
+  coverage at all, including the literal scalar comparison the expression
+  spec requires (a combining sequence is not a prefix of its precomposed
+  form). Vectors for the nine `$if` and `$switch` encoding details that
+  had none: `else branch`, `no on`, `not the root`, `no properties`,
+  `declared key`, `subject expression`, `enum subject`, `default branch`.
+- **The suite spec said four suites ship**; five do, and
+  `generated-string` was undocumented.
+- **Foundations' scope table described `$repeat` but not `$if` or
+  `$switch`**; structural choice is now a row of its own.
+- The two `InvalidVocabulary` statements no vector can express (creation
+  validates the artifact; a contract version the engine does not implement
+  is rejected) are now in `conformance/engine-pinned.json`, so every
+  runtime's test for them is checked to exist rather than assumed.
+
 ## 2.0.0
 
 ### Added

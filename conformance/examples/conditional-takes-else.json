@@ -1,0 +1,51 @@
+{
+  "name": "conditional-takes-else",
+  "description": "A false condition materializes the else branch",
+  "document": {
+    "version": "2.1.0",
+    "root": {
+      "type": "Column",
+      "id": "c",
+      "children": [
+        {
+          "type": "$if",
+          "condition": {
+            "$expr": "false"
+          },
+          "then": [
+            {
+              "type": "Text",
+              "properties": {
+                "text": "hidden"
+              }
+            }
+          ],
+          "else": [
+            {
+              "type": "Text",
+              "properties": {
+                "text": "shown"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "expect": {
+    "view": {
+      "type": "Column",
+      "reference": "c",
+      "children": [
+        {
+          "type": "Text",
+          "reference": "root/children[0]/else[0]",
+          "properties": {
+            "text": "shown"
+          }
+        }
+      ]
+    },
+    "occurrences": []
+  }
+}

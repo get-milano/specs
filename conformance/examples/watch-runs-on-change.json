@@ -1,0 +1,113 @@
+{
+  "name": "watch-runs-on-change",
+  "description": "A watch list runs when a mutation changes its key's value, with the new value readable through state",
+  "document": {
+    "version": "2.1.0",
+    "state": {
+      "a": "int",
+      "b": "int",
+      "c": "int"
+    },
+    "root": {
+      "type": "Column",
+      "id": "c",
+      "children": [
+        {
+          "type": "Text",
+          "id": "a",
+          "properties": {
+            "text": {
+              "$expr": "$str(state.a)"
+            }
+          }
+        },
+        {
+          "type": "Text",
+          "id": "b",
+          "properties": {
+            "text": {
+              "$expr": "$str(state.b)"
+            }
+          }
+        },
+        {
+          "type": "Button",
+          "id": "go",
+          "properties": {
+            "label": "Go",
+            "enabled": true
+          },
+          "on": {
+            "tap": [
+              {
+                "action": "$set",
+                "key": "a",
+                "value": 5
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "watch": {
+      "a": [
+        {
+          "action": "$set",
+          "key": "b",
+          "value": {
+            "$expr": "state.a * 2"
+          }
+        }
+      ]
+    }
+  },
+  "state": {
+    "a": 0,
+    "b": 0,
+    "c": 0
+  },
+  "steps": [
+    {
+      "event": {
+        "node": "go",
+        "name": "tap"
+      }
+    }
+  ],
+  "expect": {
+    "state": {
+      "a": 5,
+      "b": 10,
+      "c": 0
+    },
+    "view": {
+      "type": "Column",
+      "reference": "c",
+      "children": [
+        {
+          "type": "Text",
+          "reference": "a",
+          "properties": {
+            "text": "5"
+          }
+        },
+        {
+          "type": "Text",
+          "reference": "b",
+          "properties": {
+            "text": "10"
+          }
+        },
+        {
+          "type": "Button",
+          "reference": "go",
+          "properties": {
+            "label": "Go",
+            "enabled": true
+          }
+        }
+      ]
+    },
+    "occurrences": []
+  }
+}

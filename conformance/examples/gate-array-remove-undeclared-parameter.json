@@ -1,0 +1,55 @@
+{
+  "name": "gate-array-remove-undeclared-parameter",
+  "description": "A key the action does not take is an undeclared parameter",
+  "document": {
+    "version": "2.1.0",
+    "state": {
+      "items": {
+        "array": "string"
+      },
+      "n": "int"
+    },
+    "root": {
+      "type": "Column",
+      "id": "c",
+      "children": [
+        {
+          "type": "Text",
+          "id": "count",
+          "properties": {
+            "text": {
+              "$expr": "$str($length(state.items))"
+            }
+          }
+        },
+        {
+          "type": "Button",
+          "id": "add",
+          "properties": {
+            "label": "Add",
+            "enabled": true
+          },
+          "on": {
+            "tap": [
+              {
+                "action": "$remove",
+                "key": "items",
+                "at": 0,
+                "value": "x"
+              }
+            ]
+          }
+        }
+      ]
+    }
+  },
+  "expect": {
+    "error": {
+      "type": "SchemaViolation",
+      "rule": "action-encoding",
+      "node": "add",
+      "expected": "declared parameter",
+      "found": "value"
+    }
+  }
+}

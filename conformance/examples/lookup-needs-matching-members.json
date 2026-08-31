@@ -1,0 +1,41 @@
+{
+  "name": "lookup-needs-matching-members",
+  "description": "A member the record has no field for fails the gate: the lookup is exhaustive",
+  "document": {
+    "version": "2.1.0",
+    "state": {
+      "status": {
+        "enum": [
+          "ok",
+          "late",
+          "failed",
+          "cancelled"
+        ]
+      },
+      "labels": {
+        "record": {
+          "ok": "string",
+          "late": "string",
+          "failed": "string"
+        }
+      }
+    },
+    "root": {
+      "type": "Text",
+      "id": "t",
+      "properties": {
+        "text": {
+          "$expr": "state.labels[state.status]"
+        }
+      }
+    }
+  },
+  "expect": {
+    "error": {
+      "type": "SchemaViolation",
+      "rule": "expression",
+      "node": "t",
+      "expected": "string"
+    }
+  }
+}

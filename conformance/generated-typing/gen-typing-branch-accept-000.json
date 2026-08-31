@@ -1,6 +1,6 @@
 {
   "name": "gen-typing-branch-accept-000",
-  "description": "Generated (exhaustive): accepted in their declared positions. p0: if(state.b, state.s, state.s) in s; p1: if(state.b, state.s, state.s) in sOpt; p2: if(state.b, state.s, 'a') in s; p3: if(state.b, state.s, 'a') in sOpt; p4: if(state.b, state.s, 'z') in s; p5: if(state.b, state.s, 'z') in sOpt; p6: if(state.b, state.s, null) in sOpt; p7: if(state.b, state.s, state.sOpt ?? 'y') in s; p8: if(state.b, state.s, state.sOpt ?? 'y') in sOpt; p9: if(state.b, state.sOpt, state.sOpt) in sOpt; p10: if(state.b, state.sOpt, null) in sOpt; p11: if(state.b, state.e, state.e) in e",
+  "description": "Generated (exhaustive): accepted in their declared positions. p0: $if(state.b, state.s, state.s) in s; p1: $if(state.b, state.s, state.s) in sOpt; p2: $if(state.b, state.s, 'a') in s; p3: $if(state.b, state.s, 'a') in sOpt; p4: $if(state.b, state.s, 'z') in s; p5: $if(state.b, state.s, 'z') in sOpt; p6: $if(state.b, state.s, null) in sOpt; p7: $if(state.b, state.s, state.sOpt ?? 'y') in s; p8: $if(state.b, state.s, state.sOpt ?? 'y') in sOpt; p9: $if(state.b, state.sOpt, state.sOpt) in sOpt; p10: $if(state.b, state.sOpt, null) in sOpt; p11: $if(state.b, state.e, state.e) in e",
   "document": {
     "version": "1.0.0",
     "state": {
@@ -23,7 +23,7 @@
           "id": "p0",
           "properties": {
             "s": {
-              "$expr": "if(state.b, state.s, state.s)"
+              "$expr": "$if(state.b, state.s, state.s)"
             }
           }
         },
@@ -32,7 +32,7 @@
           "id": "p1",
           "properties": {
             "sOpt": {
-              "$expr": "if(state.b, state.s, state.s)"
+              "$expr": "$if(state.b, state.s, state.s)"
             }
           }
         },
@@ -41,7 +41,7 @@
           "id": "p2",
           "properties": {
             "s": {
-              "$expr": "if(state.b, state.s, 'a')"
+              "$expr": "$if(state.b, state.s, 'a')"
             }
           }
         },
@@ -50,7 +50,7 @@
           "id": "p3",
           "properties": {
             "sOpt": {
-              "$expr": "if(state.b, state.s, 'a')"
+              "$expr": "$if(state.b, state.s, 'a')"
             }
           }
         },
@@ -59,7 +59,7 @@
           "id": "p4",
           "properties": {
             "s": {
-              "$expr": "if(state.b, state.s, 'z')"
+              "$expr": "$if(state.b, state.s, 'z')"
             }
           }
         },
@@ -68,7 +68,7 @@
           "id": "p5",
           "properties": {
             "sOpt": {
-              "$expr": "if(state.b, state.s, 'z')"
+              "$expr": "$if(state.b, state.s, 'z')"
             }
           }
         },
@@ -77,7 +77,7 @@
           "id": "p6",
           "properties": {
             "sOpt": {
-              "$expr": "if(state.b, state.s, null)"
+              "$expr": "$if(state.b, state.s, null)"
             }
           }
         },
@@ -86,7 +86,7 @@
           "id": "p7",
           "properties": {
             "s": {
-              "$expr": "if(state.b, state.s, state.sOpt ?? 'y')"
+              "$expr": "$if(state.b, state.s, state.sOpt ?? 'y')"
             }
           }
         },
@@ -95,7 +95,7 @@
           "id": "p8",
           "properties": {
             "sOpt": {
-              "$expr": "if(state.b, state.s, state.sOpt ?? 'y')"
+              "$expr": "$if(state.b, state.s, state.sOpt ?? 'y')"
             }
           }
         },
@@ -104,7 +104,7 @@
           "id": "p9",
           "properties": {
             "sOpt": {
-              "$expr": "if(state.b, state.sOpt, state.sOpt)"
+              "$expr": "$if(state.b, state.sOpt, state.sOpt)"
             }
           }
         },
@@ -113,7 +113,7 @@
           "id": "p10",
           "properties": {
             "sOpt": {
-              "$expr": "if(state.b, state.sOpt, null)"
+              "$expr": "$if(state.b, state.sOpt, null)"
             }
           }
         },
@@ -122,7 +122,7 @@
           "id": "p11",
           "properties": {
             "e": {
-              "$expr": "if(state.b, state.e, state.e)"
+              "$expr": "$if(state.b, state.e, state.e)"
             }
           }
         }

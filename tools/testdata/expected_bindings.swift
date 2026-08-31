@@ -33,6 +33,12 @@ public enum FxSubmitMode: String {
     case final
 }
 
+/// Members of the failure enum of action `submit`. Gate-guaranteed: decoding never fails.
+public enum FxSubmitFailure: String {
+    case offline
+    case rejected
+}
+
 /// Fields of the element of the `items` array on `Widget`. Non-optional accessors are gate-guaranteed.
 public struct FxWidgetItemsItem {
     public let value: MilanoValue
@@ -68,7 +74,9 @@ public struct FxWidgetPayload {
     }
     public var id: String { (value.recordValue?["id"] ?? .null).stringValue! }
     public var count: Int64? { (value.recordValue?["count"] ?? .null).intValue }
-    public var kind: FxWidgetPayloadKind { FxWidgetPayloadKind(rawValue: (value.recordValue?["kind"] ?? .null).stringValue!)! }
+    public var kind: FxWidgetPayloadKind {
+        FxWidgetPayloadKind(rawValue: (value.recordValue?["kind"] ?? .null).stringValue!)!
+    }
     public var owner: FxWidgetPayloadOwner { FxWidgetPayloadOwner(value.recordValue?["owner"] ?? .null) }
     public var labels: [String]? { (value.recordValue?["labels"] ?? .null).arrayValue?.map { $0.stringValue! } }
 }
@@ -137,6 +145,20 @@ public struct FxOrderResult {
     public var reference: String { (value.recordValue?["reference"] ?? .null).stringValue! }
 }
 
+/// Fields of the failure record of action `order`. Non-optional accessors are gate-guaranteed.
+public struct FxOrderFailure {
+    public let value: MilanoValue
+    public init(_ value: MilanoValue) { self.value = value }
+    public init(code: Int64, reason: String) {
+        value = .record([
+            "code": .int(code),
+            "reason": .string(reason)
+        ])
+    }
+    public var code: Int64 { (value.recordValue?["code"] ?? .null).intValue! }
+    public var reason: String { (value.recordValue?["reason"] ?? .null).stringValue! }
+}
+
 /// Typed view of a resolved `Plain` node. Non-optional accessors are gate-guaranteed.
 public struct FxPlainNode {
     public let node: MilanoNode
@@ -180,9 +202,14 @@ public struct FxWidgetNode {
 public enum FxAction {
     case noop
     case openUrl(referrer: String?, url: String)
-    /// The handler completes it with a `{"record": {"reference": "string"}}` result, bound to `result` in onSuccess.
+    /// The handler completes it with a `{"record": {"reference": "string"}}` result, bound to `result` in
+    /// onSuccess.
+    /// The handler fails it with a `{"record": {"code": "int", "reason": "string"}}` payload (a
+    /// MilanoActionFailure), bound to `failure` in onFailure.
     case order(cart: FxOrderCart, note: FxOrderNote?)
     /// The handler completes it with a `string` result, bound to `result` in onSuccess.
+    /// The handler fails it with a `{"enum": ["rejected", "offline"]}` payload (a MilanoActionFailure),
+    /// bound to `failure` in onFailure.
     case submit(mode: FxSubmitMode)
     /// An action outside this vocabulary's declarations (builder-declared, or a newer vocabulary).
     case unrecognized(MilanoAction)

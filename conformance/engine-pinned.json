@@ -31,6 +31,50 @@
         "compose",
         "typescript"
       ]
+    },
+    {
+      "id": "dispatch-id-unique-across-views",
+      "spec": "04-state-and-actions.md",
+      "section": "Action execution",
+      "statement": "dispatchId is a string unique among every dispatch of every view in the process, whatever the views' labels; no two dispatches ever share one.",
+      "applies": [
+        "swiftui",
+        "compose",
+        "typescript"
+      ]
+    },
+    {
+      "id": "replace-provider-failure-propagates",
+      "spec": "04-state-and-actions.md",
+      "section": "Document replacement",
+      "statement": "A state data provider failure during a replacement propagates to the caller unchanged, and the view is untouched: same document, same tree, same state, still serviceable.",
+      "applies": [
+        "swiftui",
+        "compose",
+        "typescript"
+      ]
+    },
+    {
+      "id": "invalid-vocabulary-at-creation",
+      "spec": "02-vocabulary-schema.md",
+      "section": "Engine consumption",
+      "statement": "Engine creation validates the vocabulary artifact and fails fast with InvalidVocabulary naming the rule the artifact violates, before any document is built. No vector can express it: a suite's engine is created from its vocabulary, so an invalid one has no vector to carry it.",
+      "applies": [
+        "swiftui",
+        "compose",
+        "typescript"
+      ]
+    },
+    {
+      "id": "vocabulary-contract-version-rejected",
+      "spec": "02-vocabulary-schema.md",
+      "section": "Engine consumption",
+      "statement": "A vocabulary artifact whose `milano` version the engine does not implement, by major or by minor, is rejected at creation as InvalidVocabulary with rule `milano-version`.",
+      "applies": [
+        "swiftui",
+        "compose",
+        "typescript"
+      ]
     }
   ]
 }

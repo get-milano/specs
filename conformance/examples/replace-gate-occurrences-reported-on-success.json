@@ -1,0 +1,103 @@
+{
+  "name": "replace-gate-occurrences-reported-on-success",
+  "description": "Occurrences the gate detects while validating the replacement are reported when it succeeds",
+  "document": {
+    "version": "2.1.0",
+    "state": {
+      "n": "int"
+    },
+    "root": {
+      "type": "Column",
+      "id": "c",
+      "children": [
+        {
+          "type": "Text",
+          "id": "r",
+          "properties": {
+            "text": {
+              "$expr": "$str(state.n)"
+            }
+          }
+        },
+        {
+          "type": "Button",
+          "id": "go",
+          "properties": {
+            "label": "Go",
+            "enabled": true
+          },
+          "on": {
+            "tap": [
+              {
+                "action": "$set",
+                "key": "n",
+                "value": {
+                  "$expr": "state.n + 5"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    }
+  },
+  "state": {
+    "n": 0
+  },
+  "config": {
+    "unknownTypePolicy": "skip"
+  },
+  "steps": [
+    {
+      "replace": {
+        "document": {
+          "version": "2.1.0",
+          "state": {
+            "n": "int"
+          },
+          "root": {
+            "type": "Column",
+            "id": "c",
+            "children": [
+              {
+                "type": "Mystery",
+                "id": "m"
+              },
+              {
+                "type": "Text",
+                "id": "r",
+                "properties": {
+                  "text": {
+                    "$expr": "$str(state.n)"
+                  }
+                }
+              }
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "expect": {
+    "view": {
+      "type": "Column",
+      "reference": "c",
+      "children": [
+        {
+          "type": "Text",
+          "reference": "r",
+          "properties": {
+            "text": "0"
+          }
+        }
+      ]
+    },
+    "occurrences": [
+      {
+        "kind": "unknownTypeSkipped",
+        "node": "m",
+        "name": "Mystery"
+      }
+    ]
+  }
+}

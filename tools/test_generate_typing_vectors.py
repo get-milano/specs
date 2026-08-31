@@ -99,7 +99,7 @@ class Coverage(unittest.TestCase):
         # The TypeScript engine accepted this and typed it `string?` while
         # Swift and Kotlin rejected it; nothing generated the pair. Spec 03:
         # both branches type-check to exactly the same T.
-        _, accepted = self.find("if(state.b, state.sOpt, state.s)", "sOpt")
+        _, accepted = self.find("$if(state.b, state.sOpt, state.s)", "sOpt")
         self.assertFalse(accepted)
 
     def test_an_int_expression_in_a_double_position_is_accepted(self):
@@ -130,6 +130,52 @@ class Coverage(unittest.TestCase):
                 self.assertIsInstance(expected["properties"]["d"], float)
                 return
         self.fail("the promoted pair was not found in the view")
+
+
+    def find_in(self, family, expression, target):
+        """As find, within one family: the same expression sits in the
+        numeric family (accepted, 2.1 documents) and the contract family
+        (refused, 1.0 documents)."""
+        for name, vector in committed_vectors():
+            if not name.startswith(f"gen-typing-{family}-"):
+                continue
+            for node in vector["document"]["root"]["children"]:
+                properties = node["properties"]
+                if target in properties and properties[target]["$expr"] == expression:
+                    return name, "accept" in name
+        self.fail(f"no {family} vector carries {expression!r} in {target}")
+
+    def test_the_numeric_functions_keep_their_types(self):
+        # Contract 2.1: abs keeps int or double, the rounding functions take
+        # exactly a double, min and max promote like the operators.
+        self.assertTrue(self.find_in("numeric", "$abs(state.i)", "i")[1])
+        self.assertTrue(self.find_in("numeric", "$abs(state.d)", "d")[1])
+        self.assertFalse(self.find_in("numeric", "$abs(state.s)", "d")[1])
+        self.assertFalse(self.find_in("numeric", "$round(state.i)", "d")[1])
+        self.assertTrue(self.find_in("numeric", "$round(state.d)", "d")[1])
+        self.assertTrue(self.find_in("numeric", "$min(state.i, state.d)", "d")[1])
+        self.assertTrue(self.find_in("numeric", "$max(state.i, 1)", "i")[1])
+        self.assertFalse(self.find_in("numeric", "$min(state.i)", "d")[1])
+        self.assertFalse(self.find_in("numeric", "$min(state.i, state.iOpt)", "d")[1])
+
+    def test_a_2_1_function_is_refused_by_name_in_a_1_0_document(self):
+        self.assertTrue(self.find_in("numeric", "$abs(state.i)", "d")[1])
+        self.assertFalse(self.find_in("contract", "$abs(state.i)", "d")[1])
+        vectors = dict(committed_vectors())
+        functions = {"$abs", "$min", "$max", "$floor", "$ceil", "$round"}
+        gated = [v for n, v in vectors.items()
+                 if n.startswith("gen-typing-contract-reject")
+                 and v["document"]["root"]["children"][0]["properties"]
+                 [next(iter(v["document"]["root"]["children"][0]["properties"]))]["$expr"]
+                 .split("(")[0] in functions]
+        self.assertEqual(len(gated), 10, "every 2.1 function over both numeric operands")
+        for vector in gated:
+            self.assertEqual(vector["document"]["version"], "1.0.0")
+            self.assertEqual(vector["expect"]["error"]["rule"], "contract-feature")
+            self.assertEqual(vector["expect"]["error"]["expected"], "2.1")
+            self.assertIn(vector["expect"]["error"]["found"], functions)
+        accepted_1_0 = [v for n, v in vectors.items() if n.startswith("gen-typing-contract-accept")]
+        self.assertTrue(accepted_1_0, "1.0's own functions still build beside the refusals")
 
 
 class Shape(unittest.TestCase):

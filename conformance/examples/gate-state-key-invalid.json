@@ -6,7 +6,8 @@
     "error": {
       "type": "SchemaViolation",
       "rule": "state-declaration",
-      "found": "1bad"
+      "found": "1bad",
+      "expected": "identifier"
     }
   }
 }

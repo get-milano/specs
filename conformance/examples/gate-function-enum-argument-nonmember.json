@@ -1,0 +1,25 @@
+{
+  "name": "gate-function-enum-argument-nonmember",
+  "description": "A string literal in an enum argument position must be a member",
+  "document": {
+    "version": "2.1.0",
+    "root": {
+      "type": "Badge",
+      "id": "b",
+      "properties": {
+        "label": "x",
+        "tone": {
+          "$expr": "tone('loud')"
+        }
+      }
+    }
+  },
+  "expect": {
+    "error": {
+      "type": "SchemaViolation",
+      "rule": "expression",
+      "node": "b",
+      "expected": "enum"
+    }
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "name": "gen-string-098",
+  "description": "Generated (seed 20260831): $substring('trail,', $indexOf(',', '\\\\'), $length('abc'))",
+  "document": {
+    "version": "2.1.0",
+    "root": {
+      "type": "Text",
+      "id": "r",
+      "properties": {
+        "text": {
+          "$expr": "$substring('trail,', $indexOf(',', '\\\\'), $length('abc'))"
+        }
+      }
+    }
+  },
+  "expect": {
+    "view": {
+      "type": "Text",
+      "reference": "r",
+      "properties": {
+        "text": "tra"
+      }
+    },
+    "occurrences": []
+  }
+}

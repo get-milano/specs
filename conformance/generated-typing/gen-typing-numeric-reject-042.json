@@ -1,0 +1,33 @@
+{
+  "name": "gen-typing-numeric-reject-042",
+  "description": "Generated (exhaustive): $min(state.d, state.d) in a int position is rejected at the gate",
+  "document": {
+    "version": "2.1.0",
+    "state": {
+      "d": "double"
+    },
+    "root": {
+      "type": "Column",
+      "id": "root",
+      "children": [
+        {
+          "type": "Probe",
+          "id": "p",
+          "properties": {
+            "i": {
+              "$expr": "$min(state.d, state.d)"
+            }
+          }
+        }
+      ]
+    }
+  },
+  "expect": {
+    "error": {
+      "type": "SchemaViolation",
+      "rule": "expression",
+      "node": "p",
+      "expected": "int"
+    }
+  }
+}

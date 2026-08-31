@@ -1,0 +1,26 @@
+{
+  "name": "string-split-trailing-separator",
+  "description": "A trailing separator gives an empty last element",
+  "document": {
+    "version": "2.1.0",
+    "root": {
+      "type": "Text",
+      "id": "r",
+      "properties": {
+        "text": {
+          "$expr": "$join($split('trail,', ','), '|')"
+        }
+      }
+    }
+  },
+  "expect": {
+    "view": {
+      "type": "Text",
+      "reference": "r",
+      "properties": {
+        "text": "trail|"
+      }
+    },
+    "occurrences": []
+  }
+}

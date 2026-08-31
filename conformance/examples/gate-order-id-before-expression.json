@@ -29,7 +29,8 @@
     "error": {
       "type": "SchemaViolation",
       "rule": "id-uniqueness",
-      "found": "dup"
+      "found": "dup",
+      "node": "dup"
     }
   }
 }

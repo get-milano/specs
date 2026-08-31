@@ -1,0 +1,25 @@
+{
+  "name": "gate-function-return-type",
+  "description": "The call's type is exactly the declared return: a string where a bool is expected is refused",
+  "document": {
+    "version": "2.1.0",
+    "root": {
+      "type": "Text",
+      "id": "t",
+      "properties": {
+        "text": "x",
+        "visible": {
+          "$expr": "shout('x')"
+        }
+      }
+    }
+  },
+  "expect": {
+    "error": {
+      "type": "SchemaViolation",
+      "rule": "expression",
+      "node": "t",
+      "expected": "bool?"
+    }
+  }
+}

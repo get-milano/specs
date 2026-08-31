@@ -1,0 +1,70 @@
+{
+  "name": "gate-limit-node-count-counts-every-case",
+  "description": "Every case of a $switch counts against the node count limit, not only the member the subject selects: pinned at a configured limit of four with five nodes across three cases",
+  "config": {
+    "limits": {
+      "maxNodeCount": 4
+    }
+  },
+  "document": {
+    "version": "2.1.0",
+    "state": {
+      "status": {
+        "enum": [
+          "ok",
+          "late",
+          "failed"
+        ]
+      }
+    },
+    "root": {
+      "type": "Column",
+      "id": "c",
+      "children": [
+        {
+          "type": "$switch",
+          "subject": {
+            "$expr": "state.status"
+          },
+          "cases": {
+            "ok": [
+              {
+                "type": "Text",
+                "properties": {
+                  "text": "Ready"
+                }
+              }
+            ],
+            "late": [
+              {
+                "type": "Text",
+                "properties": {
+                  "text": "Running late"
+                }
+              }
+            ],
+            "failed": [
+              {
+                "type": "Text",
+                "properties": {
+                  "text": "Failed"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    }
+  },
+  "state": {
+    "status": "ok"
+  },
+  "expect": {
+    "error": {
+      "type": "LimitExceeded",
+      "limit": "maxNodeCount",
+      "value": 4,
+      "actual": 5
+    }
+  }
+}

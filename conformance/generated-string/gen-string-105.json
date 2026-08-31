@@ -1,0 +1,26 @@
+{
+  "name": "gen-string-105",
+  "description": "Generated (seed 20260831): $substring('  padded  ', (0 - 99), (0 - 99))",
+  "document": {
+    "version": "2.1.0",
+    "root": {
+      "type": "Text",
+      "id": "r",
+      "properties": {
+        "text": {
+          "$expr": "$substring('  padded  ', (0 - 99), (0 - 99))"
+        }
+      }
+    }
+  },
+  "expect": {
+    "view": {
+      "type": "Text",
+      "reference": "r",
+      "properties": {
+        "text": ""
+      }
+    },
+    "occurrences": []
+  }
+}

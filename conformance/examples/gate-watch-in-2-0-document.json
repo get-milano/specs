@@ -1,0 +1,58 @@
+{
+  "name": "gate-watch-in-2-0-document",
+  "description": "A 2.0 document carrying a watch section is the contract-feature violation with no node",
+  "document": {
+    "version": "2.0.0",
+    "state": {
+      "a": "int",
+      "b": "int",
+      "c": "int"
+    },
+    "root": {
+      "type": "Column",
+      "id": "c",
+      "children": [
+        {
+          "type": "Text",
+          "id": "a",
+          "properties": {
+            "text": {
+              "$expr": "$str(state.a)"
+            }
+          }
+        },
+        {
+          "type": "Text",
+          "id": "b",
+          "properties": {
+            "text": {
+              "$expr": "$str(state.b)"
+            }
+          }
+        },
+        {
+          "type": "Button",
+          "id": "go",
+          "properties": {
+            "label": "Go",
+            "enabled": true
+          },
+          "on": {
+            "tap": []
+          }
+        }
+      ]
+    },
+    "watch": {
+      "a": []
+    }
+  },
+  "expect": {
+    "error": {
+      "type": "SchemaViolation",
+      "rule": "contract-feature",
+      "expected": "2.1",
+      "found": "watch"
+    }
+  }
+}

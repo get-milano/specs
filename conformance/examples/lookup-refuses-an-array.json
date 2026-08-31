@@ -1,0 +1,34 @@
+{
+  "name": "lookup-refuses-an-array",
+  "description": "A lookup reads a record, never an array by position",
+  "document": {
+    "version": "2.1.0",
+    "state": {
+      "status": {
+        "enum": [
+          "ok"
+        ]
+      },
+      "counts": {
+        "array": "int"
+      }
+    },
+    "root": {
+      "type": "Text",
+      "id": "t",
+      "properties": {
+        "text": {
+          "$expr": "$str(state.counts[state.status])"
+        }
+      }
+    }
+  },
+  "expect": {
+    "error": {
+      "type": "SchemaViolation",
+      "rule": "expression",
+      "node": "t",
+      "expected": "string"
+    }
+  }
+}

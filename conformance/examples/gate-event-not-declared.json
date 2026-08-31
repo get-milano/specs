@@ -24,7 +24,9 @@
     "error": {
       "type": "SchemaViolation",
       "rule": "event-binding",
-      "node": "t"
+      "node": "t",
+      "expected": "declared event",
+      "found": "tap"
     }
   }
 }

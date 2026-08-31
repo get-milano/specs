@@ -1,0 +1,53 @@
+{
+  "name": "gate-failure-undeclared",
+  "description": "failure is unavailable inside onFailure of an action declaring no failure type",
+  "document": {
+    "version": "2.1.0",
+    "state": {
+      "label": "string"
+    },
+    "root": {
+      "type": "Button",
+      "id": "b",
+      "properties": {
+        "label": "Go",
+        "enabled": true
+      },
+      "on": {
+        "tap": [
+          {
+            "action": "fetchCode",
+            "onFailure": [
+              {
+                "action": "$set",
+                "key": "label",
+                "value": {
+                  "$expr": "failure"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "state": {
+    "label": ""
+  },
+  "expect": {
+    "error": {
+      "type": "SchemaViolation",
+      "rule": "expression",
+      "node": "b"
+    }
+  },
+  "config": {
+    "actions": {
+      "declare": {
+        "fetchCode": {
+          "result": "string"
+        }
+      }
+    }
+  }
+}

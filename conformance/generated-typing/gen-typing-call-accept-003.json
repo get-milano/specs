@@ -1,6 +1,6 @@
 {
   "name": "gen-typing-call-accept-003",
-  "description": "Generated (exhaustive): accepted in their declared positions. p0: trim(state.e) in s; p1: trim(state.e) in sOpt; p2: trim('a') in s; p3: trim('a') in sOpt; p4: int(state.d) in i; p5: int(state.d) in iOpt; p6: int(state.d) in d; p7: int(state.d) in dOpt; p8: int(1.5) in i; p9: int(1.5) in iOpt; p10: int(1.5) in d; p11: int(1.5) in dOpt",
+  "description": "Generated (exhaustive): accepted in their declared positions. p0: $trim(state.e) in s; p1: $trim(state.e) in sOpt; p2: $trim('a') in s; p3: $trim('a') in sOpt; p4: $int(state.d) in i; p5: $int(state.d) in iOpt; p6: $int(state.d) in d; p7: $int(state.d) in dOpt; p8: $int(1.5) in i; p9: $int(1.5) in iOpt; p10: $int(1.5) in d; p11: $int(1.5) in dOpt",
   "document": {
     "version": "1.0.0",
     "state": {
@@ -21,7 +21,7 @@
           "id": "p0",
           "properties": {
             "s": {
-              "$expr": "trim(state.e)"
+              "$expr": "$trim(state.e)"
             }
           }
         },
@@ -30,7 +30,7 @@
           "id": "p1",
           "properties": {
             "sOpt": {
-              "$expr": "trim(state.e)"
+              "$expr": "$trim(state.e)"
             }
           }
         },
@@ -39,7 +39,7 @@
           "id": "p2",
           "properties": {
             "s": {
-              "$expr": "trim('a')"
+              "$expr": "$trim('a')"
             }
           }
         },
@@ -48,7 +48,7 @@
           "id": "p3",
           "properties": {
             "sOpt": {
-              "$expr": "trim('a')"
+              "$expr": "$trim('a')"
             }
           }
         },
@@ -57,7 +57,7 @@
           "id": "p4",
           "properties": {
             "i": {
-              "$expr": "int(state.d)"
+              "$expr": "$int(state.d)"
             }
           }
         },
@@ -66,7 +66,7 @@
           "id": "p5",
           "properties": {
             "iOpt": {
-              "$expr": "int(state.d)"
+              "$expr": "$int(state.d)"
             }
           }
         },
@@ -75,7 +75,7 @@
           "id": "p6",
           "properties": {
             "d": {
-              "$expr": "int(state.d)"
+              "$expr": "$int(state.d)"
             }
           }
         },
@@ -84,7 +84,7 @@
           "id": "p7",
           "properties": {
             "dOpt": {
-              "$expr": "int(state.d)"
+              "$expr": "$int(state.d)"
             }
           }
         },
@@ -93,7 +93,7 @@
           "id": "p8",
           "properties": {
             "i": {
-              "$expr": "int(1.5)"
+              "$expr": "$int(1.5)"
             }
           }
         },
@@ -102,7 +102,7 @@
           "id": "p9",
           "properties": {
             "iOpt": {
-              "$expr": "int(1.5)"
+              "$expr": "$int(1.5)"
             }
           }
         },
@@ -111,7 +111,7 @@
           "id": "p10",
           "properties": {
             "d": {
-              "$expr": "int(1.5)"
+              "$expr": "$int(1.5)"
             }
           }
         },
@@ -120,7 +120,7 @@
           "id": "p11",
           "properties": {
             "dOpt": {
-              "$expr": "int(1.5)"
+              "$expr": "$int(1.5)"
             }
           }
         }

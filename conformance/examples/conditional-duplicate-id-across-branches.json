@@ -1,0 +1,45 @@
+{
+  "name": "conditional-duplicate-id-across-branches",
+  "description": "Ids are document-unique across both branches",
+  "document": {
+    "version": "2.1.0",
+    "root": {
+      "type": "Column",
+      "id": "c",
+      "children": [
+        {
+          "type": "$if",
+          "condition": {
+            "$expr": "true"
+          },
+          "then": [
+            {
+              "type": "Text",
+              "properties": {
+                "text": "a"
+              },
+              "id": "dup"
+            }
+          ],
+          "else": [
+            {
+              "type": "Text",
+              "properties": {
+                "text": "b"
+              },
+              "id": "dup"
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "expect": {
+    "error": {
+      "type": "SchemaViolation",
+      "rule": "id-uniqueness",
+      "node": "dup",
+      "found": "dup"
+    }
+  }
+}

@@ -1,6 +1,6 @@
 {
   "name": "gate-result-in-onfailure",
-  "description": "result never binds inside onFailure: failure completions carry no data",
+  "description": "result never binds inside onFailure: the failure root is what a failure completion carries",
   "document": {
     "version": "2.0.0",
     "state": {

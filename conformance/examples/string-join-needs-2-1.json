@@ -1,0 +1,25 @@
+{
+  "name": "string-join-needs-2-1",
+  "description": "A 2.0 document calling join fails with contract-feature",
+  "document": {
+    "version": "2.0.0",
+    "root": {
+      "type": "Text",
+      "id": "r",
+      "properties": {
+        "text": {
+          "$expr": "$join($split('a,b', ','), '-')"
+        }
+      }
+    }
+  },
+  "expect": {
+    "error": {
+      "type": "SchemaViolation",
+      "rule": "contract-feature",
+      "node": "r",
+      "expected": "2.1",
+      "found": "$join"
+    }
+  }
+}

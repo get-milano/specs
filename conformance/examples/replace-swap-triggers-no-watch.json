@@ -1,0 +1,125 @@
+{
+  "name": "replace-swap-triggers-no-watch",
+  "description": "The swap itself triggers no watch, even for a key the new document watches",
+  "document": {
+    "version": "2.1.0",
+    "state": {
+      "n": "int"
+    },
+    "root": {
+      "type": "Column",
+      "id": "c",
+      "children": [
+        {
+          "type": "Text",
+          "id": "r",
+          "properties": {
+            "text": {
+              "$expr": "$str(state.n)"
+            }
+          }
+        },
+        {
+          "type": "Button",
+          "id": "go",
+          "properties": {
+            "label": "Go",
+            "enabled": true
+          },
+          "on": {
+            "tap": [
+              {
+                "action": "$set",
+                "key": "n",
+                "value": {
+                  "$expr": "state.n + 5"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    }
+  },
+  "state": {
+    "n": 0
+  },
+  "steps": [
+    {
+      "event": {
+        "node": "go",
+        "name": "tap"
+      }
+    },
+    {
+      "replace": {
+        "document": {
+          "version": "2.1.0",
+          "state": {
+            "n": "int",
+            "b": "int"
+          },
+          "root": {
+            "type": "Column",
+            "id": "c",
+            "children": [
+              {
+                "type": "Text",
+                "id": "r",
+                "properties": {
+                  "text": {
+                    "$expr": "$str(state.n)"
+                  }
+                }
+              },
+              {
+                "type": "Button",
+                "id": "go",
+                "properties": {
+                  "label": "Go",
+                  "enabled": true
+                },
+                "on": {
+                  "tap": [
+                    {
+                      "action": "$set",
+                      "key": "n",
+                      "value": {
+                        "$expr": "state.n + 5"
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          "watch": {
+            "n": [
+              {
+                "action": "$set",
+                "key": "b",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "state": {
+          "b": 0
+        }
+      }
+    },
+    {
+      "event": {
+        "node": "go",
+        "name": "tap"
+      }
+    }
+  ],
+  "expect": {
+    "state": {
+      "n": 10,
+      "b": 1
+    },
+    "occurrences": []
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "name": "gate-array-remove-missing-at",
+  "description": "A missing parameter is reported by its name, with nothing found",
+  "documentText": "{\"version\": \"2.1.0\", \"state\": {\"items\": {\"array\": \"string\"}, \"n\": \"int\"}, \"root\": {\"type\": \"Column\", \"id\": \"c\", \"children\": [{\"type\": \"Text\", \"id\": \"count\", \"properties\": {\"text\": {\"$expr\": \"$str($length(state.items))\"}}}, {\"type\": \"Button\", \"id\": \"add\", \"properties\": {\"label\": \"Add\", \"enabled\": true}, \"on\": {\"tap\": [{\"action\": \"$remove\", \"key\": \"items\"}]}}]}}",
+  "expect": {
+    "error": {
+      "type": "SchemaViolation",
+      "rule": "action-encoding",
+      "node": "add",
+      "expected": "at"
+    }
+  }
+}

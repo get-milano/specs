@@ -1,0 +1,80 @@
+{
+  "name": "lifecycle-redundant-signals-ignored",
+  "description": "A second appear before any disappear, and a second disappear, are ignored silently: no actions, no records, no occurrences",
+  "document": {
+    "version": "2.1.0",
+    "state": {
+      "count": "int"
+    },
+    "root": {
+      "type": "Column",
+      "id": "root",
+      "children": [
+        {
+          "type": "Text",
+          "id": "t",
+          "properties": {
+            "text": {
+              "$expr": "$str(state.count)"
+            }
+          }
+        }
+      ]
+    },
+    "on": {
+      "appear": [
+        {
+          "action": "$set",
+          "key": "count",
+          "value": {
+            "$expr": "state.count + 1"
+          }
+        }
+      ],
+      "disappear": [
+        {
+          "action": "$set",
+          "key": "count",
+          "value": {
+            "$expr": "state.count - 1"
+          }
+        }
+      ]
+    }
+  },
+  "state": {
+    "count": 0
+  },
+  "steps": [
+    {
+      "appear": true
+    },
+    {
+      "appear": true
+    },
+    {
+      "disappear": true
+    },
+    {
+      "disappear": true
+    }
+  ],
+  "expect": {
+    "state": {
+      "count": 0
+    },
+    "dispatched": [],
+    "occurrences": [],
+    "interactions": [
+      {
+        "kind": "viewBuilt"
+      },
+      {
+        "kind": "viewAppeared"
+      },
+      {
+        "kind": "viewDisappeared"
+      }
+    ]
+  }
+}

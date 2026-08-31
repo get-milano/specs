@@ -1,0 +1,83 @@
+{
+  "name": "array-remove-negative-index",
+  "description": "A negative index is outside the array too, found in decimal with its sign",
+  "document": {
+    "version": "2.1.0",
+    "state": {
+      "items": {
+        "array": "string"
+      },
+      "n": "int"
+    },
+    "root": {
+      "type": "Column",
+      "id": "c",
+      "children": [
+        {
+          "type": "Text",
+          "id": "count",
+          "properties": {
+            "text": {
+              "$expr": "$str($length(state.items))"
+            }
+          }
+        },
+        {
+          "type": "Button",
+          "id": "add",
+          "properties": {
+            "label": "Add",
+            "enabled": true
+          },
+          "on": {
+            "tap": [
+              {
+                "action": "$remove",
+                "key": "items",
+                "at": {
+                  "$expr": "0 - 1"
+                }
+              },
+              {
+                "action": "$set",
+                "key": "n",
+                "value": 1
+              }
+            ]
+          }
+        }
+      ]
+    }
+  },
+  "state": {
+    "items": [
+      "a"
+    ],
+    "n": 0
+  },
+  "steps": [
+    {
+      "event": {
+        "node": "add",
+        "name": "tap"
+      }
+    }
+  ],
+  "expect": {
+    "state": {
+      "items": [
+        "a"
+      ],
+      "n": 0
+    },
+    "occurrences": [
+      {
+        "kind": "rejectedMutation",
+        "node": "add",
+        "name": "items",
+        "expected": "index in range",
+        "found": "-1"
+      }
+    ]
+  }
+}

@@ -1,0 +1,85 @@
+{
+  "name": "repeat-key-enum",
+  "description": "An enum key renders as its member string, since an enum is accepted where a string is",
+  "document": {
+    "version": "2.1.0",
+    "state": {
+      "rows": {
+        "array": {
+          "record": {
+            "tone": {
+              "enum": [
+                "info",
+                "warning"
+              ]
+            },
+            "name": "string"
+          }
+        }
+      }
+    },
+    "root": {
+      "type": "Column",
+      "id": "list",
+      "children": [
+        {
+          "type": "$repeat",
+          "id": "each",
+          "items": {
+            "$expr": "state.rows"
+          },
+          "as": "row",
+          "key": {
+            "$expr": "row.tone"
+          },
+          "children": [
+            {
+              "type": "Text",
+              "id": "name",
+              "properties": {
+                "text": {
+                  "$expr": "row.name"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "state": {
+    "rows": [
+      {
+        "tone": "warning",
+        "name": "Careful"
+      },
+      {
+        "tone": "info",
+        "name": "Note"
+      }
+    ]
+  },
+  "expect": {
+    "view": {
+      "type": "Column",
+      "reference": "list",
+      "children": [
+        {
+          "type": "Text",
+          "reference": "name[warning]",
+          "properties": {
+            "text": "Careful"
+          }
+        },
+        {
+          "type": "Text",
+          "reference": "name[info]",
+          "properties": {
+            "text": "Note"
+          }
+        }
+      ]
+    },
+    "occurrences": []
+  }
+}

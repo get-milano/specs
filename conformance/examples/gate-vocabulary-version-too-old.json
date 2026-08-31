@@ -20,7 +20,7 @@
       "type": "SchemaViolation",
       "rule": "vocabulary-requirement",
       "expected": ">=9.9.9",
-      "found": "1.0.0"
+      "found": "1.1.0"
     }
   }
 }

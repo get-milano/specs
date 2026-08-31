@@ -29,6 +29,9 @@ export type FxWidgetPickPayload = "one" | "two";
 /** Members of the `mode` enum on action `submit`. Gate-guaranteed: the value is always a member. */
 export type FxSubmitMode = "draft" | "final";
 
+/** Members of the failure enum of action `submit`. Gate-guaranteed: the value is always a member. */
+export type FxSubmitFailure = "offline" | "rejected";
+
 /** Fields of the element of the `items` array on `Widget`. Non-optional accessors are gate-guaranteed. */
 export class FxWidgetItemsItem {
   readonly value: MilanoValue;
@@ -73,7 +76,8 @@ export class FxWidgetPayload {
       count: fields.count === null ? MilanoValue.null : MilanoValue.int(fields.count),
       kind: MilanoValue.string(fields.kind),
       owner: fields.owner.value,
-      labels: fields.labels === null ? MilanoValue.null : MilanoValue.array(fields.labels.map((item) => MilanoValue.string(item))),
+      labels:
+        fields.labels === null ? MilanoValue.null : MilanoValue.array(fields.labels.map((item) => MilanoValue.string(item))),
     }));
   }
 
@@ -85,7 +89,9 @@ export class FxWidgetPayload {
 
   get owner(): FxWidgetPayloadOwner { return new FxWidgetPayloadOwner(this.field("owner")); }
 
-  get labels(): readonly string[] | null { return (this.field("labels").arrayValue?.map((item) => (item.stringValue as string)) ?? null); }
+  get labels(): readonly string[] | null {
+    return (this.field("labels").arrayValue?.map((item) => (item.stringValue as string)) ?? null);
+  }
 
   private field(name: string): MilanoValue {
     return this.value.recordValue?.[name] ?? MilanoValue.null;
@@ -133,7 +139,9 @@ export class FxWidgetSubmitPayload {
 
   get id(): string { return (this.field("id").stringValue as string); }
 
-  get lines(): readonly bigint[] { return (this.field("lines").arrayValue as readonly MilanoValue[]).map((item) => (item.intValue as bigint)); }
+  get lines(): readonly bigint[] {
+    return (this.field("lines").arrayValue as readonly MilanoValue[]).map((item) => (item.intValue as bigint));
+  }
 
   private field(name: string): MilanoValue {
     return this.value.recordValue?.[name] ?? MilanoValue.null;
@@ -157,7 +165,9 @@ export class FxOrderCart {
 
   get id(): string { return (this.field("id").stringValue as string); }
 
-  get lines(): readonly bigint[] { return (this.field("lines").arrayValue as readonly MilanoValue[]).map((item) => (item.intValue as bigint)); }
+  get lines(): readonly bigint[] {
+    return (this.field("lines").arrayValue as readonly MilanoValue[]).map((item) => (item.intValue as bigint));
+  }
 
   private field(name: string): MilanoValue {
     return this.value.recordValue?.[name] ?? MilanoValue.null;
@@ -200,6 +210,30 @@ export class FxOrderResult {
   }
 
   get reference(): string { return (this.field("reference").stringValue as string); }
+
+  private field(name: string): MilanoValue {
+    return this.value.recordValue?.[name] ?? MilanoValue.null;
+  }
+}
+
+/** Fields of the failure record of action `order`. Non-optional accessors are gate-guaranteed. */
+export class FxOrderFailure {
+  readonly value: MilanoValue;
+
+  constructor(value: MilanoValue) {
+    this.value = value;
+  }
+
+  static of(fields: { readonly code: bigint; readonly reason: string }): FxOrderFailure {
+    return new FxOrderFailure(MilanoValue.record({
+      code: MilanoValue.int(fields.code),
+      reason: MilanoValue.string(fields.reason),
+    }));
+  }
+
+  get code(): bigint { return (this.field("code").intValue as bigint); }
+
+  get reason(): string { return (this.field("reason").stringValue as string); }
 
   private field(name: string): MilanoValue {
     return this.value.recordValue?.[name] ?? MilanoValue.null;
@@ -274,9 +308,18 @@ export class FxWidgetNode {
 export type FxAction =
   | { readonly kind: "noop" }
   | { readonly kind: "openUrl"; readonly referrer: string | null; readonly url: string }
-  /** The handler completes it with a `{"record": {"reference": "string"}}` result, bound to `result` in onSuccess. */
+  /**
+   * The handler completes it with a `{"record": {"reference": "string"}}` result, bound to `result` in
+   * onSuccess.
+   * The handler fails it with a `{"record": {"code": "int", "reason": "string"}}` payload (a
+   * MilanoActionFailure), bound to `failure` in onFailure.
+   */
   | { readonly kind: "order"; readonly cart: FxOrderCart; readonly note: FxOrderNote | null }
-  /** The handler completes it with a `string` result, bound to `result` in onSuccess. */
+  /**
+   * The handler completes it with a `string` result, bound to `result` in onSuccess.
+   * The handler fails it with a `{"enum": ["rejected", "offline"]}` payload (a MilanoActionFailure),
+   * bound to `failure` in onFailure.
+   */
   | { readonly kind: "submit"; readonly mode: FxSubmitMode }
   /** An action outside this vocabulary's declarations (builder-declared, or a newer vocabulary). */
   | { readonly kind: "unrecognized"; readonly action: MilanoAction };
@@ -287,9 +330,21 @@ export function fxAction(action: MilanoAction): FxAction {
     case "noop":
       return { kind: "noop" };
     case "openUrl":
-      return { kind: "openUrl", referrer: action.parameters["referrer"]?.stringValue as string | null, url: action.parameters["url"]?.stringValue as string };
+      return {
+        kind: "openUrl",
+        referrer: action.parameters["referrer"]?.stringValue as string | null,
+        url: action.parameters["url"]?.stringValue as string,
+      };
     case "order":
-      return { kind: "order", cart: new FxOrderCart(action.parameters["cart"] ?? MilanoValue.null), note: ((action.parameters["note"] ?? MilanoValue.null).isNull ? null : new FxOrderNote(action.parameters["note"] ?? MilanoValue.null)) };
+      return {
+        kind: "order",
+        cart: new FxOrderCart(action.parameters["cart"] ?? MilanoValue.null),
+        note: (
+            (action.parameters["note"] ?? MilanoValue.null).isNull
+                ? null
+                : new FxOrderNote(action.parameters["note"] ?? MilanoValue.null)
+                ),
+      };
     case "submit":
       return { kind: "submit", mode: action.parameters["mode"]?.stringValue as FxSubmitMode };
     default:

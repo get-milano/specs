@@ -1,0 +1,26 @@
+{
+  "name": "string-substring-clamps-high",
+  "description": "An end index past the string clamps to its length",
+  "document": {
+    "version": "2.1.0",
+    "root": {
+      "type": "Text",
+      "id": "r",
+      "properties": {
+        "text": {
+          "$expr": "$substring('hello', 3, 99)"
+        }
+      }
+    }
+  },
+  "expect": {
+    "view": {
+      "type": "Text",
+      "reference": "r",
+      "properties": {
+        "text": "lo"
+      }
+    },
+    "occurrences": []
+  }
+}

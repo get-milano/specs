@@ -1,0 +1,50 @@
+{
+  "name": "switch-at-the-root",
+  "description": "A $switch is never the document root: the root is a component",
+  "document": {
+    "version": "2.1.0",
+    "state": {
+      "status": {
+        "enum": [
+          "ok",
+          "late"
+        ]
+      }
+    },
+    "root": {
+      "type": "$switch",
+      "subject": {
+        "$expr": "state.status"
+      },
+      "cases": {
+        "ok": [
+          {
+            "type": "Text",
+            "properties": {
+              "text": "x"
+            }
+          }
+        ],
+        "late": [
+          {
+            "type": "Text",
+            "properties": {
+              "text": "x"
+            }
+          }
+        ]
+      }
+    }
+  },
+  "state": {
+    "status": "ok"
+  },
+  "expect": {
+    "error": {
+      "type": "SchemaViolation",
+      "rule": "switch",
+      "node": "root",
+      "expected": "not the root"
+    }
+  }
+}

@@ -11,7 +11,7 @@ Milano consumes **UI documents** and defines the **mechanics** of document-drive
 
 Milano is **not** server-driven UI (it never talks to a server), **not** a SaaS (there is nothing hosted, nothing to sign up for), and **not** a design system (it draws nothing).
 
-The contract targets two capabilities: banners and interstitials, and simple document-defined forms. The same mechanics serve whole screens beyond those targets, such as user profile screens and intermediate screens like a catalog. Contract 2.0 is stable: the versioning and tolerance rules in [Foundations](00-foundations.html) are promises, a document declares the version it was written for, and a runtime rejects versions it does not implement.
+The contract serves document-driven UI of any kind: fragments embedded between native components (banners, quick actions, forms) and whole screens (profiles, catalogs, details, confirmation flows) are the same mechanics at different sizes. Contract 2.1 is stable: the versioning and tolerance rules in [Foundations](00-foundations.html) are promises, a document declares the version it was written for, and a runtime rejects versions it does not implement.
 
 Try the contract in the browser: the [Milano Playground](https://get-milano.dev/playground/) validates vocabularies and documents against these schemas and the reference checker, live.
 
@@ -27,11 +27,11 @@ Try the contract in the browser: the [Milano Playground](https://get-milano.dev/
 | 05 | [Conformance suite](05-conformance-suite.html) | Stable |
 | 06 | [Runtime API](06-runtime-api.html) | Stable |
 
-Worked examples for both target capabilities, with their conformance vectors: [Examples](examples.html).
+Worked examples written end to end, a banner, a shopping list, a quick actions strip, and a form, with their conformance vectors: [Examples](examples.html).
 
 ## Releases and the contract version
 
-Two numbers move at different speeds. The **contract version** is what a document declares in `version` and a vocabulary in `milano`: it names the rules a document is written against, and it moves only when a document could observe the difference (a new construct, function, or field; a changed rule). The **repository release** (the tags of this repository, which the conformance suite and the SDK track) moves whenever the normative text, the schemas, the tools, or the suite change, including clarifications that pin behavior the engines already had. So repository releases 1.0.0 through 1.3.1 all shipped contract 1.0, and release 2.0.0 ships contract 2.0, a superset under which every 1.x document stays valid and means the same thing. Conformance is claimed against a repository release ("passes suite 1.3.0"); compatibility is declared against a contract version.
+Two numbers move at different speeds. The **contract version** is what a document declares in `version` and a vocabulary in `milano`: it names the rules a document is written against, and it moves only when a document could observe the difference (a new construct, function, or field; a changed rule). The **repository release** (the tags of this repository, which the conformance suite and the SDK track) moves whenever the normative text, the schemas, the tools, or the suite change, including clarifications that pin behavior the engines already had. So repository releases 1.0.0 through 1.3.1 all shipped contract 1.0, release 2.0.0 shipped contract 2.0, and release 2.1.0 ships contract 2.1; each is a superset of the one before, under which every earlier document stays valid and means the same thing. Conformance is claimed against a repository release ("passes suite 2.1.0"); compatibility is declared against a contract version.
 
 ## Spec process
 

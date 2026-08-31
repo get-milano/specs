@@ -1,0 +1,24 @@
+{
+  "name": "string-substring-refuses-double-index",
+  "description": "substring takes int indices exactly, with no promotion",
+  "document": {
+    "version": "2.1.0",
+    "root": {
+      "type": "Text",
+      "id": "r",
+      "properties": {
+        "text": {
+          "$expr": "$substring('hello', 0.0, 2)"
+        }
+      }
+    }
+  },
+  "expect": {
+    "error": {
+      "type": "SchemaViolation",
+      "rule": "expression",
+      "node": "r",
+      "expected": "string"
+    }
+  }
+}

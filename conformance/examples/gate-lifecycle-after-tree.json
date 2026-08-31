@@ -1,0 +1,16 @@
+{
+  "name": "gate-lifecycle-after-tree",
+  "description": "The lifecycle bindings are validated after the tree: a defect in a node is reported before one in the on section",
+  "documentText": "{\"version\": \"2.1.0\", \"state\": {\"count\": \"int\"}, \"root\": {\"type\": \"Column\", \"id\": \"root\", \"children\": [{\"type\": \"Text\", \"id\": \"t\", \"properties\": {\"text\": {\"$expr\": \"$str(state.count)\"}}}, {\"type\": \"Text\", \"id\": \"bad\", \"properties\": {\"text\": {\"$expr\": \"state.nope\"}}}]}, \"on\": {\"load\": [{\"action\": \"$set\", \"key\": \"count\", \"value\": {\"$expr\": \"state.count + 1\"}}]}}",
+  "state": {
+    "count": 0
+  },
+  "expect": {
+    "error": {
+      "type": "SchemaViolation",
+      "rule": "expression",
+      "node": "bad",
+      "expected": "string"
+    }
+  }
+}

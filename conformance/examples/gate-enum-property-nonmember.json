@@ -16,7 +16,9 @@
     "error": {
       "type": "SchemaViolation",
       "rule": "property-type",
-      "node": "b"
+      "node": "b",
+      "expected": "enum member",
+      "found": "warn"
     }
   }
 }

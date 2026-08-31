@@ -1,0 +1,63 @@
+{
+  "name": "switch-refuses-an-empty-case",
+  "description": "A case branch is one or more nodes",
+  "document": {
+    "version": "2.1.0",
+    "state": {
+      "status": {
+        "enum": [
+          "ok",
+          "late",
+          "failed"
+        ]
+      },
+      "labels": {
+        "record": {
+          "ok": "string",
+          "late": "string",
+          "failed": "string"
+        }
+      }
+    },
+    "root": {
+      "type": "Column",
+      "id": "c",
+      "children": [
+        {
+          "type": "$switch",
+          "subject": {
+            "$expr": "state.status"
+          },
+          "cases": {
+            "ok": [],
+            "late": [
+              {
+                "type": "Text",
+                "properties": {
+                  "text": "Running late"
+                }
+              }
+            ],
+            "failed": [
+              {
+                "type": "Text",
+                "properties": {
+                  "text": "Failed"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    }
+  },
+  "expect": {
+    "error": {
+      "type": "SchemaViolation",
+      "rule": "switch",
+      "node": "root/children[0]",
+      "expected": "case branch",
+      "found": "empty"
+    }
+  }
+}

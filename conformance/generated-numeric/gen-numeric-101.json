@@ -1,6 +1,6 @@
 {
   "name": "gen-numeric-101",
-  "description": "Generated (seed 20260816): str(3 > (0 - 1))",
+  "description": "Generated (seed 20260816): $str(3 > (0 - 1))",
   "document": {
     "version": "1.0.0",
     "root": {
@@ -8,7 +8,7 @@
       "id": "r",
       "properties": {
         "text": {
-          "$expr": "str(3 > (0 - 1))"
+          "$expr": "$str(3 > (0 - 1))"
         }
       }
     }

@@ -1,0 +1,24 @@
+{
+  "name": "gate-function-optional-return-unresolved",
+  "description": "An optional return in a non-optional position is refused until resolved with ??",
+  "document": {
+    "version": "2.1.0",
+    "root": {
+      "type": "Text",
+      "id": "t",
+      "properties": {
+        "text": {
+          "$expr": "$str(parseInt('1'))"
+        }
+      }
+    }
+  },
+  "expect": {
+    "error": {
+      "type": "SchemaViolation",
+      "rule": "expression",
+      "node": "t",
+      "expected": "string"
+    }
+  }
+}

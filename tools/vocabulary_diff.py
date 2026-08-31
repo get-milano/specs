@@ -79,23 +79,32 @@ def diff_declarations(kind, owner, old, new, changes):
             changes.append(("ADDITIVE", f"{owner} {kind} {name} added"))
 
 
-def diff_result(name, old, new, changes):
-    """The completion result is a declared type like any other (vocabulary
-    schema spec, Completion results): adding one is additive, since no
-    document could bind `result` before; removing or retyping it breaks
-    every document that reads `result` in that action's onSuccess; an enum
-    result may gain members."""
-    before, after = old.get("result"), new.get("result")
+def diff_outcome(outcome, name, old, new, changes):
+    """A completion outcome's declared type, `result` or `failure`, is a
+    declared type like any other (vocabulary schema spec, Completion
+    results and Failure payloads): adding one is additive, since no
+    document could bind its root before; removing or retyping it breaks
+    every document that reads the root in that action's follow-ups; an
+    enum outcome may gain members."""
+    before, after = old.get(outcome), new.get(outcome)
     if before is None and after is None:
         return
     if before is None:
-        changes.append(("ADDITIVE", f"action {name} result added"))
+        changes.append(("ADDITIVE", f"action {name} {outcome} added"))
     elif after is None:
-        changes.append(("BREAKING", f"action {name} result removed"))
+        changes.append(("BREAKING", f"action {name} {outcome} removed"))
     else:
         change = type_change(before, after)
         if change is not None:
-            describe_change(f"action {name} result", before, after, change, changes)
+            describe_change(f"action {name} {outcome}", before, after, change, changes)
+
+
+def diff_result(name, old, new, changes):
+    diff_outcome("result", name, old, new, changes)
+
+
+def diff_failure(name, old, new, changes):
+    diff_outcome("failure", name, old, new, changes)
 
 
 def diff(old, new):
@@ -136,9 +145,41 @@ def diff(old, new):
                               action.get("parameters", {}),
                               new_actions[name].get("parameters", {}), changes)
             diff_result(name, action, new_actions[name], changes)
+            diff_failure(name, action, new_actions[name], changes)
     for name in new_actions:
         if name not in old_actions:
             changes.append(("ADDITIVE", f"action {name} added"))
+
+    # Host functions (vocabulary schema spec, Function declarations):
+    # adding one is additive, since no document could call it before;
+    # removing one, or changing its arity, an argument type, or its
+    # return type, breaks every document that calls it. An enum gaining
+    # members is the one additive type change, in either position.
+    old_functions = old.get("functions", {})
+    new_functions = new.get("functions", {})
+    for name, function in old_functions.items():
+        if name not in new_functions:
+            changes.append(("BREAKING", f"function {name} removed"))
+            continue
+        after = new_functions[name]
+        before_args = function.get("arguments", [])
+        after_args = after.get("arguments", [])
+        if len(before_args) != len(after_args):
+            changes.append(("BREAKING", f"function {name} arity changed: "
+                            f"{len(before_args)} -> {len(after_args)}"))
+        else:
+            for index, (old_arg, new_arg) in enumerate(zip(before_args, after_args)):
+                change = type_change(old_arg, new_arg)
+                if change is not None:
+                    describe_change(f"function {name} argument {index}",
+                                    old_arg, new_arg, change, changes)
+        change = type_change(function.get("returns"), after.get("returns"))
+        if change is not None:
+            describe_change(f"function {name} returns", function.get("returns"),
+                            after.get("returns"), change, changes)
+    for name in new_functions:
+        if name not in old_functions:
+            changes.append(("ADDITIVE", f"function {name} added"))
 
     return changes
 

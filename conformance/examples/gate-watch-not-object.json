@@ -1,0 +1,10 @@
+{
+  "name": "gate-watch-not-object",
+  "description": "A watch section that is not an object is malformed",
+  "documentText": "{\"version\": \"2.1.0\", \"state\": {\"a\": \"int\"}, \"root\": {\"type\": \"Text\", \"id\": \"t\", \"properties\": {\"text\": \"x\"}}, \"watch\": []}",
+  "expect": {
+    "error": {
+      "type": "MalformedDocument"
+    }
+  }
+}

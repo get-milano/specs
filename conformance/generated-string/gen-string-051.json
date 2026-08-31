@@ -1,0 +1,26 @@
+{
+  "name": "gen-string-051",
+  "description": "Generated (seed 20260831): $substring('ada@example.com', $indexOf('aaa', 'aa'), $length('abc'))",
+  "document": {
+    "version": "2.1.0",
+    "root": {
+      "type": "Text",
+      "id": "r",
+      "properties": {
+        "text": {
+          "$expr": "$substring('ada@example.com', $indexOf('aaa', 'aa'), $length('abc'))"
+        }
+      }
+    }
+  },
+  "expect": {
+    "view": {
+      "type": "Text",
+      "reference": "r",
+      "properties": {
+        "text": "ada"
+      }
+    },
+    "occurrences": []
+  }
+}

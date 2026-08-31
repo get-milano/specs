@@ -11,7 +11,7 @@
       "id": "result",
       "properties": {
         "text": {
-          "$expr": "str(state.n ?? 1 / 0)"
+          "$expr": "$str(state.n ?? 1 / 0)"
         }
       }
     }

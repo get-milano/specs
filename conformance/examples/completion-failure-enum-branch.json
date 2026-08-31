@@ -1,0 +1,92 @@
+{
+  "name": "completion-failure-enum-branch",
+  "description": "An enum failure payload branches with $when and enum comparison, the typical shape for a reason",
+  "document": {
+    "version": "2.1.0",
+    "state": {
+      "message": "string"
+    },
+    "root": {
+      "type": "Button",
+      "id": "b",
+      "properties": {
+        "label": "Go",
+        "enabled": true
+      },
+      "on": {
+        "tap": [
+          {
+            "action": "fetchCode",
+            "onFailure": [
+              {
+                "action": "$when",
+                "condition": {
+                  "$expr": "failure == 'limit'"
+                },
+                "then": [
+                  {
+                    "action": "$set",
+                    "key": "message",
+                    "value": "Limit reached"
+                  }
+                ],
+                "else": [
+                  {
+                    "action": "$set",
+                    "key": "message",
+                    "value": "Offline"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "state": {
+    "message": "start"
+  },
+  "steps": [
+    {
+      "event": {
+        "node": "b",
+        "name": "tap"
+      }
+    },
+    {
+      "complete": {
+        "dispatch": 0,
+        "outcome": "failure",
+        "payload": "limit"
+      }
+    }
+  ],
+  "expect": {
+    "state": {
+      "message": "Limit reached"
+    },
+    "dispatched": [
+      {
+        "action": "fetchCode",
+        "parameters": {},
+        "dispatch": 0
+      }
+    ],
+    "occurrences": []
+  },
+  "config": {
+    "actions": {
+      "declare": {
+        "fetchCode": {
+          "failure": {
+            "enum": [
+              "limit",
+              "offline"
+            ]
+          }
+        }
+      }
+    }
+  }
+}

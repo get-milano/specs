@@ -1,0 +1,128 @@
+{
+  "name": "function-reevaluates-on-argument-change",
+  "description": "A call re-evaluates when a dependency of an argument changes, and not otherwise",
+  "document": {
+    "version": "2.1.0",
+    "context": {
+      "currency": "string"
+    },
+    "state": {
+      "cents": "int",
+      "other": "int"
+    },
+    "root": {
+      "type": "Column",
+      "id": "c",
+      "children": [
+        {
+          "type": "Text",
+          "id": "t",
+          "properties": {
+            "text": {
+              "$expr": "formatMoney(state.cents, context.currency)"
+            }
+          }
+        },
+        {
+          "type": "Text",
+          "id": "u",
+          "properties": {
+            "text": {
+              "$expr": "$str(state.other)"
+            }
+          }
+        },
+        {
+          "type": "Button",
+          "id": "go",
+          "properties": {
+            "label": "Go",
+            "enabled": true
+          },
+          "on": {
+            "tap": [
+              {
+                "action": "$set",
+                "key": "other",
+                "value": 1
+              }
+            ]
+          }
+        }
+      ]
+    }
+  },
+  "context": {
+    "currency": "EUR"
+  },
+  "state": {
+    "cents": 1250,
+    "other": 0
+  },
+  "config": {
+    "functions": {
+      "results": {
+        "formatMoney": [
+          {
+            "arguments": [
+              1250,
+              "EUR"
+            ],
+            "returns": "12.50 EUR"
+          },
+          {
+            "arguments": [
+              1250,
+              "USD"
+            ],
+            "returns": "$12.50"
+          }
+        ]
+      }
+    }
+  },
+  "steps": [
+    {
+      "contextUpdate": {
+        "currency": "USD"
+      }
+    },
+    {
+      "event": {
+        "node": "go",
+        "name": "tap"
+      }
+    }
+  ],
+  "expect": {
+    "view": {
+      "type": "Column",
+      "reference": "c",
+      "children": [
+        {
+          "type": "Text",
+          "reference": "t",
+          "properties": {
+            "text": "$12.50"
+          }
+        },
+        {
+          "type": "Text",
+          "reference": "u",
+          "properties": {
+            "text": "1"
+          }
+        },
+        {
+          "type": "Button",
+          "reference": "go",
+          "properties": {
+            "label": "Go",
+            "enabled": true
+          }
+        }
+      ]
+    },
+    "occurrences": []
+  }
+}

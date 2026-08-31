@@ -1,6 +1,6 @@
 {
   "name": "gen-typing-branch-reject-042",
-  "description": "Generated (exhaustive): if(state.b, state.d, state.i) in a string? position is rejected at the gate",
+  "description": "Generated (exhaustive): $if(state.b, state.d, state.i) in a string? position is rejected at the gate",
   "document": {
     "version": "1.0.0",
     "state": {
@@ -17,7 +17,7 @@
           "id": "p",
           "properties": {
             "sOpt": {
-              "$expr": "if(state.b, state.d, state.i)"
+              "$expr": "$if(state.b, state.d, state.i)"
             }
           }
         }

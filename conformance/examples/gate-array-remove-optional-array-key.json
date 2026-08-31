@@ -1,0 +1,39 @@
+{
+  "name": "gate-array-remove-optional-array-key",
+  "description": "An optional array is not an array state key: the action would have nothing to index",
+  "document": {
+    "version": "2.1.0",
+    "state": {
+      "maybe": {
+        "array": "string",
+        "optional": true
+      }
+    },
+    "root": {
+      "type": "Button",
+      "id": "add",
+      "properties": {
+        "label": "Add",
+        "enabled": true
+      },
+      "on": {
+        "tap": [
+          {
+            "action": "$remove",
+            "key": "maybe",
+            "at": 0
+          }
+        ]
+      }
+    }
+  },
+  "expect": {
+    "error": {
+      "type": "SchemaViolation",
+      "rule": "action-encoding",
+      "node": "add",
+      "expected": "array state key",
+      "found": "maybe"
+    }
+  }
+}

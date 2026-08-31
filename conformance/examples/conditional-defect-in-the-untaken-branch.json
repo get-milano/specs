@@ -1,0 +1,39 @@
+{
+  "name": "conditional-defect-in-the-untaken-branch",
+  "description": "Both branches are validated, so the branch this build does not take still fails it",
+  "document": {
+    "version": "2.1.0",
+    "root": {
+      "type": "Column",
+      "id": "c",
+      "children": [
+        {
+          "type": "$if",
+          "condition": {
+            "$expr": "true"
+          },
+          "then": [
+            {
+              "type": "Text",
+              "properties": {
+                "text": "a"
+              }
+            }
+          ],
+          "else": [
+            {
+              "type": "Nope"
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "expect": {
+    "error": {
+      "type": "UnknownComponentType",
+      "node": "root/children[0]/else[0]",
+      "unknownType": "Nope"
+    }
+  }
+}

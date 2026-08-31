@@ -1,0 +1,26 @@
+{
+  "name": "string-split-round-trips",
+  "description": "Joining a split by the separator it split on returns the subject",
+  "document": {
+    "version": "2.1.0",
+    "root": {
+      "type": "Text",
+      "id": "r",
+      "properties": {
+        "text": {
+          "$expr": "$join($split('a,,b,', ','), ',')"
+        }
+      }
+    }
+  },
+  "expect": {
+    "view": {
+      "type": "Text",
+      "reference": "r",
+      "properties": {
+        "text": "a,,b,"
+      }
+    },
+    "occurrences": []
+  }
+}

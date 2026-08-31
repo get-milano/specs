@@ -1,0 +1,86 @@
+{
+  "name": "array-append-past-value-size",
+  "description": "The array an $append produces is measured whole against the value size limit",
+  "document": {
+    "version": "2.1.0",
+    "state": {
+      "items": {
+        "array": "string"
+      },
+      "n": "int"
+    },
+    "root": {
+      "type": "Column",
+      "id": "c",
+      "children": [
+        {
+          "type": "Text",
+          "id": "count",
+          "properties": {
+            "text": {
+              "$expr": "$str($length(state.items))"
+            }
+          }
+        },
+        {
+          "type": "Button",
+          "id": "add",
+          "properties": {
+            "label": "Add",
+            "enabled": true
+          },
+          "on": {
+            "tap": [
+              {
+                "action": "$append",
+                "key": "items",
+                "value": "xyz"
+              },
+              {
+                "action": "$set",
+                "key": "n",
+                "value": 1
+              }
+            ]
+          }
+        }
+      ]
+    }
+  },
+  "state": {
+    "items": [
+      "ab"
+    ],
+    "n": 0
+  },
+  "config": {
+    "limits": {
+      "maxValueSize": 5
+    }
+  },
+  "steps": [
+    {
+      "event": {
+        "node": "add",
+        "name": "tap"
+      }
+    }
+  ],
+  "expect": {
+    "state": {
+      "items": [
+        "ab"
+      ],
+      "n": 0
+    },
+    "occurrences": [
+      {
+        "kind": "rejectedMutation",
+        "node": "add",
+        "name": "items",
+        "expected": "maxValueSize",
+        "found": "6"
+      }
+    ]
+  }
+}

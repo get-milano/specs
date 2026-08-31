@@ -22,7 +22,7 @@
           "id": "head",
           "properties": {
             "text": {
-              "$expr": "'Rows: ' + str(length(state.rows))"
+              "$expr": "'Rows: ' + $str($length(state.rows))"
             }
           }
         },
@@ -39,7 +39,7 @@
               "id": "name",
               "properties": {
                 "text": {
-                  "$expr": "concat(str(row_index), '. ', row.name)"
+                  "$expr": "$concat($str(row_index), '. ', row.name)"
                 }
               }
             }

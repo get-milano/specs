@@ -1,0 +1,36 @@
+{
+  "name": "gate-watch-after-tree",
+  "description": "The watch section is validated after the tree: a node's defect wins",
+  "document": {
+    "version": "2.1.0",
+    "state": {
+      "a": "int"
+    },
+    "root": {
+      "type": "Column",
+      "id": "c",
+      "children": [
+        {
+          "type": "Text",
+          "id": "t",
+          "properties": {
+            "text": {
+              "$expr": "state.nope"
+            }
+          }
+        }
+      ]
+    },
+    "watch": {
+      "missing": []
+    }
+  },
+  "expect": {
+    "error": {
+      "type": "SchemaViolation",
+      "rule": "expression",
+      "node": "t",
+      "expected": "string"
+    }
+  }
+}

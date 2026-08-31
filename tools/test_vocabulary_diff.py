@@ -240,6 +240,36 @@ class Actions(unittest.TestCase):
         self.assertEqual(vd.diff(artifact, reordered), [])
 
 
+class Failures(unittest.TestCase):
+    """The failure payload (contract 2.1) follows the result's rules."""
+
+    def test_adding_a_failure_is_additive(self):
+        old = vocabulary(actions={"a": {}})
+        new = vocabulary(actions={"a": {"failure": "string"}})
+        self.assertEqual(verdicts(old, new), ["ADDITIVE"])
+        self.assertIn("action a failure added", messages(old, new))
+
+    def test_removing_or_retyping_a_failure_is_breaking(self):
+        old = vocabulary(actions={"a": {"failure": "string"}})
+        self.assertEqual(verdicts(old, vocabulary(actions={"a": {}})), ["BREAKING"])
+        self.assertIn("action a failure removed",
+                      messages(old, vocabulary(actions={"a": {}})))
+        retyped = vocabulary(actions={"a": {"failure": "string?"}})
+        self.assertEqual(verdicts(old, retyped), ["BREAKING"])
+
+    def test_a_failure_enum_gaining_members_is_additive(self):
+        old = vocabulary(actions={"a": {"failure": {"enum": ["one"]}}})
+        new = vocabulary(actions={"a": {"failure": {"enum": ["one", "two"]}}})
+        self.assertEqual(verdicts(old, new), ["ADDITIVE"])
+        self.assertIn("action a failure enum gained: two", messages(old, new))
+
+    def test_result_and_failure_are_compared_independently(self):
+        old = vocabulary(actions={"a": {"result": "string", "failure": "int"}})
+        new = vocabulary(actions={"a": {"result": "string", "failure": "string"}})
+        self.assertEqual(messages(old, new),
+                         ['action a failure type changed: "int" -> "string"'])
+
+
 class Combinations(unittest.TestCase):
     def test_a_change_set_reports_every_change(self):
         old = vocabulary(
@@ -375,6 +405,50 @@ class SuiteVocabulary(unittest.TestCase):
         component = sorted(new["components"])[0]
         new["components"][component].setdefault("properties", {})["addedLater"] = "string?"
         self.assertEqual(verdicts(old, new), ["ADDITIVE"])
+
+
+class HostFunctions(unittest.TestCase):
+    """Function declarations follow the evolution rules like every other
+    declaration (vocabulary schema spec, Function declarations)."""
+
+    def function(self, arguments, returns):
+        return {"arguments": arguments, "returns": returns}
+
+    def with_functions(self, functions, version="1.0.0"):
+        artifact = vocabulary(version)
+        artifact["milano"] = "2.1.0"
+        artifact["functions"] = functions
+        return artifact
+
+    def test_adding_a_function_is_additive(self):
+        old = self.with_functions({})
+        new = self.with_functions({"formatMoney": self.function(["int", "string"], "string")},
+                                  "1.1.0")
+        self.assertEqual(verdicts(old, new), ["ADDITIVE"])
+
+    def test_removing_a_function_is_breaking(self):
+        old = self.with_functions({"formatMoney": self.function(["int", "string"], "string")})
+        new = self.with_functions({}, "2.0.0")
+        self.assertEqual(verdicts(old, new), ["BREAKING"])
+
+    def test_changing_arity_an_argument_or_the_return_is_breaking(self):
+        base = self.function(["int", "string"], "string")
+        old = self.with_functions({"f": base})
+        for changed in (self.function(["int"], "string"),
+                        self.function(["double", "string"], "string"),
+                        self.function(["int", "string"], "string?")):
+            new = self.with_functions({"f": changed}, "2.0.0")
+            self.assertEqual(verdicts(old, new), ["BREAKING"], changed)
+
+    def test_an_enum_gaining_members_is_additive_in_either_position(self):
+        old = self.with_functions({"f": self.function([{"enum": ["a"]}], {"enum": ["x"]})})
+        new = self.with_functions({"f": self.function([{"enum": ["a", "b"]}],
+                                                      {"enum": ["x", "y"]})}, "1.1.0")
+        self.assertEqual(verdicts(old, new), ["ADDITIVE", "ADDITIVE"])
+
+    def test_an_unchanged_function_is_no_change(self):
+        old = self.with_functions({"f": self.function(["int"], "string")})
+        self.assertEqual(vd.diff(old, old), [])
 
 
 if __name__ == "__main__":

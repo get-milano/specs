@@ -1,0 +1,108 @@
+{
+  "name": "context-update-rejected-duplicate-key",
+  "description": "A context update that would give a keyed repeat two elements with the same key is rejected whole and reported with the repeated key; the previous values stay",
+  "document": {
+    "version": "2.1.0",
+    "context": {
+      "rows": {
+        "array": {
+          "record": {
+            "id": "string",
+            "name": "string",
+            "url": "string"
+          }
+        }
+      }
+    },
+    "root": {
+      "type": "Column",
+      "id": "list",
+      "children": [
+        {
+          "type": "$repeat",
+          "id": "each",
+          "items": {
+            "$expr": "context.rows"
+          },
+          "as": "row",
+          "key": {
+            "$expr": "row.id"
+          },
+          "children": [
+            {
+              "type": "Text",
+              "id": "name",
+              "properties": {
+                "text": {
+                  "$expr": "$concat($str(row_index), ':', row.name)"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "context": {
+    "rows": [
+      {
+        "id": "alpha",
+        "name": "Alpha",
+        "url": "https://example.com/a"
+      },
+      {
+        "id": "beta",
+        "name": "Beta",
+        "url": "https://example.com/b"
+      }
+    ]
+  },
+  "steps": [
+    {
+      "contextUpdate": {
+        "rows": [
+          {
+            "id": "beta",
+            "name": "Beta",
+            "url": "https://example.com/b"
+          },
+          {
+            "id": "beta",
+            "name": "Beta again",
+            "url": "https://example.com/b"
+          }
+        ]
+      }
+    }
+  ],
+  "expect": {
+    "view": {
+      "type": "Column",
+      "reference": "list",
+      "children": [
+        {
+          "type": "Text",
+          "reference": "name[alpha]",
+          "properties": {
+            "text": "0:Alpha"
+          }
+        },
+        {
+          "type": "Text",
+          "reference": "name[beta]",
+          "properties": {
+            "text": "1:Beta"
+          }
+        }
+      ]
+    },
+    "occurrences": [
+      {
+        "kind": "rejectedContextUpdate",
+        "name": "rows",
+        "expected": "distinct key",
+        "found": "beta"
+      }
+    ]
+  }
+}

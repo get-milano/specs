@@ -1,0 +1,85 @@
+{
+  "name": "lifecycle-fifo-with-events",
+  "description": "Signals queue in FIFO order with events: an appear list reads state an earlier event wrote, and an event after it reads what the appear list wrote",
+  "document": {
+    "version": "2.1.0",
+    "state": {
+      "trail": "string"
+    },
+    "root": {
+      "type": "Column",
+      "id": "root",
+      "children": [
+        {
+          "type": "Button",
+          "id": "b",
+          "properties": {
+            "label": "Go",
+            "enabled": true
+          },
+          "on": {
+            "tap": [
+              {
+                "action": "$set",
+                "key": "trail",
+                "value": {
+                  "$expr": "$concat(state.trail, 'e')"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "on": {
+      "appear": [
+        {
+          "action": "$set",
+          "key": "trail",
+          "value": {
+            "$expr": "$concat(state.trail, 'a')"
+          }
+        }
+      ],
+      "disappear": [
+        {
+          "action": "$set",
+          "key": "trail",
+          "value": {
+            "$expr": "$concat(state.trail, 'd')"
+          }
+        }
+      ]
+    }
+  },
+  "state": {
+    "trail": ""
+  },
+  "steps": [
+    {
+      "event": {
+        "node": "b",
+        "name": "tap"
+      }
+    },
+    {
+      "appear": true
+    },
+    {
+      "event": {
+        "node": "b",
+        "name": "tap"
+      }
+    },
+    {
+      "disappear": true
+    }
+  ],
+  "expect": {
+    "state": {
+      "trail": "eaed"
+    },
+    "dispatched": [],
+    "occurrences": []
+  }
+}

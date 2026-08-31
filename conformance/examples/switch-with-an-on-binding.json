@@ -1,0 +1,61 @@
+{
+  "name": "switch-with-an-on-binding",
+  "description": "A $switch carries no event bindings: it is not a component and has nothing to emit",
+  "document": {
+    "version": "2.1.0",
+    "root": {
+      "type": "Column",
+      "id": "c",
+      "children": [
+        {
+          "type": "$switch",
+          "subject": {
+            "$expr": "state.status"
+          },
+          "cases": {
+            "ok": [
+              {
+                "type": "Text",
+                "properties": {
+                  "text": "x"
+                }
+              }
+            ],
+            "late": [
+              {
+                "type": "Text",
+                "properties": {
+                  "text": "x"
+                }
+              }
+            ]
+          },
+          "on": {
+            "tap": {
+              "action": "open"
+            }
+          }
+        }
+      ]
+    },
+    "state": {
+      "status": {
+        "enum": [
+          "ok",
+          "late"
+        ]
+      }
+    }
+  },
+  "state": {
+    "status": "ok"
+  },
+  "expect": {
+    "error": {
+      "type": "SchemaViolation",
+      "rule": "switch",
+      "node": "root/children[0]",
+      "expected": "no on"
+    }
+  }
+}

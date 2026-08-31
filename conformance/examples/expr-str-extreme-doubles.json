@@ -13,7 +13,7 @@
       "id": "t",
       "properties": {
         "text": {
-          "$expr": "str(state.tiny) + ' ' + str(state.huge) + ' ' + str(state.carry)"
+          "$expr": "$str(state.tiny) + ' ' + $str(state.huge) + ' ' + $str(state.carry)"
         }
       }
     }

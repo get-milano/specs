@@ -1,0 +1,77 @@
+{
+  "name": "watch-from-array-action",
+  "description": "An array action that changes the key triggers its watch",
+  "document": {
+    "version": "2.1.0",
+    "state": {
+      "items": {
+        "array": "string"
+      },
+      "n": "int"
+    },
+    "root": {
+      "type": "Column",
+      "id": "c",
+      "children": [
+        {
+          "type": "Text",
+          "id": "n",
+          "properties": {
+            "text": {
+              "$expr": "$str(state.n)"
+            }
+          }
+        },
+        {
+          "type": "Button",
+          "id": "add",
+          "properties": {
+            "label": "Add",
+            "enabled": true
+          },
+          "on": {
+            "tap": [
+              {
+                "action": "$append",
+                "key": "items",
+                "value": "x"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "watch": {
+      "items": [
+        {
+          "action": "$set",
+          "key": "n",
+          "value": {
+            "$expr": "$length(state.items)"
+          }
+        }
+      ]
+    }
+  },
+  "state": {
+    "items": [],
+    "n": 0
+  },
+  "steps": [
+    {
+      "event": {
+        "node": "add",
+        "name": "tap"
+      }
+    }
+  ],
+  "expect": {
+    "state": {
+      "items": [
+        "x"
+      ],
+      "n": 1
+    },
+    "occurrences": []
+  }
+}

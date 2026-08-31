@@ -1,0 +1,80 @@
+{
+  "name": "completion-failure-missing-payload",
+  "description": "A failure completion without a value violates a non-optional failure declaration: an invalid completion, exactly as a missing result does",
+  "document": {
+    "version": "2.1.0",
+    "state": {
+      "message": "string"
+    },
+    "root": {
+      "type": "Button",
+      "id": "b",
+      "properties": {
+        "label": "Go",
+        "enabled": true
+      },
+      "on": {
+        "tap": [
+          {
+            "action": "fetchCode",
+            "onFailure": [
+              {
+                "action": "$set",
+                "key": "message",
+                "value": {
+                  "$expr": "failure"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "state": {
+    "message": "start"
+  },
+  "steps": [
+    {
+      "event": {
+        "node": "b",
+        "name": "tap"
+      }
+    },
+    {
+      "complete": {
+        "dispatch": 0,
+        "outcome": "failure"
+      }
+    }
+  ],
+  "expect": {
+    "state": {
+      "message": "start"
+    },
+    "dispatched": [
+      {
+        "action": "fetchCode",
+        "parameters": {},
+        "dispatch": 0
+      }
+    ],
+    "occurrences": [
+      {
+        "kind": "invalidCompletion",
+        "name": "fetchCode",
+        "expected": "string",
+        "found": "null"
+      }
+    ]
+  },
+  "config": {
+    "actions": {
+      "declare": {
+        "fetchCode": {
+          "failure": "string"
+        }
+      }
+    }
+  }
+}

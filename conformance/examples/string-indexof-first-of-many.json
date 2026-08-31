@@ -1,0 +1,26 @@
+{
+  "name": "string-indexof-first-of-many",
+  "description": "The first occurrence wins, left to right",
+  "document": {
+    "version": "2.1.0",
+    "root": {
+      "type": "Text",
+      "id": "r",
+      "properties": {
+        "text": {
+          "$expr": "$str($indexOf('ababab', 'ab'))"
+        }
+      }
+    }
+  },
+  "expect": {
+    "view": {
+      "type": "Text",
+      "reference": "r",
+      "properties": {
+        "text": "0"
+      }
+    },
+    "occurrences": []
+  }
+}

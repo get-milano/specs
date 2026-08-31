@@ -1,0 +1,29 @@
+{
+  "name": "conditional-empty-branch",
+  "description": "A branch is one or more nodes, never an empty list",
+  "document": {
+    "version": "2.1.0",
+    "root": {
+      "type": "Column",
+      "id": "c",
+      "children": [
+        {
+          "type": "$if",
+          "condition": {
+            "$expr": "true"
+          },
+          "then": []
+        }
+      ]
+    }
+  },
+  "expect": {
+    "error": {
+      "type": "SchemaViolation",
+      "rule": "conditional",
+      "node": "root/children[0]",
+      "expected": "then branch",
+      "found": "empty"
+    }
+  }
+}

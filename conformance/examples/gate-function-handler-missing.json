@@ -1,0 +1,26 @@
+{
+  "name": "gate-function-handler-missing",
+  "description": "A document calling host functions on a surface with no function handler is refused at build",
+  "document": {
+    "version": "2.1.0",
+    "root": {
+      "type": "Text",
+      "id": "t",
+      "properties": {
+        "text": {
+          "$expr": "shout('x')"
+        }
+      }
+    }
+  },
+  "config": {
+    "functionHandler": false
+  },
+  "expect": {
+    "error": {
+      "type": "SchemaViolation",
+      "rule": "function-handler",
+      "expected": "function handler"
+    }
+  }
+}

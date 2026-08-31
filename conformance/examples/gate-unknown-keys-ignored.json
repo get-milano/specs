@@ -33,7 +33,7 @@
           "id": "t",
           "properties": {
             "text": {
-              "$expr": "concat(state.tone, str(state.count))"
+              "$expr": "$concat(state.tone, $str(state.count))"
             }
           },
           "hint": "ignored"

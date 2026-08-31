@@ -1,0 +1,43 @@
+{
+  "name": "gate-lifecycle-not-granted",
+  "description": "A lifecycle binding is checked against the surface's granted action set like a node's binding, anchored to no node",
+  "document": {
+    "version": "2.1.0",
+    "state": {
+      "count": "int"
+    },
+    "root": {
+      "type": "Column",
+      "id": "root",
+      "children": [
+        {
+          "type": "Text",
+          "id": "t",
+          "properties": {
+            "text": {
+              "$expr": "$str(state.count)"
+            }
+          }
+        }
+      ]
+    },
+    "on": {
+      "appear": [
+        {
+          "action": "secret"
+        }
+      ]
+    }
+  },
+  "state": {
+    "count": 0
+  },
+  "expect": {
+    "error": {
+      "type": "SchemaViolation",
+      "rule": "action-capability",
+      "expected": "granted action",
+      "found": "secret"
+    }
+  }
+}

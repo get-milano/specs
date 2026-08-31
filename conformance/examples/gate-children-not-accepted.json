@@ -23,7 +23,9 @@
     "error": {
       "type": "SchemaViolation",
       "rule": "children",
-      "node": "t"
+      "node": "t",
+      "expected": "no children",
+      "found": "children"
     }
   }
 }

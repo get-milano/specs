@@ -1,0 +1,49 @@
+{
+  "name": "gen-order-action-encoding-then-contract-feature",
+  "description": "Generated (order): action-encoding on node a, then contract-feature on node b; the first defect in document order wins",
+  "document": {
+    "version": "1.0.0",
+    "root": {
+      "type": "Column",
+      "id": "root",
+      "children": [
+        {
+          "type": "Button",
+          "id": "a",
+          "properties": {
+            "label": "A",
+            "enabled": true
+          },
+          "on": {
+            "tap": [
+              {
+                "action": "$set",
+                "key": "undeclared",
+                "value": 1
+              }
+            ]
+          }
+        },
+        {
+          "type": "Button",
+          "id": "b",
+          "properties": {
+            "label": {
+              "$expr": "$str($abs(1))"
+            },
+            "enabled": true
+          }
+        }
+      ]
+    }
+  },
+  "expect": {
+    "error": {
+      "type": "SchemaViolation",
+      "rule": "action-encoding",
+      "node": "a",
+      "expected": "declared state key",
+      "found": "undeclared"
+    }
+  }
+}

@@ -37,7 +37,8 @@
     "error": {
       "type": "SchemaViolation",
       "rule": "expression",
-      "node": "t"
+      "node": "t",
+      "expected": "bool?"
     }
   }
 }

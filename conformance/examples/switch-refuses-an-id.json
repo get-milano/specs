@@ -1,0 +1,70 @@
+{
+  "name": "switch-refuses-an-id",
+  "description": "A switch carries no id: it renders nothing and is never referenced",
+  "document": {
+    "version": "2.1.0",
+    "state": {
+      "status": {
+        "enum": [
+          "ok",
+          "late",
+          "failed"
+        ]
+      },
+      "labels": {
+        "record": {
+          "ok": "string",
+          "late": "string",
+          "failed": "string"
+        }
+      }
+    },
+    "root": {
+      "type": "Column",
+      "id": "c",
+      "children": [
+        {
+          "type": "$switch",
+          "subject": {
+            "$expr": "state.status"
+          },
+          "cases": {
+            "ok": [
+              {
+                "type": "Text",
+                "properties": {
+                  "text": "Ready"
+                }
+              }
+            ],
+            "late": [
+              {
+                "type": "Text",
+                "properties": {
+                  "text": "Running late"
+                }
+              }
+            ],
+            "failed": [
+              {
+                "type": "Text",
+                "properties": {
+                  "text": "Failed"
+                }
+              }
+            ]
+          },
+          "id": "s"
+        }
+      ]
+    }
+  },
+  "expect": {
+    "error": {
+      "type": "SchemaViolation",
+      "rule": "switch",
+      "node": "s",
+      "expected": "no id"
+    }
+  }
+}

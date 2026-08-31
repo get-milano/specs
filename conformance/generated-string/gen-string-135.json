@@ -1,0 +1,26 @@
+{
+  "name": "gen-string-135",
+  "description": "Generated (seed 20260831): $join($split('hello world', ' '), ' ')",
+  "document": {
+    "version": "2.1.0",
+    "root": {
+      "type": "Text",
+      "id": "r",
+      "properties": {
+        "text": {
+          "$expr": "$join($split('hello world', ' '), ' ')"
+        }
+      }
+    }
+  },
+  "expect": {
+    "view": {
+      "type": "Text",
+      "reference": "r",
+      "properties": {
+        "text": "hello world"
+      }
+    },
+    "occurrences": []
+  }
+}

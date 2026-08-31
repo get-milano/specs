@@ -1,0 +1,26 @@
+{
+  "name": "gen-string-009",
+  "description": "Generated (seed 20260831): $substring('hello world', $indexOf('aaa', 'l'), $length('a\ud83d\ude00b'))",
+  "document": {
+    "version": "2.1.0",
+    "root": {
+      "type": "Text",
+      "id": "r",
+      "properties": {
+        "text": {
+          "$expr": "$substring('hello world', $indexOf('aaa', 'l'), $length('a\ud83d\ude00b'))"
+        }
+      }
+    }
+  },
+  "expect": {
+    "view": {
+      "type": "Text",
+      "reference": "r",
+      "properties": {
+        "text": "hel"
+      }
+    },
+    "occurrences": []
+  }
+}

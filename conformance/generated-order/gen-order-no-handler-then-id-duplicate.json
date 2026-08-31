@@ -41,7 +41,8 @@
     "error": {
       "type": "SchemaViolation",
       "rule": "id-uniqueness",
-      "node": "root"
+      "node": "root",
+      "found": "root"
     }
   }
 }

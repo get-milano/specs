@@ -1,0 +1,26 @@
+{
+  "name": "gen-string-211",
+  "description": "Generated (seed 20260831): $join($split('tab\tnewline\n', '\\''), '')",
+  "document": {
+    "version": "2.1.0",
+    "root": {
+      "type": "Text",
+      "id": "r",
+      "properties": {
+        "text": {
+          "$expr": "$join($split('tab\tnewline\n', '\\''), '')"
+        }
+      }
+    }
+  },
+  "expect": {
+    "view": {
+      "type": "Text",
+      "reference": "r",
+      "properties": {
+        "text": "tab\tnewline\n"
+      }
+    },
+    "occurrences": []
+  }
+}

@@ -1,0 +1,151 @@
+{
+  "name": "interaction-completion-values",
+  "description": "Completion records carry the validated value: the result on success, the failure payload on failure, null when the action declares none",
+  "document": {
+    "version": "2.1.0",
+    "state": {
+      "code": "string"
+    },
+    "root": {
+      "type": "Column",
+      "id": "root",
+      "children": [
+        {
+          "type": "Button",
+          "id": "a",
+          "properties": {
+            "label": "Fetch",
+            "enabled": true
+          },
+          "on": {
+            "tap": [
+              {
+                "action": "fetchCode",
+                "onSuccess": [
+                  {
+                    "action": "$set",
+                    "key": "code",
+                    "value": {
+                      "$expr": "result"
+                    }
+                  }
+                ],
+                "onFailure": [
+                  {
+                    "action": "$set",
+                    "key": "code",
+                    "value": {
+                      "$expr": "failure"
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    }
+  },
+  "state": {
+    "code": ""
+  },
+  "steps": [
+    {
+      "event": {
+        "node": "a",
+        "name": "tap"
+      }
+    },
+    {
+      "event": {
+        "node": "a",
+        "name": "tap"
+      }
+    },
+    {
+      "complete": {
+        "dispatch": 0,
+        "outcome": "success",
+        "payload": "ABC"
+      }
+    },
+    {
+      "complete": {
+        "dispatch": 1,
+        "outcome": "failure",
+        "payload": "nope"
+      }
+    }
+  ],
+  "expect": {
+    "state": {
+      "code": "nope"
+    },
+    "dispatched": [
+      {
+        "action": "fetchCode",
+        "parameters": {},
+        "dispatch": 0
+      },
+      {
+        "action": "fetchCode",
+        "parameters": {},
+        "dispatch": 1
+      }
+    ],
+    "occurrences": [],
+    "interactions": [
+      {
+        "kind": "viewBuilt"
+      },
+      {
+        "kind": "event",
+        "node": "a",
+        "name": "tap"
+      },
+      {
+        "kind": "actionDispatched",
+        "node": "a",
+        "name": "fetchCode",
+        "dispatch": 0,
+        "value": {}
+      },
+      {
+        "kind": "event",
+        "node": "a",
+        "name": "tap"
+      },
+      {
+        "kind": "actionDispatched",
+        "node": "a",
+        "name": "fetchCode",
+        "dispatch": 1,
+        "value": {}
+      },
+      {
+        "kind": "completionSucceeded",
+        "node": "a",
+        "name": "fetchCode",
+        "dispatch": 0,
+        "value": "ABC"
+      },
+      {
+        "kind": "completionFailed",
+        "node": "a",
+        "name": "fetchCode",
+        "dispatch": 1,
+        "value": "nope"
+      }
+    ]
+  },
+  "config": {
+    "actions": {
+      "declare": {
+        "fetchCode": {
+          "result": "string",
+          "failure": "string"
+        }
+      }
+    }
+  }
+}

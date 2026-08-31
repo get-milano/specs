@@ -1,0 +1,114 @@
+{
+  "name": "conditional-emission-from-a-branch",
+  "description": "A node inside a branch dispatches like any other: its binding is not reached through children, and an engine that only walks those drops the emission",
+  "document": {
+    "version": "2.1.0",
+    "state": {
+      "rows": {
+        "array": {
+          "record": {
+            "name": "string"
+          }
+        }
+      }
+    },
+    "root": {
+      "type": "Column",
+      "id": "c",
+      "children": [
+        {
+          "type": "$if",
+          "condition": {
+            "$expr": "$isEmpty(state.rows)"
+          },
+          "then": [
+            {
+              "type": "Text",
+              "properties": {
+                "text": "Nothing left"
+              }
+            }
+          ],
+          "else": [
+            {
+              "type": "$repeat",
+              "id": "row",
+              "items": {
+                "$expr": "state.rows"
+              },
+              "as": "item",
+              "key": {
+                "$expr": "item.name"
+              },
+              "children": [
+                {
+                  "type": "Button",
+                  "id": "del",
+                  "properties": {
+                    "label": {
+                      "$expr": "item.name"
+                    },
+                    "enabled": true
+                  },
+                  "on": {
+                    "tap": [
+                      {
+                        "action": "$remove",
+                        "key": "rows",
+                        "at": {
+                          "$expr": "item_index"
+                        }
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "state": {
+    "rows": [
+      {
+        "name": "a"
+      },
+      {
+        "name": "b"
+      }
+    ]
+  },
+  "steps": [
+    {
+      "event": {
+        "node": "del[b]",
+        "name": "tap"
+      }
+    }
+  ],
+  "expect": {
+    "state": {
+      "rows": [
+        {
+          "name": "a"
+        }
+      ]
+    },
+    "view": {
+      "type": "Column",
+      "reference": "c",
+      "children": [
+        {
+          "type": "Button",
+          "reference": "del[a]",
+          "properties": {
+            "enabled": true,
+            "label": "a"
+          }
+        }
+      ]
+    },
+    "occurrences": []
+  }
+}

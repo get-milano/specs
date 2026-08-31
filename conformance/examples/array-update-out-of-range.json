@@ -1,0 +1,104 @@
+{
+  "name": "array-update-out-of-range",
+  "description": "An $update index outside the array is rejected like a $remove's",
+  "document": {
+    "version": "2.1.0",
+    "state": {
+      "rows": {
+        "array": {
+          "record": {
+            "name": "string",
+            "done": "bool"
+          }
+        }
+      },
+      "n": "int"
+    },
+    "root": {
+      "type": "Column",
+      "id": "c",
+      "children": [
+        {
+          "type": "Button",
+          "id": "toggle",
+          "properties": {
+            "label": "Toggle",
+            "enabled": true
+          },
+          "on": {
+            "tap": [
+              {
+                "action": "$update",
+                "key": "rows",
+                "at": 2,
+                "field": "done",
+                "value": true
+              },
+              {
+                "action": "$set",
+                "key": "n",
+                "value": 1
+              }
+            ]
+          }
+        },
+        {
+          "type": "$repeat",
+          "id": "list",
+          "items": {
+            "$expr": "state.rows"
+          },
+          "as": "row",
+          "children": [
+            {
+              "type": "Text",
+              "id": "row_text",
+              "properties": {
+                "text": {
+                  "$expr": "$concat(row.name, $if(row.done, ' done', ''))"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "state": {
+    "rows": [
+      {
+        "name": "a",
+        "done": false
+      }
+    ],
+    "n": 0
+  },
+  "steps": [
+    {
+      "event": {
+        "node": "toggle",
+        "name": "tap"
+      }
+    }
+  ],
+  "expect": {
+    "state": {
+      "rows": [
+        {
+          "name": "a",
+          "done": false
+        }
+      ],
+      "n": 0
+    },
+    "occurrences": [
+      {
+        "kind": "rejectedMutation",
+        "node": "toggle",
+        "name": "rows",
+        "expected": "index in range",
+        "found": "2"
+      }
+    ]
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "name": "gen-string-199",
+  "description": "Generated (seed 20260831): $str($indexOf('ada@example.com', ' '))",
+  "document": {
+    "version": "2.1.0",
+    "root": {
+      "type": "Text",
+      "id": "r",
+      "properties": {
+        "text": {
+          "$expr": "$str($indexOf('ada@example.com', ' '))"
+        }
+      }
+    }
+  },
+  "expect": {
+    "view": {
+      "type": "Text",
+      "reference": "r",
+      "properties": {
+        "text": "-1"
+      }
+    },
+    "occurrences": []
+  }
+}

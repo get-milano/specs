@@ -1,0 +1,47 @@
+{
+  "name": "gate-lifecycle-in-2-0-document",
+  "description": "A lifecycle section in a document declaring contract 2.0 is the contract-feature violation naming on, with no node",
+  "document": {
+    "version": "2.0.0",
+    "state": {
+      "count": "int"
+    },
+    "root": {
+      "type": "Column",
+      "id": "root",
+      "children": [
+        {
+          "type": "Text",
+          "id": "t",
+          "properties": {
+            "text": {
+              "$expr": "$str(state.count)"
+            }
+          }
+        }
+      ]
+    },
+    "on": {
+      "appear": [
+        {
+          "action": "$set",
+          "key": "count",
+          "value": {
+            "$expr": "state.count + 1"
+          }
+        }
+      ]
+    }
+  },
+  "state": {
+    "count": 0
+  },
+  "expect": {
+    "error": {
+      "type": "SchemaViolation",
+      "rule": "contract-feature",
+      "expected": "2.1",
+      "found": "on"
+    }
+  }
+}

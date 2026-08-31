@@ -17,7 +17,7 @@
       "id": "t",
       "properties": {
         "text": {
-          "$expr": "concat('tone: ', state.tone)"
+          "$expr": "$concat('tone: ', state.tone)"
         }
       }
     }

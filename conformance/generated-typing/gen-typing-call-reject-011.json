@@ -1,6 +1,6 @@
 {
   "name": "gen-typing-call-reject-011",
-  "description": "Generated (exhaustive): length(state.sOpt) in a string position is rejected at the gate",
+  "description": "Generated (exhaustive): $length(state.sOpt) in a string position is rejected at the gate",
   "document": {
     "version": "1.0.0",
     "state": {
@@ -15,7 +15,7 @@
           "id": "p",
           "properties": {
             "s": {
-              "$expr": "length(state.sOpt)"
+              "$expr": "$length(state.sOpt)"
             }
           }
         }

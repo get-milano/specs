@@ -1,0 +1,88 @@
+{
+  "name": "watch-not-triggered-by-context-update",
+  "description": "A context update re-resolves the view but mutates no state key: no watch runs",
+  "document": {
+    "version": "2.1.0",
+    "context": {
+      "k": "int"
+    },
+    "state": {
+      "a": "int",
+      "b": "int"
+    },
+    "root": {
+      "type": "Column",
+      "id": "c",
+      "children": [
+        {
+          "type": "Text",
+          "id": "k",
+          "properties": {
+            "text": {
+              "$expr": "$str(context.k)"
+            }
+          }
+        },
+        {
+          "type": "Text",
+          "id": "b",
+          "properties": {
+            "text": {
+              "$expr": "$str(state.b)"
+            }
+          }
+        }
+      ]
+    },
+    "watch": {
+      "a": [
+        {
+          "action": "$set",
+          "key": "b",
+          "value": 1
+        }
+      ]
+    }
+  },
+  "context": {
+    "k": 1
+  },
+  "state": {
+    "a": 0,
+    "b": 0
+  },
+  "steps": [
+    {
+      "contextUpdate": {
+        "k": 2
+      }
+    }
+  ],
+  "expect": {
+    "state": {
+      "a": 0,
+      "b": 0
+    },
+    "view": {
+      "type": "Column",
+      "reference": "c",
+      "children": [
+        {
+          "type": "Text",
+          "reference": "k",
+          "properties": {
+            "text": "2"
+          }
+        },
+        {
+          "type": "Text",
+          "reference": "b",
+          "properties": {
+            "text": "0"
+          }
+        }
+      ]
+    },
+    "occurrences": []
+  }
+}

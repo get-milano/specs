@@ -1,0 +1,26 @@
+{
+  "name": "string-indexof-absent-is-minus-one",
+  "description": "An absent needle answers -1 rather than failing",
+  "document": {
+    "version": "2.1.0",
+    "root": {
+      "type": "Text",
+      "id": "r",
+      "properties": {
+        "text": {
+          "$expr": "$str($indexOf('hello', 'zz'))"
+        }
+      }
+    }
+  },
+  "expect": {
+    "view": {
+      "type": "Text",
+      "reference": "r",
+      "properties": {
+        "text": "-1"
+      }
+    },
+    "occurrences": []
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "name": "gate-context-descriptor-repeated-member",
+  "description": "Enum members are distinct: a repeated member is a malformed descriptor",
+  "documentText": "{\"version\": \"2.0.0\", \"context\": {\"x\": {\"enum\": [\"a\", \"a\"]}}, \"root\": {\"type\": \"Text\", \"id\": \"r\", \"properties\": {\"text\": \"x\"}}}",
+  "context": {
+    "x": "a"
+  },
+  "expect": {
+    "error": {
+      "type": "SchemaViolation",
+      "rule": "context-declaration",
+      "expected": "type descriptor",
+      "found": "x"
+    }
+  }
+}

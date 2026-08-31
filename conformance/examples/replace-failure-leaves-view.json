@@ -1,0 +1,119 @@
+{
+  "name": "replace-failure-leaves-view",
+  "description": "A replacement that fails the gate leaves the view exactly as it was: document, tree, state, and its bindings",
+  "document": {
+    "version": "2.1.0",
+    "state": {
+      "n": "int"
+    },
+    "root": {
+      "type": "Column",
+      "id": "c",
+      "children": [
+        {
+          "type": "Text",
+          "id": "r",
+          "properties": {
+            "text": {
+              "$expr": "$str(state.n)"
+            }
+          }
+        },
+        {
+          "type": "Button",
+          "id": "go",
+          "properties": {
+            "label": "Go",
+            "enabled": true
+          },
+          "on": {
+            "tap": [
+              {
+                "action": "$set",
+                "key": "n",
+                "value": {
+                  "$expr": "state.n + 5"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    }
+  },
+  "state": {
+    "n": 0
+  },
+  "steps": [
+    {
+      "event": {
+        "node": "go",
+        "name": "tap"
+      }
+    },
+    {
+      "replace": {
+        "document": {
+          "version": "2.1.0",
+          "root": {
+            "type": "Nope",
+            "id": "r"
+          }
+        },
+        "error": {
+          "type": "UnknownComponentType",
+          "node": "r",
+          "unknownType": "Nope"
+        }
+      }
+    },
+    {
+      "event": {
+        "node": "go",
+        "name": "tap"
+      }
+    }
+  ],
+  "expect": {
+    "state": {
+      "n": 10
+    },
+    "view": {
+      "type": "Column",
+      "reference": "c",
+      "children": [
+        {
+          "type": "Text",
+          "reference": "r",
+          "properties": {
+            "text": "10"
+          }
+        },
+        {
+          "type": "Button",
+          "reference": "go",
+          "properties": {
+            "label": "Go",
+            "enabled": true
+          }
+        }
+      ]
+    },
+    "occurrences": [],
+    "interactions": [
+      {
+        "kind": "viewBuilt"
+      },
+      {
+        "kind": "event",
+        "node": "go",
+        "name": "tap"
+      },
+      {
+        "kind": "event",
+        "node": "go",
+        "name": "tap"
+      }
+    ]
+  }
+}

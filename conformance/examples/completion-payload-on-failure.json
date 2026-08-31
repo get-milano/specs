@@ -1,6 +1,6 @@
 {
   "name": "completion-payload-on-failure",
-  "description": "Failure completions never carry data: any value on a failure is an invalid completion and onFailure does not run",
+  "description": "A failure completion for an action declaring no failure type never carries data: any value on it is an invalid completion and onFailure does not run",
   "document": {
     "version": "2.0.0",
     "state": {

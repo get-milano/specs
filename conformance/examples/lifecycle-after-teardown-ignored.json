@@ -1,0 +1,62 @@
+{
+  "name": "lifecycle-after-teardown-ignored",
+  "description": "Signals arriving after teardown are ignored silently, like emissions",
+  "document": {
+    "version": "2.1.0",
+    "state": {
+      "count": "int"
+    },
+    "root": {
+      "type": "Column",
+      "id": "root",
+      "children": [
+        {
+          "type": "Text",
+          "id": "t",
+          "properties": {
+            "text": {
+              "$expr": "$str(state.count)"
+            }
+          }
+        }
+      ]
+    },
+    "on": {
+      "appear": [
+        {
+          "action": "$set",
+          "key": "count",
+          "value": {
+            "$expr": "state.count + 1"
+          }
+        }
+      ]
+    }
+  },
+  "state": {
+    "count": 0
+  },
+  "steps": [
+    {
+      "teardown": true
+    },
+    {
+      "appear": true
+    }
+  ],
+  "expect": {
+    "state": {
+      "count": 0
+    },
+    "dispatched": [],
+    "occurrences": [],
+    "interactions": [
+      {
+        "kind": "viewBuilt"
+      },
+      {
+        "kind": "viewTornDown"
+      }
+    ]
+  }
+}

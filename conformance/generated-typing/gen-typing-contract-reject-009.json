@@ -1,0 +1,35 @@
+{
+  "name": "gen-typing-contract-reject-009",
+  "description": "Generated (exhaustive): $max(state.i, state.d) in a double position is rejected at the gate",
+  "document": {
+    "version": "1.0.0",
+    "state": {
+      "d": "double",
+      "i": "int"
+    },
+    "root": {
+      "type": "Column",
+      "id": "root",
+      "children": [
+        {
+          "type": "Probe",
+          "id": "p",
+          "properties": {
+            "d": {
+              "$expr": "$max(state.i, state.d)"
+            }
+          }
+        }
+      ]
+    }
+  },
+  "expect": {
+    "error": {
+      "type": "SchemaViolation",
+      "rule": "contract-feature",
+      "node": "p",
+      "expected": "2.1",
+      "found": "$max"
+    }
+  }
+}

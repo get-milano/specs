@@ -1,0 +1,118 @@
+{
+  "name": "replace-keeps-matching-state",
+  "description": "A key the new document declares with the same type carries over with its current value; a new key comes from the provider; the swap contributes a viewReplaced record",
+  "document": {
+    "version": "2.1.0",
+    "state": {
+      "n": "int"
+    },
+    "root": {
+      "type": "Column",
+      "id": "c",
+      "children": [
+        {
+          "type": "Text",
+          "id": "r",
+          "properties": {
+            "text": {
+              "$expr": "$str(state.n)"
+            }
+          }
+        },
+        {
+          "type": "Button",
+          "id": "go",
+          "properties": {
+            "label": "Go",
+            "enabled": true
+          },
+          "on": {
+            "tap": [
+              {
+                "action": "$set",
+                "key": "n",
+                "value": {
+                  "$expr": "state.n + 5"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    }
+  },
+  "state": {
+    "n": 0
+  },
+  "steps": [
+    {
+      "event": {
+        "node": "go",
+        "name": "tap"
+      }
+    },
+    {
+      "replace": {
+        "document": {
+          "version": "2.1.0",
+          "state": {
+            "n": "int",
+            "extra": "string"
+          },
+          "root": {
+            "type": "Column",
+            "id": "c",
+            "children": [
+              {
+                "type": "Text",
+                "id": "r",
+                "properties": {
+                  "text": {
+                    "$expr": "$concat($str(state.n), state.extra)"
+                  }
+                }
+              }
+            ]
+          }
+        },
+        "state": {
+          "n": 100,
+          "extra": "!"
+        }
+      }
+    }
+  ],
+  "expect": {
+    "state": {
+      "n": 5,
+      "extra": "!"
+    },
+    "view": {
+      "type": "Column",
+      "reference": "c",
+      "children": [
+        {
+          "type": "Text",
+          "reference": "r",
+          "properties": {
+            "text": "5!"
+          }
+        }
+      ]
+    },
+    "occurrences": [],
+    "interactions": [
+      {
+        "kind": "viewBuilt"
+      },
+      {
+        "kind": "event",
+        "node": "go",
+        "name": "tap"
+      },
+      {
+        "kind": "viewReplaced"
+      }
+    ]
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "name": "string-replace-empty-needle-unchanged",
+  "description": "An empty needle returns the subject unchanged, which is what bounds the result",
+  "document": {
+    "version": "2.1.0",
+    "root": {
+      "type": "Text",
+      "id": "r",
+      "properties": {
+        "text": {
+          "$expr": "$replace('hello', '', 'X')"
+        }
+      }
+    }
+  },
+  "expect": {
+    "view": {
+      "type": "Text",
+      "reference": "r",
+      "properties": {
+        "text": "hello"
+      }
+    },
+    "occurrences": []
+  }
+}

@@ -14,7 +14,7 @@
       "id": "t",
       "properties": {
         "text": {
-          "$expr": "str(state.n)"
+          "$expr": "$str(state.n)"
         }
       }
     }

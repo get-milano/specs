@@ -1,0 +1,54 @@
+{
+  "name": "gate-array-append-wrong-element-type",
+  "description": "A literal value that does not match the element type is the action-encoding violation naming the element type",
+  "document": {
+    "version": "2.1.0",
+    "state": {
+      "items": {
+        "array": "string"
+      },
+      "n": "int"
+    },
+    "root": {
+      "type": "Column",
+      "id": "c",
+      "children": [
+        {
+          "type": "Text",
+          "id": "count",
+          "properties": {
+            "text": {
+              "$expr": "$str($length(state.items))"
+            }
+          }
+        },
+        {
+          "type": "Button",
+          "id": "add",
+          "properties": {
+            "label": "Add",
+            "enabled": true
+          },
+          "on": {
+            "tap": [
+              {
+                "action": "$append",
+                "key": "items",
+                "value": 1
+              }
+            ]
+          }
+        }
+      ]
+    }
+  },
+  "expect": {
+    "error": {
+      "type": "SchemaViolation",
+      "rule": "action-encoding",
+      "node": "add",
+      "expected": "string",
+      "found": "int"
+    }
+  }
+}

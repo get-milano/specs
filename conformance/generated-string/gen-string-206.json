@@ -1,0 +1,26 @@
+{
+  "name": "gen-string-206",
+  "description": "Generated (seed 20260831): $str($isEmpty($split('hello world', 'a')))",
+  "document": {
+    "version": "2.1.0",
+    "root": {
+      "type": "Text",
+      "id": "r",
+      "properties": {
+        "text": {
+          "$expr": "$str($isEmpty($split('hello world', 'a')))"
+        }
+      }
+    }
+  },
+  "expect": {
+    "view": {
+      "type": "Text",
+      "reference": "r",
+      "properties": {
+        "text": "false"
+      }
+    },
+    "occurrences": []
+  }
+}

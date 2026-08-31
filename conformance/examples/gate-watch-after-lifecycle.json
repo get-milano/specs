@@ -1,0 +1,13 @@
+{
+  "name": "gate-watch-after-lifecycle",
+  "description": "The watch section is validated after the lifecycle section: a lifecycle defect wins",
+  "documentText": "{\"version\": \"2.1.0\", \"state\": {\"a\": \"int\", \"b\": \"int\", \"c\": \"int\"}, \"root\": {\"type\": \"Column\", \"id\": \"c\", \"children\": [{\"type\": \"Text\", \"id\": \"a\", \"properties\": {\"text\": {\"$expr\": \"$str(state.a)\"}}}, {\"type\": \"Text\", \"id\": \"b\", \"properties\": {\"text\": {\"$expr\": \"$str(state.b)\"}}}, {\"type\": \"Button\", \"id\": \"go\", \"properties\": {\"label\": \"Go\", \"enabled\": true}, \"on\": {\"tap\": []}}]}, \"watch\": {\"missing\": []}, \"on\": {\"nosuch\": []}}",
+  "expect": {
+    "error": {
+      "type": "SchemaViolation",
+      "rule": "event-binding",
+      "expected": "lifecycle event",
+      "found": "nosuch"
+    }
+  }
+}

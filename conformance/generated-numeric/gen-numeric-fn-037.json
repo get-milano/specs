@@ -1,0 +1,26 @@
+{
+  "name": "gen-numeric-fn-037",
+  "description": "Generated (seed 20260830): $str($round((0.0 / 0.0)))",
+  "document": {
+    "version": "2.1.0",
+    "root": {
+      "type": "Text",
+      "id": "r",
+      "properties": {
+        "text": {
+          "$expr": "$str($round((0.0 / 0.0)))"
+        }
+      }
+    }
+  },
+  "expect": {
+    "view": {
+      "type": "Text",
+      "reference": "r",
+      "properties": {
+        "text": "nan"
+      }
+    },
+    "occurrences": []
+  }
+}

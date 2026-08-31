@@ -1,0 +1,29 @@
+{
+  "name": "gate-function-handler-not-needed",
+  "description": "A document calling no host function builds without a function handler",
+  "document": {
+    "version": "2.1.0",
+    "root": {
+      "type": "Text",
+      "id": "t",
+      "properties": {
+        "text": {
+          "$expr": "$concat('a', 'b')"
+        }
+      }
+    }
+  },
+  "config": {
+    "functionHandler": false
+  },
+  "expect": {
+    "view": {
+      "type": "Text",
+      "reference": "t",
+      "properties": {
+        "text": "ab"
+      }
+    },
+    "occurrences": []
+  }
+}

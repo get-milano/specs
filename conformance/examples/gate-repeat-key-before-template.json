@@ -1,0 +1,28 @@
+{
+  "name": "gate-repeat-key-before-template",
+  "description": "The repeat rules apply in order: a defective key is reported before a defect inside the template",
+  "documentText": "{\"version\": \"2.1.0\", \"state\": {\"rows\": {\"array\": {\"record\": {\"id\": \"string\", \"name\": \"string\", \"url\": \"string\"}}}}, \"root\": {\"type\": \"Column\", \"id\": \"list\", \"children\": [{\"type\": \"$repeat\", \"id\": \"each\", \"items\": {\"$expr\": \"state.rows\"}, \"as\": \"row\", \"key\": \"abc\", \"children\": [{\"type\": \"Text\", \"id\": \"name\", \"properties\": {\"text\": {\"$expr\": \"row.nope\"}}}]}]}}",
+  "state": {
+    "rows": [
+      {
+        "id": "alpha",
+        "name": "Alpha",
+        "url": "https://example.com/a"
+      },
+      {
+        "id": "beta",
+        "name": "Beta",
+        "url": "https://example.com/b"
+      }
+    ]
+  },
+  "expect": {
+    "error": {
+      "type": "SchemaViolation",
+      "rule": "repeat",
+      "node": "each",
+      "expected": "key expression",
+      "found": "string"
+    }
+  }
+}

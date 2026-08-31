@@ -1,0 +1,26 @@
+{
+  "name": "gen-string-068",
+  "description": "Generated (seed 20260831): $substring(',lead', 2, 9223372036854775807)",
+  "document": {
+    "version": "2.1.0",
+    "root": {
+      "type": "Text",
+      "id": "r",
+      "properties": {
+        "text": {
+          "$expr": "$substring(',lead', 2, 9223372036854775807)"
+        }
+      }
+    }
+  },
+  "expect": {
+    "view": {
+      "type": "Text",
+      "reference": "r",
+      "properties": {
+        "text": "ead"
+      }
+    },
+    "occurrences": []
+  }
+}

@@ -1,0 +1,33 @@
+{
+  "name": "gen-typing-numeric-reject-011",
+  "description": "Generated (exhaustive): $floor(state.dOpt) in a double position is rejected at the gate",
+  "document": {
+    "version": "2.1.0",
+    "state": {
+      "dOpt": "double?"
+    },
+    "root": {
+      "type": "Column",
+      "id": "root",
+      "children": [
+        {
+          "type": "Probe",
+          "id": "p",
+          "properties": {
+            "d": {
+              "$expr": "$floor(state.dOpt)"
+            }
+          }
+        }
+      ]
+    }
+  },
+  "expect": {
+    "error": {
+      "type": "SchemaViolation",
+      "rule": "expression",
+      "node": "p",
+      "expected": "double"
+    }
+  }
+}

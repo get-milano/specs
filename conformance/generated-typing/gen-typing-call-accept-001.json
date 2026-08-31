@@ -1,6 +1,6 @@
 {
   "name": "gen-typing-call-accept-001",
-  "description": "Generated (exhaustive): accepted in their declared positions. p0: str(1) in s; p1: str(1) in sOpt; p2: str(1.5) in s; p3: str(1.5) in sOpt; p4: length(state.s) in i; p5: length(state.s) in iOpt; p6: length(state.s) in d; p7: length(state.s) in dOpt; p8: length(state.e) in i; p9: length(state.e) in iOpt; p10: length(state.e) in d; p11: length(state.e) in dOpt",
+  "description": "Generated (exhaustive): accepted in their declared positions. p0: $str(1) in s; p1: $str(1) in sOpt; p2: $str(1.5) in s; p3: $str(1.5) in sOpt; p4: $length(state.s) in i; p5: $length(state.s) in iOpt; p6: $length(state.s) in d; p7: $length(state.s) in dOpt; p8: $length(state.e) in i; p9: $length(state.e) in iOpt; p10: $length(state.e) in d; p11: $length(state.e) in dOpt",
   "document": {
     "version": "1.0.0",
     "state": {
@@ -21,7 +21,7 @@
           "id": "p0",
           "properties": {
             "s": {
-              "$expr": "str(1)"
+              "$expr": "$str(1)"
             }
           }
         },
@@ -30,7 +30,7 @@
           "id": "p1",
           "properties": {
             "sOpt": {
-              "$expr": "str(1)"
+              "$expr": "$str(1)"
             }
           }
         },
@@ -39,7 +39,7 @@
           "id": "p2",
           "properties": {
             "s": {
-              "$expr": "str(1.5)"
+              "$expr": "$str(1.5)"
             }
           }
         },
@@ -48,7 +48,7 @@
           "id": "p3",
           "properties": {
             "sOpt": {
-              "$expr": "str(1.5)"
+              "$expr": "$str(1.5)"
             }
           }
         },
@@ -57,7 +57,7 @@
           "id": "p4",
           "properties": {
             "i": {
-              "$expr": "length(state.s)"
+              "$expr": "$length(state.s)"
             }
           }
         },
@@ -66,7 +66,7 @@
           "id": "p5",
           "properties": {
             "iOpt": {
-              "$expr": "length(state.s)"
+              "$expr": "$length(state.s)"
             }
           }
         },
@@ -75,7 +75,7 @@
           "id": "p6",
           "properties": {
             "d": {
-              "$expr": "length(state.s)"
+              "$expr": "$length(state.s)"
             }
           }
         },
@@ -84,7 +84,7 @@
           "id": "p7",
           "properties": {
             "dOpt": {
-              "$expr": "length(state.s)"
+              "$expr": "$length(state.s)"
             }
           }
         },
@@ -93,7 +93,7 @@
           "id": "p8",
           "properties": {
             "i": {
-              "$expr": "length(state.e)"
+              "$expr": "$length(state.e)"
             }
           }
         },
@@ -102,7 +102,7 @@
           "id": "p9",
           "properties": {
             "iOpt": {
-              "$expr": "length(state.e)"
+              "$expr": "$length(state.e)"
             }
           }
         },
@@ -111,7 +111,7 @@
           "id": "p10",
           "properties": {
             "d": {
-              "$expr": "length(state.e)"
+              "$expr": "$length(state.e)"
             }
           }
         },
@@ -120,7 +120,7 @@
           "id": "p11",
           "properties": {
             "dOpt": {
-              "$expr": "length(state.e)"
+              "$expr": "$length(state.e)"
             }
           }
         }

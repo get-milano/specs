@@ -1,0 +1,139 @@
+{
+  "name": "repeat-key-dispatch-binding",
+  "description": "An emission from a keyed instance binds the element whose key matches at dispatch time, wherever it has moved to: the element's fields and its current index",
+  "document": {
+    "version": "2.1.0",
+    "context": {
+      "rows": {
+        "array": {
+          "record": {
+            "id": "string",
+            "name": "string",
+            "url": "string"
+          }
+        }
+      }
+    },
+    "state": {
+      "picked": "int"
+    },
+    "root": {
+      "type": "Column",
+      "id": "list",
+      "children": [
+        {
+          "type": "$repeat",
+          "id": "each",
+          "items": {
+            "$expr": "context.rows"
+          },
+          "as": "row",
+          "key": {
+            "$expr": "row.id"
+          },
+          "children": [
+            {
+              "type": "Button",
+              "id": "open",
+              "properties": {
+                "label": {
+                  "$expr": "row.name"
+                },
+                "enabled": true
+              },
+              "on": {
+                "tap": [
+                  {
+                    "action": "openUrl",
+                    "url": {
+                      "$expr": "row.url"
+                    }
+                  },
+                  {
+                    "action": "$set",
+                    "key": "picked",
+                    "value": {
+                      "$expr": "row_index"
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "context": {
+    "rows": [
+      {
+        "id": "alpha",
+        "name": "Alpha",
+        "url": "https://example.com/a"
+      },
+      {
+        "id": "beta",
+        "name": "Beta",
+        "url": "https://example.com/b"
+      }
+    ]
+  },
+  "state": {
+    "picked": -1
+  },
+  "steps": [
+    {
+      "contextUpdate": {
+        "rows": [
+          {
+            "id": "beta",
+            "name": "Beta",
+            "url": "https://example.com/b"
+          },
+          {
+            "id": "alpha",
+            "name": "Alpha",
+            "url": "https://example.com/a"
+          }
+        ]
+      }
+    },
+    {
+      "event": {
+        "node": "open[alpha]",
+        "name": "tap"
+      }
+    }
+  ],
+  "expect": {
+    "state": {
+      "picked": 1
+    },
+    "dispatched": [
+      {
+        "action": "openUrl",
+        "parameters": {
+          "url": "https://example.com/a"
+        },
+        "dispatch": 0
+      }
+    ],
+    "occurrences": [],
+    "interactions": [
+      {
+        "kind": "viewBuilt"
+      },
+      {
+        "kind": "event",
+        "node": "open[alpha]",
+        "name": "tap"
+      },
+      {
+        "kind": "actionDispatched",
+        "node": "open[alpha]",
+        "name": "openUrl",
+        "dispatch": 0
+      }
+    ]
+  }
+}

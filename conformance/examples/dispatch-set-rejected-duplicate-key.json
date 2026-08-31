@@ -1,0 +1,148 @@
+{
+  "name": "dispatch-set-rejected-duplicate-key",
+  "description": "A $set whose value would give a keyed repeat two elements with the same key assigns nothing, is reported as a rejected mutation with the repeated key, and ends the action list",
+  "document": {
+    "version": "2.1.0",
+    "context": {
+      "dupes": {
+        "array": {
+          "record": {
+            "id": "string",
+            "name": "string",
+            "url": "string"
+          }
+        }
+      }
+    },
+    "state": {
+      "rows": {
+        "array": {
+          "record": {
+            "id": "string",
+            "name": "string",
+            "url": "string"
+          }
+        }
+      },
+      "count": "int"
+    },
+    "root": {
+      "type": "Column",
+      "id": "list",
+      "children": [
+        {
+          "type": "Button",
+          "id": "load",
+          "properties": {
+            "label": "Load",
+            "enabled": true
+          },
+          "on": {
+            "tap": [
+              {
+                "action": "$set",
+                "key": "rows",
+                "value": {
+                  "$expr": "context.dupes"
+                }
+              },
+              {
+                "action": "$set",
+                "key": "count",
+                "value": {
+                  "$expr": "state.count + 1"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "$repeat",
+          "id": "each",
+          "items": {
+            "$expr": "state.rows"
+          },
+          "as": "row",
+          "key": {
+            "$expr": "row.id"
+          },
+          "children": [
+            {
+              "type": "Text",
+              "id": "name",
+              "properties": {
+                "text": {
+                  "$expr": "row.name"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "context": {
+    "dupes": [
+      {
+        "id": "alpha",
+        "name": "Alpha",
+        "url": "https://example.com/a"
+      },
+      {
+        "id": "alpha",
+        "name": "Alpha again",
+        "url": "https://example.com/a"
+      }
+    ]
+  },
+  "state": {
+    "rows": [
+      {
+        "id": "alpha",
+        "name": "Alpha",
+        "url": "https://example.com/a"
+      },
+      {
+        "id": "beta",
+        "name": "Beta",
+        "url": "https://example.com/b"
+      }
+    ],
+    "count": 0
+  },
+  "steps": [
+    {
+      "event": {
+        "node": "load",
+        "name": "tap"
+      }
+    }
+  ],
+  "expect": {
+    "state": {
+      "rows": [
+        {
+          "id": "alpha",
+          "name": "Alpha",
+          "url": "https://example.com/a"
+        },
+        {
+          "id": "beta",
+          "name": "Beta",
+          "url": "https://example.com/b"
+        }
+      ],
+      "count": 0
+    },
+    "dispatched": [],
+    "occurrences": [
+      {
+        "kind": "rejectedMutation",
+        "node": "load",
+        "name": "rows",
+        "expected": "distinct key",
+        "found": "alpha"
+      }
+    ]
+  }
+}

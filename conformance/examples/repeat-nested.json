@@ -49,7 +49,7 @@
                   "id": "line",
                   "properties": {
                     "text": {
-                      "$expr": "concat(group.label, ' ', size, ' #', str(size_index))"
+                      "$expr": "$concat(group.label, ' ', size, ' #', $str(size_index))"
                     }
                   }
                 }

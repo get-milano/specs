@@ -1,0 +1,71 @@
+{
+  "name": "gate-array-update-in-2-0-document",
+  "description": "A 2.0 document carrying $update is the contract-feature violation naming the action",
+  "document": {
+    "version": "2.0.0",
+    "state": {
+      "rows": {
+        "array": {
+          "record": {
+            "name": "string",
+            "done": "bool"
+          }
+        }
+      },
+      "n": "int"
+    },
+    "root": {
+      "type": "Column",
+      "id": "c",
+      "children": [
+        {
+          "type": "Button",
+          "id": "toggle",
+          "properties": {
+            "label": "Toggle",
+            "enabled": true
+          },
+          "on": {
+            "tap": [
+              {
+                "action": "$update",
+                "key": "rows",
+                "at": 0,
+                "field": "done",
+                "value": true
+              }
+            ]
+          }
+        },
+        {
+          "type": "$repeat",
+          "id": "list",
+          "items": {
+            "$expr": "state.rows"
+          },
+          "as": "row",
+          "children": [
+            {
+              "type": "Text",
+              "id": "row_text",
+              "properties": {
+                "text": {
+                  "$expr": "$concat(row.name, $if(row.done, ' done', ''))"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "expect": {
+    "error": {
+      "type": "SchemaViolation",
+      "rule": "contract-feature",
+      "node": "toggle",
+      "expected": "2.1",
+      "found": "$update"
+    }
+  }
+}

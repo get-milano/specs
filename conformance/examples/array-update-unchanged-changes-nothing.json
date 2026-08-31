@@ -1,0 +1,114 @@
+{
+  "name": "array-update-unchanged-changes-nothing",
+  "description": "An $update that leaves the field equal to what it was changes nothing and re-evaluates nothing: the dependent's arithmetic report is not repeated until a change lands",
+  "document": {
+    "version": "2.1.0",
+    "state": {
+      "rows": {
+        "array": {
+          "record": {
+            "name": "string",
+            "done": "bool"
+          }
+        }
+      }
+    },
+    "root": {
+      "type": "Column",
+      "id": "c",
+      "children": [
+        {
+          "type": "Text",
+          "id": "t",
+          "properties": {
+            "text": {
+              "$expr": "$str($length(state.rows) / 0)"
+            }
+          }
+        },
+        {
+          "type": "Button",
+          "id": "same",
+          "properties": {
+            "label": "Same",
+            "enabled": true
+          },
+          "on": {
+            "tap": [
+              {
+                "action": "$update",
+                "key": "rows",
+                "at": 0,
+                "field": "done",
+                "value": false
+              }
+            ]
+          }
+        },
+        {
+          "type": "Button",
+          "id": "change",
+          "properties": {
+            "label": "Change",
+            "enabled": true
+          },
+          "on": {
+            "tap": [
+              {
+                "action": "$update",
+                "key": "rows",
+                "at": 0,
+                "field": "done",
+                "value": true
+              }
+            ]
+          }
+        }
+      ]
+    }
+  },
+  "state": {
+    "rows": [
+      {
+        "name": "a",
+        "done": false
+      }
+    ]
+  },
+  "steps": [
+    {
+      "event": {
+        "node": "same",
+        "name": "tap"
+      }
+    },
+    {
+      "event": {
+        "node": "change",
+        "name": "tap"
+      }
+    }
+  ],
+  "expect": {
+    "state": {
+      "rows": [
+        {
+          "name": "a",
+          "done": true
+        }
+      ]
+    },
+    "occurrences": [
+      {
+        "kind": "divisionByZero",
+        "node": "t",
+        "name": "text"
+      },
+      {
+        "kind": "divisionByZero",
+        "node": "t",
+        "name": "text"
+      }
+    ]
+  }
+}

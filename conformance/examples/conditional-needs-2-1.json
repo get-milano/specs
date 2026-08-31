@@ -1,0 +1,36 @@
+{
+  "name": "conditional-needs-2-1",
+  "description": "A 2.0 document may not carry the construct",
+  "document": {
+    "version": "2.0.0",
+    "root": {
+      "type": "Column",
+      "id": "c",
+      "children": [
+        {
+          "type": "$if",
+          "condition": {
+            "$expr": "true"
+          },
+          "then": [
+            {
+              "type": "Text",
+              "properties": {
+                "text": "a"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "expect": {
+    "error": {
+      "type": "SchemaViolation",
+      "rule": "contract-feature",
+      "node": "root/children[0]",
+      "expected": "2.1",
+      "found": "$if"
+    }
+  }
+}

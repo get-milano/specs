@@ -18,7 +18,7 @@
       "id": "t",
       "properties": {
         "text": {
-          "$expr": "str(length(context.tags))"
+          "$expr": "$str($length(context.tags))"
         }
       }
     }

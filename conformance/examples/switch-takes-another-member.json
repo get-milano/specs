@@ -1,0 +1,85 @@
+{
+  "name": "switch-takes-another-member",
+  "description": "A different member takes a different branch",
+  "document": {
+    "version": "2.1.0",
+    "state": {
+      "status": {
+        "enum": [
+          "ok",
+          "late",
+          "failed"
+        ]
+      },
+      "labels": {
+        "record": {
+          "ok": "string",
+          "late": "string",
+          "failed": "string"
+        }
+      }
+    },
+    "root": {
+      "type": "Column",
+      "id": "c",
+      "children": [
+        {
+          "type": "$switch",
+          "subject": {
+            "$expr": "state.status"
+          },
+          "cases": {
+            "ok": [
+              {
+                "type": "Text",
+                "properties": {
+                  "text": "Ready"
+                }
+              }
+            ],
+            "late": [
+              {
+                "type": "Text",
+                "properties": {
+                  "text": "Running late"
+                }
+              }
+            ],
+            "failed": [
+              {
+                "type": "Text",
+                "properties": {
+                  "text": "Failed"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    }
+  },
+  "state": {
+    "status": "ok",
+    "labels": {
+      "ok": "Ready",
+      "late": "Running late",
+      "failed": "Failed"
+    }
+  },
+  "expect": {
+    "view": {
+      "type": "Column",
+      "reference": "c",
+      "children": [
+        {
+          "type": "Text",
+          "reference": "root/children[0]/cases[ok][0]",
+          "properties": {
+            "text": "Ready"
+          }
+        }
+      ]
+    },
+    "occurrences": []
+  }
+}

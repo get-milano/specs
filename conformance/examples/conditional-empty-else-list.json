@@ -1,0 +1,37 @@
+{
+  "name": "conditional-empty-else-list",
+  "description": "An $if whose `else` is an empty list: a branch present is a non-empty node list",
+  "document": {
+    "version": "2.1.0",
+    "root": {
+      "type": "Column",
+      "id": "c",
+      "children": [
+        {
+          "type": "$if",
+          "condition": {
+            "$expr": "true"
+          },
+          "then": [
+            {
+              "type": "Text",
+              "properties": {
+                "text": "x"
+              }
+            }
+          ],
+          "else": []
+        }
+      ]
+    }
+  },
+  "expect": {
+    "error": {
+      "type": "SchemaViolation",
+      "rule": "conditional",
+      "node": "root/children[0]",
+      "expected": "else branch",
+      "found": "empty"
+    }
+  }
+}

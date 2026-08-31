@@ -1,0 +1,16 @@
+{
+  "name": "gate-lifecycle-unknown-signal",
+  "description": "Only appear and disappear are lifecycle signals: any other key in the document's on section is the event-binding violation with no node",
+  "documentText": "{\"version\": \"2.1.0\", \"state\": {\"count\": \"int\"}, \"root\": {\"type\": \"Column\", \"id\": \"root\", \"children\": [{\"type\": \"Text\", \"id\": \"t\", \"properties\": {\"text\": {\"$expr\": \"$str(state.count)\"}}}]}, \"on\": {\"load\": [{\"action\": \"$set\", \"key\": \"count\", \"value\": {\"$expr\": \"state.count + 1\"}}]}}",
+  "state": {
+    "count": 0
+  },
+  "expect": {
+    "error": {
+      "type": "SchemaViolation",
+      "rule": "event-binding",
+      "expected": "lifecycle event",
+      "found": "load"
+    }
+  }
+}

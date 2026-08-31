@@ -1,0 +1,77 @@
+{
+  "name": "switch-falls-to-the-default",
+  "description": "A member with no case takes the default",
+  "document": {
+    "version": "2.1.0",
+    "state": {
+      "status": {
+        "enum": [
+          "ok",
+          "late",
+          "failed"
+        ]
+      },
+      "labels": {
+        "record": {
+          "ok": "string",
+          "late": "string",
+          "failed": "string"
+        }
+      }
+    },
+    "root": {
+      "type": "Column",
+      "id": "c",
+      "children": [
+        {
+          "type": "$switch",
+          "subject": {
+            "$expr": "state.status"
+          },
+          "cases": {
+            "ok": [
+              {
+                "type": "Text",
+                "properties": {
+                  "text": "Ready"
+                }
+              }
+            ]
+          },
+          "default": [
+            {
+              "type": "Text",
+              "properties": {
+                "text": "Something else"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "state": {
+    "status": "failed",
+    "labels": {
+      "ok": "Ready",
+      "late": "Running late",
+      "failed": "Failed"
+    }
+  },
+  "expect": {
+    "view": {
+      "type": "Column",
+      "reference": "c",
+      "children": [
+        {
+          "type": "Text",
+          "reference": "root/children[0]/default[0]",
+          "properties": {
+            "text": "Something else"
+          }
+        }
+      ]
+    },
+    "occurrences": []
+  }
+}

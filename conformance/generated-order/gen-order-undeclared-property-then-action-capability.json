@@ -37,7 +37,8 @@
     "error": {
       "type": "SchemaViolation",
       "rule": "undeclared-property",
-      "node": "a"
+      "node": "a",
+      "found": "extra"
     }
   }
 }

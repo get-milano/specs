@@ -1,0 +1,16 @@
+{
+  "name": "gate-context-descriptor-empty-enum",
+  "description": "An enum descriptor has at least one member: an empty one declares a type no value can satisfy",
+  "documentText": "{\"version\": \"2.0.0\", \"context\": {\"x\": {\"enum\": []}}, \"root\": {\"type\": \"Text\", \"id\": \"r\", \"properties\": {\"text\": \"x\"}}}",
+  "context": {
+    "x": "v"
+  },
+  "expect": {
+    "error": {
+      "type": "SchemaViolation",
+      "rule": "context-declaration",
+      "expected": "type descriptor",
+      "found": "x"
+    }
+  }
+}

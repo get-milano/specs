@@ -1,0 +1,24 @@
+{
+  "name": "string-join-refuses-a-string",
+  "description": "join takes an array, and a string in its place is a SchemaViolation",
+  "document": {
+    "version": "2.1.0",
+    "root": {
+      "type": "Text",
+      "id": "r",
+      "properties": {
+        "text": {
+          "$expr": "$join('abc', '-')"
+        }
+      }
+    }
+  },
+  "expect": {
+    "error": {
+      "type": "SchemaViolation",
+      "rule": "expression",
+      "node": "r",
+      "expected": "string"
+    }
+  }
+}

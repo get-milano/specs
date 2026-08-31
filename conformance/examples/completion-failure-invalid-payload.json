@@ -1,0 +1,81 @@
+{
+  "name": "completion-failure-invalid-payload",
+  "description": "A failure value that does not match the declared failure type is an invalid completion: neither branch runs, and the occurrence names the declared type and the value's kind",
+  "document": {
+    "version": "2.1.0",
+    "state": {
+      "message": "string"
+    },
+    "root": {
+      "type": "Button",
+      "id": "b",
+      "properties": {
+        "label": "Go",
+        "enabled": true
+      },
+      "on": {
+        "tap": [
+          {
+            "action": "fetchCode",
+            "onFailure": [
+              {
+                "action": "$set",
+                "key": "message",
+                "value": {
+                  "$expr": "failure"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "state": {
+    "message": "start"
+  },
+  "steps": [
+    {
+      "event": {
+        "node": "b",
+        "name": "tap"
+      }
+    },
+    {
+      "complete": {
+        "dispatch": 0,
+        "outcome": "failure",
+        "payload": 5
+      }
+    }
+  ],
+  "expect": {
+    "state": {
+      "message": "start"
+    },
+    "dispatched": [
+      {
+        "action": "fetchCode",
+        "parameters": {},
+        "dispatch": 0
+      }
+    ],
+    "occurrences": [
+      {
+        "kind": "invalidCompletion",
+        "name": "fetchCode",
+        "expected": "string",
+        "found": "int"
+      }
+    ]
+  },
+  "config": {
+    "actions": {
+      "declare": {
+        "fetchCode": {
+          "failure": "string"
+        }
+      }
+    }
+  }
+}

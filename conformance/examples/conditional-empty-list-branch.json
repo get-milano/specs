@@ -1,0 +1,69 @@
+{
+  "name": "conditional-empty-list-branch",
+  "description": "The empty-list case: a repeat beside a message for when it has nothing",
+  "document": {
+    "version": "2.1.0",
+    "state": {
+      "items": {
+        "array": "string"
+      }
+    },
+    "root": {
+      "type": "Column",
+      "id": "c",
+      "children": [
+        {
+          "type": "$if",
+          "condition": {
+            "$expr": "$isEmpty(state.items)"
+          },
+          "then": [
+            {
+              "type": "Text",
+              "properties": {
+                "text": "Nothing yet"
+              }
+            }
+          ],
+          "else": [
+            {
+              "type": "$repeat",
+              "id": "row",
+              "items": {
+                "$expr": "state.items"
+              },
+              "as": "item",
+              "children": [
+                {
+                  "type": "Text",
+                  "properties": {
+                    "text": "x"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "state": {
+    "items": []
+  },
+  "expect": {
+    "view": {
+      "type": "Column",
+      "reference": "c",
+      "children": [
+        {
+          "type": "Text",
+          "reference": "root/children[0]/then[0]",
+          "properties": {
+            "text": "Nothing yet"
+          }
+        }
+      ]
+    },
+    "occurrences": []
+  }
+}

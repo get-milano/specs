@@ -21,8 +21,8 @@ arrays get native types; enums get one nominal type per declaration site
 (a Swift/Kotlin enum, a TypeScript string-literal union); records get one
 wrapper type per declaration site with typed field accessors and a
 memberwise constructor, nesting through record fields and array elements,
-so a record-typed property, event payload, action parameter, or result
-is as typed as a scalar one.
+so a record-typed property, event payload, action parameter, result, or
+failure payload is as typed as a scalar one.
 """
 
 import argparse
@@ -165,10 +165,11 @@ def collect_sites(vocabulary, prefix):
             visit(("parameter", action, parameter), Shape(descriptor),
                   enum_type_name(prefix, action, parameter),
                   f"`{parameter}` {Shape(descriptor).kind} on action `{action}`")
-        if declaration.get("result") is not None:
-            visit(("result", action), Shape(declaration["result"]),
-                  enum_type_name(prefix, action, "result"),
-                  f"result {Shape(declaration['result']).kind} of action `{action}`")
+        for outcome in ("result", "failure"):
+            if declaration.get(outcome) is not None:
+                visit((outcome, action), Shape(declaration[outcome]),
+                      enum_type_name(prefix, action, outcome),
+                      f"{outcome} {Shape(declaration[outcome]).kind} of action `{action}`")
     return enums, records, lookup
 
 
@@ -266,8 +267,12 @@ def swift_record(type_name, fields, doc, key, lookup):
     for name, shape in fields:
         read = swift_read(shape, key + ("field", name), lookup,
                           f"value.recordValue?[\"{name}\"] ?? .null")
-        lines.append(f"    public var {escape_swift(name)}: "
-                     f"{swift_type(shape, key + ('field', name), lookup)} {{ {read} }}")
+        declared = (f"    public var {escape_swift(name)}: "
+                    f"{swift_type(shape, key + ('field', name), lookup)}")
+        if fits(f"{declared} {{ {read} }}"):
+            lines.append(f"{declared} {{ {read} }}")
+        else:
+            lines.extend([f"{declared} {{", f"        {read}", "    }"])
     lines.append("}")
     return "\n".join(lines)
 
@@ -340,21 +345,141 @@ def swift_emitter(event, payload_descriptor, enum_type=None, key=None, lookup=No
             f"{{ node.emit(\"{event}\", payload: {wrap}(payload)) }}")
 
 
+def render_descriptor(descriptor):
+    return descriptor if isinstance(descriptor, str) \
+        else json.dumps(descriptor, sort_keys=True)
+
+
 def result_note(declaration):
     """A doc line for actions declaring a completion result."""
     descriptor = declaration.get("result")
     if descriptor is None:
         return None
-    rendered = descriptor if isinstance(descriptor, str) \
-        else json.dumps(descriptor, sort_keys=True)
-    return (f"The handler completes it with a `{rendered}` result,"
+    return (f"The handler completes it with a `{render_descriptor(descriptor)}` result,"
             f" bound to `result` in onSuccess.")
+
+
+def failure_note(declaration):
+    """A doc line for actions declaring a failure payload (contract 2.1)."""
+    descriptor = declaration.get("failure")
+    if descriptor is None:
+        return None
+    return (f"The handler fails it with a `{render_descriptor(descriptor)}` payload"
+            f" (a MilanoActionFailure), bound to `failure` in onFailure.")
+
+
+def action_notes(declaration):
+    """The doc lines an action's declaration earns, in a fixed order."""
+    return [note for note in (result_note(declaration), failure_note(declaration))
+            if note is not None]
+
+
+# A doc line's text, before its comment prefix. Wide enough to read, narrow
+# enough that every emitter's prefix keeps the line inside the strictest
+# formatter limit the generated files meet (130 columns).
+DOC_WIDTH = 100
+
+
+def wrapped_note(text):
+    """Greedy word wrap: a rendered type descriptor can be long, and an
+    unwrapped doc comment trips the line-length rule of the very linters
+    the generated files are checked by. Never breaks inside a word, so a
+    single long token simply overflows rather than being mangled."""
+    lines, current = [], ""
+    for word in text.split(" "):
+        candidate = f"{current} {word}" if current else word
+        if current and len(candidate) > DOC_WIDTH:
+            lines.append(current)
+            current = word
+        else:
+            current = candidate
+    if current:
+        lines.append(current)
+    return lines
+
+
+# Generated code, like the doc comments above, meets formatters with line
+# limits (SwiftLint and ktlint both stop at 130 here, and nothing checks
+# TypeScript). A declaration wider than this is re-emitted in a multi-line
+# form that says exactly the same thing.
+CODE_WIDTH = 120
+
+
+def fits(text):
+    """Whether a generated line stays inside the limit."""
+    return len(text) <= CODE_WIDTH
+
+
+def split_top_level(text, separators):
+    """Splits an emitted expression at the separators that sit outside every
+    bracket, so a long conditional or elvis can be broken across lines
+    without understanding the expression."""
+    parts, depth, last = [], 0, 0
+    index = 0
+    while index < len(text):
+        character = text[index]
+        if character in "([{":
+            depth += 1
+        elif character in ")]}":
+            depth -= 1
+        elif depth == 0:
+            for separator in separators:
+                if text.startswith(separator, index):
+                    parts.append(text[last:index])
+                    last = index + len(separator)
+                    parts.append(separator.strip())
+                    index += len(separator) - 1
+                    break
+        index += 1
+    parts.append(text[last:])
+    return parts
+
+
+def unwrapped(text):
+    """The expression inside a single pair of enclosing parentheses."""
+    if not (text.startswith("(") and text.endswith(")")):
+        return None
+    inner = text[1:-1]
+    depth = 0
+    for character in inner:
+        if character in "([{":
+            depth += 1
+        elif character in ")]}":
+            depth -= 1
+            if depth < 0:
+                return None
+    return inner if depth == 0 else None
+
+
+def broken_expression(expression, indent, separators):
+    """The expression over several lines, each continuation indented, or
+    None when it holds no separator to break at."""
+    inner = unwrapped(expression)
+    parts = split_top_level(inner if inner is not None else expression, separators)
+    if len(parts) < 3:
+        return None
+    lines = [parts[0].strip()]
+    for at in range(1, len(parts) - 1, 2):
+        lines.append(f"{parts[at]} {parts[at + 1].strip()}")
+    body = [f"{indent}    {lines[0]}"] + [f"{indent}        {line}" for line in lines[1:]]
+    if inner is not None:
+        return ["("] + body + [f"{indent})"]
+    return [lines[0]] + body[1:]
+
+
+def doc_block(notes, indent, opener="/**", line=" * ", closer=" */"):
+    """A block comment carrying the notes, one wrapped line each."""
+    if not notes:
+        return ""
+    body = "".join(f"{indent}{line}{text}\n"
+                   for note in notes for text in wrapped_note(note))
+    return f"{indent}{opener}\n{body}{indent}{closer}\n"
 
 
 def swift_action_case(name, declaration, enum_lookup):
     parameters = declaration.get("parameters", {})
-    note = result_note(declaration)
-    doc = f"    /// {note}\n" if note else ""
+    doc = "".join(f"    /// {text}\n"
+                  for note in action_notes(declaration) for text in wrapped_note(note))
     declared = escape_swift(name)
     if not parameters:
         return (doc + f"    case {declared}",
@@ -547,22 +672,41 @@ def kotlin_record(type_name, fields, doc, key, lookup):
     for name, shape in fields:
         read = kotlin_read(shape, key + ("field", name), lookup,
                            f"value.recordOrNull?.get(\"{name}\") ?: MilanoValue.Null")
-        lines.append(f"    val {escape_kotlin(name)}: {kotlin_type(shape, key + ('field', name), lookup)}"
-                     f" get() = {read}")
+        declared = f"    val {escape_kotlin(name)}: {kotlin_type(shape, key + ('field', name), lookup)}"
+        if fits(f"{declared} get() = {read}"):
+            lines.append(f"{declared} get() = {read}")
+        else:
+            lines.extend([declared, f"        get() = {read}"])
     if fields:
         lines.append("")
         lines.append("    companion object {")
-        lines.append("        fun of(")
-        for name, shape in fields:
-            lines.append(f"            {escape_kotlin(name)}: "
-                         f"{kotlin_type(shape, key + ('field', name), lookup)},")
-        lines.append(f"        ): {type_name} =")
+        parameters = [f"{escape_kotlin(name)}: {kotlin_type(shape, key + ('field', name), lookup)}"
+                      for name, shape in fields]
+        inline = f"        fun of({', '.join(parameters)}): {type_name} ="
+        if len(parameters) <= 1 and fits(inline):
+            lines.append(inline)
+        else:
+            lines.append("        fun of(")
+            lines.extend(f"            {parameter}," for parameter in parameters)
+            lines.append(f"        ): {type_name} =")
         lines.append(f"            {type_name}(")
         lines.append("                MilanoValue.RecordValue(")
         lines.append("                    mapOf(")
         for name, shape in fields:
             write = kotlin_write(shape, key + ("field", name), lookup, escape_kotlin(name))
-            lines.append(f"                        \"{name}\" to ({write}),")
+            entry = f"                        \"{name}\" to ({write}),"
+            if fits(entry):
+                lines.append(entry)
+                continue
+            indent = " " * 24
+            broken = broken_expression(f"({write})", indent, [" ?: "])
+            if broken is None:
+                lines.extend([f"{indent}\"{name}\" to",
+                              f"{indent}    ({write}),"])
+                continue
+            lines.append(f"{indent}\"{name}\" to {broken[0]}")
+            lines.extend(broken[1:-1])
+            lines.append(f"{broken[-1]},")
         lines.append("                    ),")
         lines.append("                ),")
         lines.append("            )")
@@ -637,8 +781,9 @@ def kotlin_emitter(event, payload_descriptor, enum_type=None, key=None, lookup=N
 def kotlin_action_entry(name, declaration, action_type, enum_lookup):
     type_name = capitalize(name)
     parameters = declaration.get("parameters", {})
-    note = result_note(declaration)
-    doc = f"    /** {note} */\n" if note else ""
+    # One KDoc per declaration: ktlint refuses consecutive ones.
+    notes = action_notes(declaration)
+    doc = doc_block(notes, "    ")
     if not parameters:
         entry = doc + f"    data object {type_name} : {action_type}"
         decode = (f"                \"{name}\" -> {{\n"
@@ -877,13 +1022,21 @@ def ts_record(type_name, fields, doc, key, lookup):
             lines.append(f"  }}): {type_name} {{")
         lines.append(f"    return new {type_name}(MilanoValue.record({{")
         for name, shape in fields:
-            lines.append(f"      {name}: {ts_write(shape, key + ('field', name), lookup, f'fields.{name}')},")
+            written = ts_write(shape, key + ('field', name), lookup, f'fields.{name}')
+            if fits(f"      {name}: {written},"):
+                lines.append(f"      {name}: {written},")
+            else:
+                lines.extend([f"      {name}:", f"        {written},"])
         lines.append("    }));")
         lines.append("  }")
     for name, shape in fields:
         lines.append("")
         read = ts_read(shape, key + ("field", name), lookup, f'this.field("{name}")')
-        lines.append(f"  get {name}(): {ts_type(shape, key + ('field', name), lookup)} {{ return {read}; }}")
+        declared = f"  get {name}(): {ts_type(shape, key + ('field', name), lookup)}"
+        if fits(f"{declared} {{ return {read}; }}"):
+            lines.append(f"{declared} {{ return {read}; }}")
+        else:
+            lines.extend([f"{declared} {{", f"    return {read};", "  }"])
     lines.append("")
     lines.append("  private field(name: string): MilanoValue {")
     lines.append("    return this.value.recordValue?.[name] ?? MilanoValue.null;")
@@ -964,8 +1117,8 @@ def ts_emitter(event, payload_descriptor, enum_type=None, key=None, lookup=None)
 def ts_action_member(name, declaration, enum_lookup):
     """One arm of the action union, plus the case that decodes it."""
     parameters = declaration.get("parameters", {})
-    note = result_note(declaration)
-    doc = f"  /** {note} */\n" if note else ""
+    notes = action_notes(declaration)
+    doc = doc_block(notes, "  ")
     fields, reads = [], []
     for parameter, descriptor in sorted(parameters.items()):
         kind, optional, element = parse_descriptor(descriptor)
@@ -991,10 +1144,32 @@ def ts_action_member(name, declaration, enum_lookup):
         fields.append(f"readonly {parameter}: {base}{suffix}")
         reads.append(f"{parameter}: {read}?.{accessor} as {base}{suffix}")
     if fields:
-        arm = doc + (f'  | {{ readonly kind: "{name}"; ' + "; ".join(fields) + " }")
+        one_line = f'  | {{ readonly kind: "{name}"; ' + "; ".join(fields) + " }"
+        if fits(one_line):
+            arm = doc + one_line
+        else:
+            members = "".join(f"      readonly {field[len('readonly '):]};\n"
+                              if field.startswith("readonly ") else f"      {field};\n"
+                              for field in fields)
+            arm = doc + (f'  | {{\n      readonly kind: "{name}";\n{members}    }}')
         joined = ", ".join(reads)
-        case = (f'    case "{name}":\n'
-                f'      return {{ kind: "{name}", {joined} }};')
+        returned = f'      return {{ kind: "{name}", {joined} }};'
+        if not fits(returned):
+            entries = ""
+            for read in reads:
+                if fits(f"        {read},"):
+                    entries += f"        {read},\n"
+                    continue
+                label, _, expression = read.partition(": ")
+                broken = broken_expression(expression, "        ", [" ? ", " : "])
+                if broken is None:
+                    entries += f"        {read},\n"
+                    continue
+                entries += f"        {label}: {broken[0]}\n"
+                entries += "".join(f"{line}\n" for line in broken[1:-1])
+                entries += f"        {broken[-1]},\n"
+            returned = (f'      return {{\n        kind: "{name}",\n{entries}      }};')
+        case = (f'    case "{name}":\n' + returned)
     else:
         arm = doc + f'  | {{ readonly kind: "{name}" }}'
         case = (f'    case "{name}":\n'

@@ -18,7 +18,7 @@
           "id": "title",
           "properties": {
             "text": {
-              "$expr": "concat('Hello, ', context.userName)"
+              "$expr": "$concat('Hello, ', context.userName)"
             }
           }
         },

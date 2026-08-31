@@ -1,0 +1,92 @@
+{
+  "name": "array-remove-basic",
+  "description": "$remove evaluates its index and produces the array without that element",
+  "document": {
+    "version": "2.1.0",
+    "state": {
+      "items": {
+        "array": "string"
+      },
+      "n": "int"
+    },
+    "root": {
+      "type": "Column",
+      "id": "c",
+      "children": [
+        {
+          "type": "Text",
+          "id": "count",
+          "properties": {
+            "text": {
+              "$expr": "$str($length(state.items))"
+            }
+          }
+        },
+        {
+          "type": "Button",
+          "id": "add",
+          "properties": {
+            "label": "Add",
+            "enabled": true
+          },
+          "on": {
+            "tap": [
+              {
+                "action": "$remove",
+                "key": "items",
+                "at": 1
+              }
+            ]
+          }
+        }
+      ]
+    }
+  },
+  "state": {
+    "items": [
+      "a",
+      "b",
+      "c"
+    ],
+    "n": 0
+  },
+  "steps": [
+    {
+      "event": {
+        "node": "add",
+        "name": "tap"
+      }
+    }
+  ],
+  "expect": {
+    "state": {
+      "items": [
+        "a",
+        "c"
+      ],
+      "n": 0
+    },
+    "view": {
+      "type": "Column",
+      "reference": "c",
+      "children": [
+        {
+          "type": "Text",
+          "reference": "count",
+          "properties": {
+            "text": "2"
+          }
+        },
+        {
+          "type": "Button",
+          "reference": "add",
+          "properties": {
+            "label": "Add",
+            "enabled": true
+          }
+        }
+      ]
+    },
+    "occurrences": []
+  }
+}

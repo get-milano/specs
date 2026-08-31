@@ -1,0 +1,105 @@
+{
+  "name": "completion-failure-rebinds-nested",
+  "description": "failure rebinds at each nesting: inside a nested action's onFailure it is that action's payload, while the outer one flows in as a captured parameter",
+  "document": {
+    "version": "2.1.0",
+    "state": {
+      "message": "string",
+      "code": "int"
+    },
+    "root": {
+      "type": "Button",
+      "id": "b",
+      "properties": {
+        "label": "Go",
+        "enabled": true
+      },
+      "on": {
+        "tap": [
+          {
+            "action": "fetchCode",
+            "onFailure": [
+              {
+                "action": "retry",
+                "note": {
+                  "$expr": "failure"
+                },
+                "onFailure": [
+                  {
+                    "action": "$set",
+                    "key": "code",
+                    "value": {
+                      "$expr": "failure"
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "state": {
+    "message": "start",
+    "code": 0
+  },
+  "steps": [
+    {
+      "event": {
+        "node": "b",
+        "name": "tap"
+      }
+    },
+    {
+      "complete": {
+        "dispatch": 0,
+        "outcome": "failure",
+        "payload": "boom"
+      }
+    },
+    {
+      "complete": {
+        "dispatch": 1,
+        "outcome": "failure",
+        "payload": 7
+      }
+    }
+  ],
+  "expect": {
+    "state": {
+      "message": "start",
+      "code": 7
+    },
+    "dispatched": [
+      {
+        "action": "fetchCode",
+        "parameters": {},
+        "dispatch": 0
+      },
+      {
+        "action": "retry",
+        "parameters": {
+          "note": "boom"
+        },
+        "dispatch": 1
+      }
+    ],
+    "occurrences": []
+  },
+  "config": {
+    "actions": {
+      "declare": {
+        "fetchCode": {
+          "failure": "string"
+        },
+        "retry": {
+          "parameters": {
+            "note": "string"
+          },
+          "failure": "int"
+        }
+      }
+    }
+  }
+}

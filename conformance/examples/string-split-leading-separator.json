@@ -1,0 +1,26 @@
+{
+  "name": "string-split-leading-separator",
+  "description": "A leading separator gives an empty first element",
+  "document": {
+    "version": "2.1.0",
+    "root": {
+      "type": "Text",
+      "id": "r",
+      "properties": {
+        "text": {
+          "$expr": "$join($split(',lead', ','), '|')"
+        }
+      }
+    }
+  },
+  "expect": {
+    "view": {
+      "type": "Text",
+      "reference": "r",
+      "properties": {
+        "text": "|lead"
+      }
+    },
+    "occurrences": []
+  }
+}

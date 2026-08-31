@@ -1,0 +1,36 @@
+{
+  "name": "conditional-with-an-id",
+  "description": "An $if carries no id: it renders nothing and is never referenced",
+  "document": {
+    "version": "2.1.0",
+    "root": {
+      "type": "Column",
+      "id": "c",
+      "children": [
+        {
+          "type": "$if",
+          "condition": {
+            "$expr": "true"
+          },
+          "then": [
+            {
+              "type": "Text",
+              "properties": {
+                "text": "a"
+              }
+            }
+          ],
+          "id": "gate"
+        }
+      ]
+    }
+  },
+  "expect": {
+    "error": {
+      "type": "SchemaViolation",
+      "rule": "conditional",
+      "node": "gate",
+      "expected": "no id"
+    }
+  }
+}

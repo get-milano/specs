@@ -1,0 +1,149 @@
+{
+  "name": "dispatch-numbering",
+  "description": "Every custom action dispatch is numbered from zero in delivery order, across lifecycle bindings, events, and follow-ups; the number travels on the action, its dispatch record, and its completion record",
+  "document": {
+    "version": "2.1.0",
+    "root": {
+      "type": "Column",
+      "id": "root",
+      "children": [
+        {
+          "type": "Button",
+          "id": "b",
+          "properties": {
+            "label": "Go",
+            "enabled": true
+          },
+          "on": {
+            "tap": [
+              {
+                "action": "ping",
+                "n": 1,
+                "onSuccess": [
+                  {
+                    "action": "ping",
+                    "n": 2
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "on": {
+      "appear": [
+        {
+          "action": "track"
+        }
+      ]
+    }
+  },
+  "steps": [
+    {
+      "appear": true
+    },
+    {
+      "event": {
+        "node": "b",
+        "name": "tap"
+      }
+    },
+    {
+      "complete": {
+        "dispatch": 1,
+        "outcome": "success"
+      }
+    },
+    {
+      "complete": {
+        "dispatch": 0,
+        "outcome": "failure"
+      }
+    }
+  ],
+  "expect": {
+    "dispatched": [
+      {
+        "action": "track",
+        "parameters": {},
+        "dispatch": 0
+      },
+      {
+        "action": "ping",
+        "parameters": {
+          "n": 1
+        },
+        "dispatch": 1
+      },
+      {
+        "action": "ping",
+        "parameters": {
+          "n": 2
+        },
+        "dispatch": 2
+      }
+    ],
+    "occurrences": [],
+    "interactions": [
+      {
+        "kind": "viewBuilt"
+      },
+      {
+        "kind": "viewAppeared"
+      },
+      {
+        "kind": "actionDispatched",
+        "name": "track",
+        "dispatch": 0,
+        "value": {}
+      },
+      {
+        "kind": "event",
+        "node": "b",
+        "name": "tap"
+      },
+      {
+        "kind": "actionDispatched",
+        "node": "b",
+        "name": "ping",
+        "dispatch": 1,
+        "value": {
+          "n": 1
+        }
+      },
+      {
+        "kind": "completionSucceeded",
+        "node": "b",
+        "name": "ping",
+        "dispatch": 1
+      },
+      {
+        "kind": "actionDispatched",
+        "node": "b",
+        "name": "ping",
+        "dispatch": 2,
+        "value": {
+          "n": 2
+        }
+      },
+      {
+        "kind": "completionFailed",
+        "name": "track",
+        "dispatch": 0
+      }
+    ]
+  },
+  "config": {
+    "actions": {
+      "declare": {
+        "track": {},
+        "ping": {
+          "parameters": {
+            "n": "int"
+          }
+        }
+      }
+    }
+  }
+}

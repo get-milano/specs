@@ -143,6 +143,11 @@ def expression(n, v):
     n["properties"]["label"] = {"$expr": "state.nope"}
 
 
+def contract_feature(n, v):
+    # A contract 2.1 function in the base document, which declares 1.0.
+    n["properties"]["label"] = {"$expr": "$str($abs(1))"}
+
+
 def children(n, v):
     n["children"] = [{"type": "Text", "id": n["id"] + "-child", "properties": {"text": "x"}}]
 
@@ -171,6 +176,7 @@ NODE = [
     ("undeclared-property", undeclared_property),
     ("property-type", property_type),
     ("expression", expression),
+    ("contract-feature", contract_feature),
     ("children", children),
     ("event-binding", event_binding),
     ("action-encoding", action_encoding),
@@ -193,7 +199,7 @@ def verdict(vector):
         # model spec, error taxonomy): the type alone is the pin.
         if fields["type"] == "MalformedDocument":
             return expect
-        for key in ("rule", "node", "expected", "limit", "value", "actual"):
+        for key in ("rule", "node", "expected", "found", "limit", "value", "actual"):
             if key in fields:
                 expect[key] = fields[key]
         return expect

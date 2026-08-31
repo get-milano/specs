@@ -1,0 +1,38 @@
+{
+  "name": "gen-typing-numeric-reject-013",
+  "description": "Generated (exhaustive): $floor(state.e) in a double position is rejected at the gate",
+  "document": {
+    "version": "2.1.0",
+    "state": {
+      "e": {
+        "enum": [
+          "a",
+          "b"
+        ]
+      }
+    },
+    "root": {
+      "type": "Column",
+      "id": "root",
+      "children": [
+        {
+          "type": "Probe",
+          "id": "p",
+          "properties": {
+            "d": {
+              "$expr": "$floor(state.e)"
+            }
+          }
+        }
+      ]
+    }
+  },
+  "expect": {
+    "error": {
+      "type": "SchemaViolation",
+      "rule": "expression",
+      "node": "p",
+      "expected": "double"
+    }
+  }
+}

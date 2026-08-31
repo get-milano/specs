@@ -1,6 +1,6 @@
 {
   "name": "gen-typing-call-reject-023",
-  "description": "Generated (exhaustive): isEmpty(state.b) in a string position is rejected at the gate",
+  "description": "Generated (exhaustive): $isEmpty(state.b) in a string position is rejected at the gate",
   "document": {
     "version": "1.0.0",
     "state": {
@@ -15,7 +15,7 @@
           "id": "p",
           "properties": {
             "s": {
-              "$expr": "isEmpty(state.b)"
+              "$expr": "$isEmpty(state.b)"
             }
           }
         }

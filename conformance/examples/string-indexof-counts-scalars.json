@@ -1,0 +1,26 @@
+{
+  "name": "string-indexof-counts-scalars",
+  "description": "The index counts scalars, so it agrees with substring",
+  "document": {
+    "version": "2.1.0",
+    "root": {
+      "type": "Text",
+      "id": "r",
+      "properties": {
+        "text": {
+          "$expr": "$str($indexOf('a\ud83d\ude00b', 'b'))"
+        }
+      }
+    }
+  },
+  "expect": {
+    "view": {
+      "type": "Text",
+      "reference": "r",
+      "properties": {
+        "text": "2"
+      }
+    },
+    "occurrences": []
+  }
+}

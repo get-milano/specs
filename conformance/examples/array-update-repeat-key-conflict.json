@@ -1,0 +1,115 @@
+{
+  "name": "array-update-repeat-key-conflict",
+  "description": "An $update that would give a keyed repeat two elements with the same key is a rejected mutation naming the repeated key, and assigns nothing",
+  "document": {
+    "version": "2.1.0",
+    "state": {
+      "rows": {
+        "array": {
+          "record": {
+            "name": "string",
+            "done": "bool"
+          }
+        }
+      },
+      "n": "int"
+    },
+    "root": {
+      "type": "Column",
+      "id": "c",
+      "children": [
+        {
+          "type": "Button",
+          "id": "toggle",
+          "properties": {
+            "label": "Toggle",
+            "enabled": true
+          },
+          "on": {
+            "tap": [
+              {
+                "action": "$update",
+                "key": "rows",
+                "at": 1,
+                "field": "name",
+                "value": "a"
+              },
+              {
+                "action": "$set",
+                "key": "n",
+                "value": 1
+              }
+            ]
+          }
+        },
+        {
+          "type": "$repeat",
+          "id": "list",
+          "items": {
+            "$expr": "state.rows"
+          },
+          "as": "row",
+          "key": {
+            "$expr": "row.name"
+          },
+          "children": [
+            {
+              "type": "Text",
+              "id": "row_text",
+              "properties": {
+                "text": {
+                  "$expr": "$concat(row.name, $if(row.done, ' done', ''))"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "state": {
+    "rows": [
+      {
+        "name": "a",
+        "done": false
+      },
+      {
+        "name": "b",
+        "done": false
+      }
+    ],
+    "n": 0
+  },
+  "steps": [
+    {
+      "event": {
+        "node": "toggle",
+        "name": "tap"
+      }
+    }
+  ],
+  "expect": {
+    "state": {
+      "rows": [
+        {
+          "name": "a",
+          "done": false
+        },
+        {
+          "name": "b",
+          "done": false
+        }
+      ],
+      "n": 0
+    },
+    "occurrences": [
+      {
+        "kind": "rejectedMutation",
+        "node": "toggle",
+        "name": "rows",
+        "expected": "distinct key",
+        "found": "a"
+      }
+    ]
+  }
+}

@@ -1,0 +1,49 @@
+{
+  "name": "function-result-throws",
+  "description": "A handler that throws is an invalid function result finding an error; the zero value of a double is 0.0",
+  "document": {
+    "version": "2.1.0",
+    "root": {
+      "type": "Text",
+      "id": "t",
+      "properties": {
+        "text": {
+          "$expr": "$str(scale(1.0, 1))"
+        }
+      }
+    }
+  },
+  "config": {
+    "functions": {
+      "results": {
+        "scale": [
+          {
+            "arguments": [
+              1.0,
+              1
+            ],
+            "throws": true
+          }
+        ]
+      }
+    }
+  },
+  "expect": {
+    "view": {
+      "type": "Text",
+      "reference": "t",
+      "properties": {
+        "text": "0.0"
+      }
+    },
+    "occurrences": [
+      {
+        "kind": "invalidFunctionResult",
+        "node": "t",
+        "name": "scale",
+        "expected": "double",
+        "found": "error"
+      }
+    ]
+  }
+}

@@ -1,0 +1,54 @@
+{
+  "name": "gate-array-append-in-2-0-document",
+  "description": "A 2.0 document carrying $append is the contract-feature violation naming the action",
+  "document": {
+    "version": "2.0.0",
+    "state": {
+      "items": {
+        "array": "string"
+      },
+      "n": "int"
+    },
+    "root": {
+      "type": "Column",
+      "id": "c",
+      "children": [
+        {
+          "type": "Text",
+          "id": "count",
+          "properties": {
+            "text": {
+              "$expr": "$str($length(state.items))"
+            }
+          }
+        },
+        {
+          "type": "Button",
+          "id": "add",
+          "properties": {
+            "label": "Add",
+            "enabled": true
+          },
+          "on": {
+            "tap": [
+              {
+                "action": "$append",
+                "key": "items",
+                "value": "x"
+              }
+            ]
+          }
+        }
+      ]
+    }
+  },
+  "expect": {
+    "error": {
+      "type": "SchemaViolation",
+      "rule": "contract-feature",
+      "node": "add",
+      "expected": "2.1",
+      "found": "$append"
+    }
+  }
+}

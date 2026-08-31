@@ -1,5 +1,5 @@
 {
-  "milano": "1.0.0",
+  "milano": "2.1.0",
   "name": "fixture",
   "version": "2.3.4",
   "components": {
@@ -96,7 +96,13 @@
           ]
         }
       },
-      "result": "string"
+      "result": "string",
+      "failure": {
+        "enum": [
+          "rejected",
+          "offline"
+        ]
+      }
     },
     "order": {
       "parameters": {
@@ -118,6 +124,12 @@
       "result": {
         "record": {
           "reference": "string"
+        }
+      },
+      "failure": {
+        "record": {
+          "code": "int",
+          "reason": "string"
         }
       }
     }

@@ -1,0 +1,26 @@
+{
+  "name": "gen-string-088",
+  "description": "Generated (seed 20260831): $substring('abc', $indexOf('\ud83d\ude00', 'zz'), $length('aaa'))",
+  "document": {
+    "version": "2.1.0",
+    "root": {
+      "type": "Text",
+      "id": "r",
+      "properties": {
+        "text": {
+          "$expr": "$substring('abc', $indexOf('\ud83d\ude00', 'zz'), $length('aaa'))"
+        }
+      }
+    }
+  },
+  "expect": {
+    "view": {
+      "type": "Text",
+      "reference": "r",
+      "properties": {
+        "text": "abc"
+      }
+    },
+    "occurrences": []
+  }
+}

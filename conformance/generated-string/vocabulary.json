@@ -1,0 +1,12 @@
+{
+  "milano": "2.1.0",
+  "name": "generated_string",
+  "version": "1.0.0",
+  "components": {
+    "Text": {
+      "properties": {
+        "text": "string"
+      }
+    }
+  }
+}

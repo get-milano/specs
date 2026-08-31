@@ -1,0 +1,96 @@
+{
+  "name": "completion-failure-success-unaffected",
+  "description": "Declaring a failure type changes nothing about success: a success completion with no value still runs onSuccess for an action declaring no result",
+  "document": {
+    "version": "2.1.0",
+    "state": {
+      "message": "string"
+    },
+    "root": {
+      "type": "Button",
+      "id": "b",
+      "properties": {
+        "label": "Go",
+        "enabled": true
+      },
+      "on": {
+        "tap": [
+          {
+            "action": "fetchCode",
+            "onFailure": [
+              {
+                "action": "$set",
+                "key": "message",
+                "value": {
+                  "$expr": "failure"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "state": {
+    "message": "start"
+  },
+  "steps": [
+    {
+      "event": {
+        "node": "b",
+        "name": "tap"
+      }
+    },
+    {
+      "complete": {
+        "dispatch": 0,
+        "outcome": "success"
+      }
+    }
+  ],
+  "expect": {
+    "state": {
+      "message": "start"
+    },
+    "dispatched": [
+      {
+        "action": "fetchCode",
+        "parameters": {},
+        "dispatch": 0
+      }
+    ],
+    "occurrences": [],
+    "interactions": [
+      {
+        "kind": "viewBuilt"
+      },
+      {
+        "kind": "event",
+        "node": "b",
+        "name": "tap"
+      },
+      {
+        "kind": "actionDispatched",
+        "node": "b",
+        "name": "fetchCode",
+        "dispatch": 0,
+        "value": {}
+      },
+      {
+        "kind": "completionSucceeded",
+        "node": "b",
+        "name": "fetchCode",
+        "dispatch": 0
+      }
+    ]
+  },
+  "config": {
+    "actions": {
+      "declare": {
+        "fetchCode": {
+          "failure": "string"
+        }
+      }
+    }
+  }
+}

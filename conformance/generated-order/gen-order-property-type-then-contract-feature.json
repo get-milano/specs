@@ -1,0 +1,40 @@
+{
+  "name": "gen-order-property-type-then-contract-feature",
+  "description": "Generated (order): property-type on node a, then contract-feature on node b; the first defect in document order wins",
+  "document": {
+    "version": "1.0.0",
+    "root": {
+      "type": "Column",
+      "id": "root",
+      "children": [
+        {
+          "type": "Button",
+          "id": "a",
+          "properties": {
+            "label": 1,
+            "enabled": true
+          }
+        },
+        {
+          "type": "Button",
+          "id": "b",
+          "properties": {
+            "label": {
+              "$expr": "$str($abs(1))"
+            },
+            "enabled": true
+          }
+        }
+      ]
+    }
+  },
+  "expect": {
+    "error": {
+      "type": "SchemaViolation",
+      "rule": "property-type",
+      "node": "a",
+      "expected": "string",
+      "found": "int"
+    }
+  }
+}

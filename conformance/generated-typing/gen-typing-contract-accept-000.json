@@ -1,0 +1,158 @@
+{
+  "name": "gen-typing-contract-accept-000",
+  "description": "Generated (exhaustive): accepted in their declared positions. p0: $str(state.i) in s; p1: $str(state.i) in sOpt; p2: $double(state.i) in d; p3: $double(state.i) in dOpt; p4: $int(state.d) in i; p5: $int(state.d) in iOpt; p6: $int(state.d) in d; p7: $int(state.d) in dOpt",
+  "document": {
+    "version": "1.0.0",
+    "state": {
+      "d": "double",
+      "i": "int"
+    },
+    "root": {
+      "type": "Column",
+      "id": "root",
+      "children": [
+        {
+          "type": "Probe",
+          "id": "p0",
+          "properties": {
+            "s": {
+              "$expr": "$str(state.i)"
+            }
+          }
+        },
+        {
+          "type": "Probe",
+          "id": "p1",
+          "properties": {
+            "sOpt": {
+              "$expr": "$str(state.i)"
+            }
+          }
+        },
+        {
+          "type": "Probe",
+          "id": "p2",
+          "properties": {
+            "d": {
+              "$expr": "$double(state.i)"
+            }
+          }
+        },
+        {
+          "type": "Probe",
+          "id": "p3",
+          "properties": {
+            "dOpt": {
+              "$expr": "$double(state.i)"
+            }
+          }
+        },
+        {
+          "type": "Probe",
+          "id": "p4",
+          "properties": {
+            "i": {
+              "$expr": "$int(state.d)"
+            }
+          }
+        },
+        {
+          "type": "Probe",
+          "id": "p5",
+          "properties": {
+            "iOpt": {
+              "$expr": "$int(state.d)"
+            }
+          }
+        },
+        {
+          "type": "Probe",
+          "id": "p6",
+          "properties": {
+            "d": {
+              "$expr": "$int(state.d)"
+            }
+          }
+        },
+        {
+          "type": "Probe",
+          "id": "p7",
+          "properties": {
+            "dOpt": {
+              "$expr": "$int(state.d)"
+            }
+          }
+        }
+      ]
+    }
+  },
+  "state": {
+    "d": 2.5,
+    "i": 7
+  },
+  "expect": {
+    "view": {
+      "type": "Column",
+      "reference": "root",
+      "children": [
+        {
+          "type": "Probe",
+          "reference": "p0",
+          "properties": {
+            "s": "7"
+          }
+        },
+        {
+          "type": "Probe",
+          "reference": "p1",
+          "properties": {
+            "sOpt": "7"
+          }
+        },
+        {
+          "type": "Probe",
+          "reference": "p2",
+          "properties": {
+            "d": 7.0
+          }
+        },
+        {
+          "type": "Probe",
+          "reference": "p3",
+          "properties": {
+            "dOpt": 7.0
+          }
+        },
+        {
+          "type": "Probe",
+          "reference": "p4",
+          "properties": {
+            "i": 2
+          }
+        },
+        {
+          "type": "Probe",
+          "reference": "p5",
+          "properties": {
+            "iOpt": 2
+          }
+        },
+        {
+          "type": "Probe",
+          "reference": "p6",
+          "properties": {
+            "d": 2.0
+          }
+        },
+        {
+          "type": "Probe",
+          "reference": "p7",
+          "properties": {
+            "dOpt": 2.0
+          }
+        }
+      ]
+    },
+    "occurrences": []
+  }
+}

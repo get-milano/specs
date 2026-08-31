@@ -1,0 +1,113 @@
+{
+  "name": "replace-after-teardown-ignored",
+  "description": "A replacement requested after teardown is ignored silently",
+  "document": {
+    "version": "2.1.0",
+    "state": {
+      "n": "int"
+    },
+    "root": {
+      "type": "Column",
+      "id": "c",
+      "children": [
+        {
+          "type": "Text",
+          "id": "r",
+          "properties": {
+            "text": {
+              "$expr": "$str(state.n)"
+            }
+          }
+        },
+        {
+          "type": "Button",
+          "id": "go",
+          "properties": {
+            "label": "Go",
+            "enabled": true
+          },
+          "on": {
+            "tap": [
+              {
+                "action": "$set",
+                "key": "n",
+                "value": {
+                  "$expr": "state.n + 5"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    }
+  },
+  "state": {
+    "n": 0
+  },
+  "steps": [
+    {
+      "teardown": true
+    },
+    {
+      "replace": {
+        "document": {
+          "version": "2.1.0",
+          "state": {
+            "n": "int"
+          },
+          "root": {
+            "type": "Column",
+            "id": "c",
+            "children": [
+              {
+                "type": "Text",
+                "id": "r",
+                "properties": {
+                  "text": {
+                    "$expr": "$str(state.n)"
+                  }
+                }
+              },
+              {
+                "type": "Button",
+                "id": "go",
+                "properties": {
+                  "label": "Go",
+                  "enabled": true
+                },
+                "on": {
+                  "tap": [
+                    {
+                      "action": "$set",
+                      "key": "n",
+                      "value": {
+                        "$expr": "state.n + 5"
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          "metadata": {
+            "campaign": "x"
+          }
+        }
+      }
+    }
+  ],
+  "expect": {
+    "state": {
+      "n": 0
+    },
+    "occurrences": [],
+    "interactions": [
+      {
+        "kind": "viewBuilt"
+      },
+      {
+        "kind": "viewTornDown"
+      }
+    ]
+  }
+}

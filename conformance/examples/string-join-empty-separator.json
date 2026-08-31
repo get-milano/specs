@@ -1,0 +1,26 @@
+{
+  "name": "string-join-empty-separator",
+  "description": "An empty separator concatenates the elements",
+  "document": {
+    "version": "2.1.0",
+    "root": {
+      "type": "Text",
+      "id": "r",
+      "properties": {
+        "text": {
+          "$expr": "$join($split('a,b', ','), '')"
+        }
+      }
+    }
+  },
+  "expect": {
+    "view": {
+      "type": "Text",
+      "reference": "r",
+      "properties": {
+        "text": "ab"
+      }
+    },
+    "occurrences": []
+  }
+}

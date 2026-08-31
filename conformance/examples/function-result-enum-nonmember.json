@@ -1,0 +1,50 @@
+{
+  "name": "function-result-enum-nonmember",
+  "description": "An answer outside the declared enum is invalid; the zero value of an enum is its first declared member",
+  "document": {
+    "version": "2.1.0",
+    "root": {
+      "type": "Badge",
+      "id": "b",
+      "properties": {
+        "label": "x",
+        "tone": {
+          "$expr": "tone('danger')"
+        }
+      }
+    }
+  },
+  "config": {
+    "functions": {
+      "results": {
+        "tone": [
+          {
+            "arguments": [
+              "danger"
+            ],
+            "returns": "loud"
+          }
+        ]
+      }
+    }
+  },
+  "expect": {
+    "view": {
+      "type": "Badge",
+      "reference": "b",
+      "properties": {
+        "label": "x",
+        "tone": "info"
+      }
+    },
+    "occurrences": [
+      {
+        "kind": "invalidFunctionResult",
+        "node": "b",
+        "name": "tone",
+        "expected": "enum",
+        "found": "string"
+      }
+    ]
+  }
+}

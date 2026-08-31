@@ -1,0 +1,59 @@
+{
+  "name": "switch-with-properties",
+  "description": "A $switch carries no properties: it is not a component",
+  "document": {
+    "version": "2.1.0",
+    "root": {
+      "type": "Column",
+      "id": "c",
+      "children": [
+        {
+          "type": "$switch",
+          "subject": {
+            "$expr": "state.status"
+          },
+          "cases": {
+            "ok": [
+              {
+                "type": "Text",
+                "properties": {
+                  "text": "x"
+                }
+              }
+            ],
+            "late": [
+              {
+                "type": "Text",
+                "properties": {
+                  "text": "x"
+                }
+              }
+            ]
+          },
+          "properties": {
+            "text": "x"
+          }
+        }
+      ]
+    },
+    "state": {
+      "status": {
+        "enum": [
+          "ok",
+          "late"
+        ]
+      }
+    }
+  },
+  "state": {
+    "status": "ok"
+  },
+  "expect": {
+    "error": {
+      "type": "SchemaViolation",
+      "rule": "switch",
+      "node": "root/children[0]",
+      "expected": "no properties"
+    }
+  }
+}

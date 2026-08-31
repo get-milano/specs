@@ -1,0 +1,26 @@
+{
+  "name": "gen-numeric-fn-053",
+  "description": "Generated (seed 20260830): $str($abs(10))",
+  "document": {
+    "version": "2.1.0",
+    "root": {
+      "type": "Text",
+      "id": "r",
+      "properties": {
+        "text": {
+          "$expr": "$str($abs(10))"
+        }
+      }
+    }
+  },
+  "expect": {
+    "view": {
+      "type": "Text",
+      "reference": "r",
+      "properties": {
+        "text": "10"
+      }
+    },
+    "occurrences": []
+  }
+}

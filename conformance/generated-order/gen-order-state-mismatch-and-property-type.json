@@ -37,7 +37,8 @@
       "type": "SchemaViolation",
       "rule": "property-type",
       "node": "a",
-      "expected": "string"
+      "expected": "string",
+      "found": "int"
     }
   }
 }

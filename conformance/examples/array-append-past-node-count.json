@@ -1,0 +1,97 @@
+{
+  "name": "array-append-past-node-count",
+  "description": "The tree an $append re-materializes is measured against the node count limit: the append that fits lands, the next is rejected",
+  "document": {
+    "version": "2.1.0",
+    "state": {
+      "items": {
+        "array": "string"
+      }
+    },
+    "root": {
+      "type": "Column",
+      "id": "c",
+      "children": [
+        {
+          "type": "Button",
+          "id": "add",
+          "properties": {
+            "label": "Add",
+            "enabled": true
+          },
+          "on": {
+            "tap": [
+              {
+                "action": "$append",
+                "key": "items",
+                "value": "z"
+              }
+            ]
+          }
+        },
+        {
+          "type": "$repeat",
+          "id": "list",
+          "items": {
+            "$expr": "state.items"
+          },
+          "as": "item",
+          "children": [
+            {
+              "type": "Text",
+              "id": "t",
+              "properties": {
+                "text": {
+                  "$expr": "item"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "state": {
+    "items": [
+      "a",
+      "b"
+    ]
+  },
+  "config": {
+    "limits": {
+      "maxNodeCount": 5
+    }
+  },
+  "steps": [
+    {
+      "event": {
+        "node": "add",
+        "name": "tap"
+      }
+    },
+    {
+      "event": {
+        "node": "add",
+        "name": "tap"
+      }
+    }
+  ],
+  "expect": {
+    "state": {
+      "items": [
+        "a",
+        "b",
+        "z"
+      ]
+    },
+    "occurrences": [
+      {
+        "kind": "rejectedMutation",
+        "node": "add",
+        "name": "items",
+        "expected": "maxNodeCount",
+        "found": "6"
+      }
+    ]
+  }
+}

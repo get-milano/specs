@@ -1,0 +1,13 @@
+{
+  "name": "gate-state-descriptor-unknown-scalar",
+  "description": "A type descriptor names one of the contract's scalars: an unknown name is a malformed declaration, not a type nothing can satisfy",
+  "documentText": "{\"version\": \"2.0.0\", \"state\": {\"n\": \"number\"}, \"root\": {\"type\": \"Text\", \"id\": \"r\", \"properties\": {\"text\": \"x\"}}}",
+  "expect": {
+    "error": {
+      "type": "SchemaViolation",
+      "rule": "state-declaration",
+      "expected": "type descriptor",
+      "found": "n"
+    }
+  }
+}

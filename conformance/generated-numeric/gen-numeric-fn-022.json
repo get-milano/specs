@@ -1,0 +1,26 @@
+{
+  "name": "gen-numeric-fn-022",
+  "description": "Generated (seed 20260830): $str($max(1.0, (10 * 2), 3.0))",
+  "document": {
+    "version": "2.1.0",
+    "root": {
+      "type": "Text",
+      "id": "r",
+      "properties": {
+        "text": {
+          "$expr": "$str($max(1.0, (10 * 2), 3.0))"
+        }
+      }
+    }
+  },
+  "expect": {
+    "view": {
+      "type": "Text",
+      "reference": "r",
+      "properties": {
+        "text": "20.0"
+      }
+    },
+    "occurrences": []
+  }
+}

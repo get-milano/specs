@@ -1,6 +1,6 @@
 {
   "name": "gen-numeric-074",
-  "description": "Generated (seed 20260816): str((1 % 1) / 9223372036854775807)",
+  "description": "Generated (seed 20260816): $str((1 % 1) / 9223372036854775807)",
   "document": {
     "version": "1.0.0",
     "root": {
@@ -8,7 +8,7 @@
       "id": "r",
       "properties": {
         "text": {
-          "$expr": "str((1 % 1) / 9223372036854775807)"
+          "$expr": "$str((1 % 1) / 9223372036854775807)"
         }
       }
     }

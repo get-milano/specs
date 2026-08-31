@@ -1,0 +1,26 @@
+{
+  "name": "gen-string-018",
+  "description": "Generated (seed 20260831): $replace($join($split('  padded  ', ' '), '\ud83d\ude00'), 'a', '..')",
+  "document": {
+    "version": "2.1.0",
+    "root": {
+      "type": "Text",
+      "id": "r",
+      "properties": {
+        "text": {
+          "$expr": "$replace($join($split('  padded  ', ' '), '\ud83d\ude00'), 'a', '..')"
+        }
+      }
+    }
+  },
+  "expect": {
+    "view": {
+      "type": "Text",
+      "reference": "r",
+      "properties": {
+        "text": "\ud83d\ude00\ud83d\ude00p..dded\ud83d\ude00\ud83d\ude00"
+      }
+    },
+    "occurrences": []
+  }
+}

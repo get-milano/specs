@@ -1,0 +1,24 @@
+{
+  "name": "gate-function-argument-type",
+  "description": "Each argument is a declared position: a string where an int is declared is refused",
+  "document": {
+    "version": "2.1.0",
+    "root": {
+      "type": "Text",
+      "id": "t",
+      "properties": {
+        "text": {
+          "$expr": "formatMoney('1', 'EUR')"
+        }
+      }
+    }
+  },
+  "expect": {
+    "error": {
+      "type": "SchemaViolation",
+      "rule": "expression",
+      "node": "t",
+      "expected": "string"
+    }
+  }
+}

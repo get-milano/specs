@@ -1,0 +1,48 @@
+{
+  "name": "function-result-optional-zero",
+  "description": "The zero value of an optional return is null, which the document resolves with ??",
+  "document": {
+    "version": "2.1.0",
+    "root": {
+      "type": "Text",
+      "id": "t",
+      "properties": {
+        "text": {
+          "$expr": "$str(parseInt('7') ?? 0 - 1)"
+        }
+      }
+    }
+  },
+  "config": {
+    "functions": {
+      "results": {
+        "parseInt": [
+          {
+            "arguments": [
+              "7"
+            ],
+            "returns": "seven"
+          }
+        ]
+      }
+    }
+  },
+  "expect": {
+    "view": {
+      "type": "Text",
+      "reference": "t",
+      "properties": {
+        "text": "-1"
+      }
+    },
+    "occurrences": [
+      {
+        "kind": "invalidFunctionResult",
+        "node": "t",
+        "name": "parseInt",
+        "expected": "int?",
+        "found": "string"
+      }
+    ]
+  }
+}

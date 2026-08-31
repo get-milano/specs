@@ -8,7 +8,7 @@
       "id": "result",
       "properties": {
         "text": {
-          "$expr": "str(int(-3.9)) + ' ' + str(int(3.9))"
+          "$expr": "$str($int(-3.9)) + ' ' + $str($int(3.9))"
         }
       }
     }

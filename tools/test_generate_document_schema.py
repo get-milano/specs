@@ -113,22 +113,33 @@ class Specialization(unittest.TestCase):
         # different documents claim the same identity.
         self.assertNotIn("$id", self.schema)
 
-    def test_component_types_become_a_closed_sorted_enum_plus_the_construct(self):
+    def test_component_types_become_a_closed_sorted_enum_plus_the_constructs(self):
+        # Every construct belongs to every vocabulary, so all three join the
+        # enum whatever the vocabulary declares.
         self.assertEqual(
-            self.schema["$defs"]["node"]["properties"]["type"], {"enum": ["Column", "Text", "$repeat"]})
+            self.schema["$defs"]["node"]["properties"]["type"],
+            {"enum": ["Column", "Text", "$if", "$repeat", "$switch"]})
 
-    def test_one_conditional_per_component_in_a_fixed_order_then_the_construct(self):
+    def test_one_conditional_per_component_in_a_fixed_order_then_the_constructs(self):
         branches = self.schema["$defs"]["node"]["allOf"]
         self.assertEqual(
             [branch["if"]["properties"]["type"]["const"] for branch in branches],
-            ["Column", "Text", "$repeat"],
+            ["Column", "Text", "$repeat", "$if", "$switch"],
         )
 
-    def test_the_construct_requires_its_own_keys_and_carries_no_component_keys(self):
-        branch = self.schema["$defs"]["node"]["allOf"][-1]["then"]
-        self.assertEqual(branch["required"], ["items", "as", "children"])
-        self.assertEqual(branch["properties"]["properties"], {"type": "object", "maxProperties": 0})
-        self.assertEqual(branch["properties"]["on"], {"type": "object", "maxProperties": 0})
+    def test_each_construct_requires_its_own_keys_and_carries_no_component_keys(self):
+        branches = {branch["if"]["properties"]["type"]["const"]: branch["then"]
+                    for branch in self.schema["$defs"]["node"]["allOf"]}
+        required = {"$repeat": ["items", "as", "children"],
+                    "$if": ["condition", "then"],
+                    "$switch": ["subject", "cases"]}
+        for construct, keys in required.items():
+            branch = branches[construct]
+            self.assertEqual(branch["required"], keys, construct)
+            self.assertEqual(branch["properties"]["properties"],
+                             {"type": "object", "maxProperties": 0}, construct)
+            self.assertEqual(branch["properties"]["on"],
+                             {"type": "object", "maxProperties": 0}, construct)
 
     def test_childless_components_reject_children(self):
         branches = {b["if"]["properties"]["type"]["const"]: b["then"]["properties"] for b in self.schema["$defs"]["node"]["allOf"]}
@@ -274,6 +285,27 @@ class Behaviour(unittest.TestCase):
                       "on": {"tap": [{"action": "go", "url": "https://example.com"}]}}),
             "a binding for a declared event",
         )
+
+    def test_a_repeat_key_is_an_expression(self):
+        # Contract 2.1: the key travels on the construct beside items and
+        # as; the schema accepts the wrapper and refuses a literal, the
+        # same approximation the gate's `key expression` rule makes exact.
+        keyed = {"type": "$repeat", "items": {"$expr": "state.rows"}, "as": "row",
+                 "key": {"$expr": "row.id"},
+                 "children": [{"type": "Text", "properties": {"text": {"$expr": "row.name"}}}]}
+        self.valid(document({"type": "Column", "children": [keyed]}), "a keyed repeat")
+        keyed["key"] = "abc"
+        self.invalid(document({"type": "Column", "children": [keyed]}), "a literal key")
+
+    def test_lifecycle_bindings_name_the_two_signals(self):
+        doc = document({"type": "Text", "properties": {"text": "x"}})
+        doc["on"] = {"appear": [{"action": "$set", "key": "n", "value": 1}],
+                     "disappear": {"action": "$set", "key": "n", "value": 0}}
+        self.valid(doc, "appear and disappear bindings")
+        doc["on"] = {"load": []}
+        self.invalid(doc, "an unknown lifecycle signal")
+        doc["on"] = []
+        self.invalid(doc, "a non-object lifecycle section")
 
     def test_does_not_pretend_to_check_what_only_the_gate_can(self):
         # Authoring-time approximation: an expression's result type, an

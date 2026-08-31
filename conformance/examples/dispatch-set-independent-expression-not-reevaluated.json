@@ -16,7 +16,7 @@
           "id": "ratio",
           "properties": {
             "text": {
-              "$expr": "str(100 / state.divisor)"
+              "$expr": "$str(100 / state.divisor)"
             }
           }
         },

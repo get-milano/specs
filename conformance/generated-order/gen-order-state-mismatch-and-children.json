@@ -46,7 +46,8 @@
       "type": "SchemaViolation",
       "rule": "children",
       "node": "a",
-      "expected": "no children"
+      "expected": "no children",
+      "found": "children"
     }
   }
 }

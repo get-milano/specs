@@ -1,0 +1,34 @@
+{
+  "name": "gen-typing-contract-reject-003",
+  "description": "Generated (exhaustive): $floor(state.d) in a double position is rejected at the gate",
+  "document": {
+    "version": "1.0.0",
+    "state": {
+      "d": "double"
+    },
+    "root": {
+      "type": "Column",
+      "id": "root",
+      "children": [
+        {
+          "type": "Probe",
+          "id": "p",
+          "properties": {
+            "d": {
+              "$expr": "$floor(state.d)"
+            }
+          }
+        }
+      ]
+    }
+  },
+  "expect": {
+    "error": {
+      "type": "SchemaViolation",
+      "rule": "contract-feature",
+      "node": "p",
+      "expected": "2.1",
+      "found": "$floor"
+    }
+  }
+}

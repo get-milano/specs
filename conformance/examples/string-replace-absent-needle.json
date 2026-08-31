@@ -1,0 +1,26 @@
+{
+  "name": "string-replace-absent-needle",
+  "description": "An absent needle leaves the subject as it was",
+  "document": {
+    "version": "2.1.0",
+    "root": {
+      "type": "Text",
+      "id": "r",
+      "properties": {
+        "text": {
+          "$expr": "$replace('hello', 'zz', 'X')"
+        }
+      }
+    }
+  },
+  "expect": {
+    "view": {
+      "type": "Text",
+      "reference": "r",
+      "properties": {
+        "text": "hello"
+      }
+    },
+    "occurrences": []
+  }
+}

@@ -1,0 +1,39 @@
+{
+  "name": "conditional-undeclared-key",
+  "description": "A key the construct does not declare is an encoding violation",
+  "document": {
+    "version": "2.1.0",
+    "root": {
+      "type": "Column",
+      "id": "c",
+      "children": [
+        {
+          "type": "$if",
+          "condition": {
+            "$expr": "true"
+          },
+          "then": [
+            {
+              "type": "Text",
+              "properties": {
+                "text": "a"
+              }
+            }
+          ],
+          "unless": {
+            "$expr": "false"
+          }
+        }
+      ]
+    }
+  },
+  "expect": {
+    "error": {
+      "type": "SchemaViolation",
+      "rule": "conditional",
+      "node": "root/children[0]",
+      "expected": "declared key",
+      "found": "unless"
+    }
+  }
+}

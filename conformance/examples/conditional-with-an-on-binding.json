@@ -1,0 +1,40 @@
+{
+  "name": "conditional-with-an-on-binding",
+  "description": "An $if carries no event bindings: it is not a component and has nothing to emit",
+  "document": {
+    "version": "2.1.0",
+    "root": {
+      "type": "Column",
+      "id": "c",
+      "children": [
+        {
+          "type": "$if",
+          "condition": {
+            "$expr": "true"
+          },
+          "then": [
+            {
+              "type": "Text",
+              "properties": {
+                "text": "x"
+              }
+            }
+          ],
+          "on": {
+            "tap": {
+              "action": "open"
+            }
+          }
+        }
+      ]
+    }
+  },
+  "expect": {
+    "error": {
+      "type": "SchemaViolation",
+      "rule": "conditional",
+      "node": "root/children[0]",
+      "expected": "no on"
+    }
+  }
+}

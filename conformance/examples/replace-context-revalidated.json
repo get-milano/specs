@@ -1,0 +1,59 @@
+{
+  "name": "replace-context-revalidated",
+  "description": "The held context values are validated against the new declarations; a mismatch fails the replacement",
+  "document": {
+    "version": "2.1.0",
+    "context": {
+      "k": "string"
+    },
+    "root": {
+      "type": "Text",
+      "id": "r",
+      "properties": {
+        "text": {
+          "$expr": "context.k"
+        }
+      }
+    }
+  },
+  "context": {
+    "k": "v"
+  },
+  "steps": [
+    {
+      "replace": {
+        "document": {
+          "version": "2.1.0",
+          "context": {
+            "k": "int"
+          },
+          "root": {
+            "type": "Text",
+            "id": "r",
+            "properties": {
+              "text": {
+                "$expr": "$str(context.k)"
+              }
+            }
+          }
+        },
+        "error": {
+          "type": "SchemaViolation",
+          "rule": "context-declaration",
+          "expected": "int",
+          "found": "string"
+        }
+      }
+    }
+  ],
+  "expect": {
+    "view": {
+      "type": "Text",
+      "reference": "r",
+      "properties": {
+        "text": "v"
+      }
+    },
+    "occurrences": []
+  }
+}

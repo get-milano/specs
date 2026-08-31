@@ -1,6 +1,6 @@
 {
   "name": "gen-typing-call-reject-052",
-  "description": "Generated (exhaustive): double(state.d) in a string position is rejected at the gate",
+  "description": "Generated (exhaustive): $double(state.d) in a string position is rejected at the gate",
   "document": {
     "version": "1.0.0",
     "state": {
@@ -15,7 +15,7 @@
           "id": "p",
           "properties": {
             "s": {
-              "$expr": "double(state.d)"
+              "$expr": "$double(state.d)"
             }
           }
         }

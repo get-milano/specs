@@ -1,0 +1,36 @@
+{
+  "name": "conditional-needs-contract-2",
+  "description": "A 1.x document may not use any construct",
+  "document": {
+    "version": "1.0.0",
+    "root": {
+      "type": "Column",
+      "id": "c",
+      "children": [
+        {
+          "type": "$if",
+          "condition": {
+            "$expr": "true"
+          },
+          "then": [
+            {
+              "type": "Text",
+              "properties": {
+                "text": "a"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "expect": {
+    "error": {
+      "type": "SchemaViolation",
+      "rule": "construct",
+      "node": "root/children[0]",
+      "expected": "component type",
+      "found": "$if"
+    }
+  }
+}

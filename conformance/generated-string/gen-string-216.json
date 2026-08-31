@@ -1,0 +1,26 @@
+{
+  "name": "gen-string-216",
+  "description": "Generated (seed 20260831): $replace($join($split('', '\\''), '\ud83d\ude00'), '\ud83d\ude00', '')",
+  "document": {
+    "version": "2.1.0",
+    "root": {
+      "type": "Text",
+      "id": "r",
+      "properties": {
+        "text": {
+          "$expr": "$replace($join($split('', '\\''), '\ud83d\ude00'), '\ud83d\ude00', '')"
+        }
+      }
+    }
+  },
+  "expect": {
+    "view": {
+      "type": "Text",
+      "reference": "r",
+      "properties": {
+        "text": ""
+      }
+    },
+    "occurrences": []
+  }
+}

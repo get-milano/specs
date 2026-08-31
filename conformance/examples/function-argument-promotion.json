@@ -1,0 +1,41 @@
+{
+  "name": "function-argument-promotion",
+  "description": "An int in a double argument position is promoted before the call, as in every declared position",
+  "document": {
+    "version": "2.1.0",
+    "root": {
+      "type": "Text",
+      "id": "t",
+      "properties": {
+        "text": {
+          "$expr": "$str(scale(2, 3))"
+        }
+      }
+    }
+  },
+  "config": {
+    "functions": {
+      "results": {
+        "scale": [
+          {
+            "arguments": [
+              2.0,
+              3
+            ],
+            "returns": 6.0
+          }
+        ]
+      }
+    }
+  },
+  "expect": {
+    "view": {
+      "type": "Text",
+      "reference": "t",
+      "properties": {
+        "text": "6.0"
+      }
+    },
+    "occurrences": []
+  }
+}

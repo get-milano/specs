@@ -1,0 +1,33 @@
+{
+  "name": "gen-typing-numeric-reject-001",
+  "description": "Generated (exhaustive): $abs(state.iOpt) in a double position is rejected at the gate",
+  "document": {
+    "version": "2.1.0",
+    "state": {
+      "iOpt": "int?"
+    },
+    "root": {
+      "type": "Column",
+      "id": "root",
+      "children": [
+        {
+          "type": "Probe",
+          "id": "p",
+          "properties": {
+            "d": {
+              "$expr": "$abs(state.iOpt)"
+            }
+          }
+        }
+      ]
+    }
+  },
+  "expect": {
+    "error": {
+      "type": "SchemaViolation",
+      "rule": "expression",
+      "node": "p",
+      "expected": "double"
+    }
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "name": "string-split-absent-separator",
+  "description": "A separator that does not occur gives one element, the subject",
+  "document": {
+    "version": "2.1.0",
+    "root": {
+      "type": "Text",
+      "id": "r",
+      "properties": {
+        "text": {
+          "$expr": "$str($length($split('hello', ',')))"
+        }
+      }
+    }
+  },
+  "expect": {
+    "view": {
+      "type": "Text",
+      "reference": "r",
+      "properties": {
+        "text": "1"
+      }
+    },
+    "occurrences": []
+  }
+}

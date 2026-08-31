@@ -1,0 +1,90 @@
+{
+  "name": "replace-optionality-is-part-of-the-type",
+  "description": "A key whose optionality changes is retyped: it comes from the provider",
+  "document": {
+    "version": "2.1.0",
+    "state": {
+      "n": "int"
+    },
+    "root": {
+      "type": "Column",
+      "id": "c",
+      "children": [
+        {
+          "type": "Text",
+          "id": "r",
+          "properties": {
+            "text": {
+              "$expr": "$str(state.n)"
+            }
+          }
+        },
+        {
+          "type": "Button",
+          "id": "go",
+          "properties": {
+            "label": "Go",
+            "enabled": true
+          },
+          "on": {
+            "tap": [
+              {
+                "action": "$set",
+                "key": "n",
+                "value": {
+                  "$expr": "state.n + 5"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    }
+  },
+  "state": {
+    "n": 0
+  },
+  "steps": [
+    {
+      "event": {
+        "node": "go",
+        "name": "tap"
+      }
+    },
+    {
+      "replace": {
+        "document": {
+          "version": "2.1.0",
+          "state": {
+            "n": "int?"
+          },
+          "root": {
+            "type": "Text",
+            "id": "r",
+            "properties": {
+              "text": {
+                "$expr": "$str(state.n ?? 0)"
+              }
+            }
+          }
+        },
+        "state": {
+          "n": null
+        }
+      }
+    }
+  ],
+  "expect": {
+    "state": {
+      "n": null
+    },
+    "view": {
+      "type": "Text",
+      "reference": "r",
+      "properties": {
+        "text": "0"
+      }
+    },
+    "occurrences": []
+  }
+}

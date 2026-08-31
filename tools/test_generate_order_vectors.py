@@ -74,6 +74,7 @@ class Catalog(unittest.TestCase):
         "undeclared-property": ("SchemaViolation", "undeclared-property"),
         "property-type": ("SchemaViolation", "property-type"),
         "expression": ("SchemaViolation", "expression"),
+        "contract-feature": ("SchemaViolation", "contract-feature"),
         "children": ("SchemaViolation", "children"),
         "event-binding": ("SchemaViolation", "event-binding"),
         "action-encoding": ("SchemaViolation", "action-encoding"),

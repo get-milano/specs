@@ -1,0 +1,25 @@
+{
+  "name": "string-substring-needs-2-1",
+  "description": "A 2.0 document calling substring fails with contract-feature",
+  "document": {
+    "version": "2.0.0",
+    "root": {
+      "type": "Text",
+      "id": "r",
+      "properties": {
+        "text": {
+          "$expr": "$substring('hello', 0, 2)"
+        }
+      }
+    }
+  },
+  "expect": {
+    "error": {
+      "type": "SchemaViolation",
+      "rule": "contract-feature",
+      "node": "r",
+      "expected": "2.1",
+      "found": "$substring"
+    }
+  }
+}

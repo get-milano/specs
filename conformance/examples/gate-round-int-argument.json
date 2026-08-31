@@ -1,0 +1,24 @@
+{
+  "name": "gate-round-int-argument",
+  "description": "floor, ceil, and round take exactly a double: an int argument is rejected, as it is for int() and double()",
+  "document": {
+    "version": "2.1.0",
+    "root": {
+      "type": "Text",
+      "id": "t",
+      "properties": {
+        "text": {
+          "$expr": "$str($round(1))"
+        }
+      }
+    }
+  },
+  "expect": {
+    "error": {
+      "type": "SchemaViolation",
+      "rule": "expression",
+      "node": "t",
+      "expected": "string"
+    }
+  }
+}

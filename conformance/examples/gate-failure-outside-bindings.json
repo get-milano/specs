@@ -1,0 +1,39 @@
+{
+  "name": "gate-failure-outside-bindings",
+  "description": "failure is not a root in property expressions",
+  "document": {
+    "version": "2.1.0",
+    "state": {
+      "label": "string"
+    },
+    "root": {
+      "type": "Text",
+      "id": "t",
+      "properties": {
+        "text": {
+          "$expr": "failure"
+        }
+      }
+    }
+  },
+  "state": {
+    "label": ""
+  },
+  "expect": {
+    "error": {
+      "type": "SchemaViolation",
+      "rule": "expression",
+      "node": "t",
+      "expected": "string"
+    }
+  },
+  "config": {
+    "actions": {
+      "declare": {
+        "fetchCode": {
+          "failure": "string"
+        }
+      }
+    }
+  }
+}

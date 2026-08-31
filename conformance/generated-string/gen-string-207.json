@@ -1,0 +1,26 @@
+{
+  "name": "gen-string-207",
+  "description": "Generated (seed 20260831): $substring('ababab', $indexOf('ababab', ','), $length('trail,'))",
+  "document": {
+    "version": "2.1.0",
+    "root": {
+      "type": "Text",
+      "id": "r",
+      "properties": {
+        "text": {
+          "$expr": "$substring('ababab', $indexOf('ababab', ','), $length('trail,'))"
+        }
+      }
+    }
+  },
+  "expect": {
+    "view": {
+      "type": "Text",
+      "reference": "r",
+      "properties": {
+        "text": "ababab"
+      }
+    },
+    "occurrences": []
+  }
+}

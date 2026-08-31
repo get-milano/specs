@@ -1,0 +1,40 @@
+{
+  "name": "gate-limit-tree-depth-counts-branches",
+  "description": "A node inside a branch counts against the tree depth limit at the depth the branch sits: pinned at a configured depth of two with a node three deep inside an $if",
+  "config": {
+    "limits": {
+      "maxTreeDepth": 2
+    }
+  },
+  "document": {
+    "version": "2.1.0",
+    "root": {
+      "type": "Column",
+      "id": "c",
+      "children": [
+        {
+          "type": "$if",
+          "condition": {
+            "$expr": "true"
+          },
+          "then": [
+            {
+              "type": "Text",
+              "properties": {
+                "text": "deep"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "expect": {
+    "error": {
+      "type": "LimitExceeded",
+      "limit": "maxTreeDepth",
+      "value": 2,
+      "actual": 3
+    }
+  }
+}

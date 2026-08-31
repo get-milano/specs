@@ -1,0 +1,100 @@
+{
+  "name": "array-append-basic",
+  "description": "$append evaluates its value and adds it as the last element; the array's dependents re-resolve before the next action, and a second append sees the first",
+  "document": {
+    "version": "2.1.0",
+    "state": {
+      "items": {
+        "array": "string"
+      },
+      "n": "int"
+    },
+    "root": {
+      "type": "Column",
+      "id": "c",
+      "children": [
+        {
+          "type": "Text",
+          "id": "count",
+          "properties": {
+            "text": {
+              "$expr": "$str($length(state.items))"
+            }
+          }
+        },
+        {
+          "type": "Button",
+          "id": "add",
+          "properties": {
+            "label": "Add",
+            "enabled": true
+          },
+          "on": {
+            "tap": [
+              {
+                "action": "$append",
+                "key": "items",
+                "value": "c"
+              },
+              {
+                "action": "$append",
+                "key": "items",
+                "value": {
+                  "$expr": "$concat('d', $str($length(state.items)))"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    }
+  },
+  "state": {
+    "items": [
+      "a",
+      "b"
+    ],
+    "n": 0
+  },
+  "steps": [
+    {
+      "event": {
+        "node": "add",
+        "name": "tap"
+      }
+    }
+  ],
+  "expect": {
+    "state": {
+      "items": [
+        "a",
+        "b",
+        "c",
+        "d3"
+      ],
+      "n": 0
+    },
+    "view": {
+      "type": "Column",
+      "reference": "c",
+      "children": [
+        {
+          "type": "Text",
+          "reference": "count",
+          "properties": {
+            "text": "4"
+          }
+        },
+        {
+          "type": "Button",
+          "reference": "add",
+          "properties": {
+            "label": "Add",
+            "enabled": true
+          }
+        }
+      ]
+    },
+    "occurrences": []
+  }
+}

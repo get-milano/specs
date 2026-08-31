@@ -55,7 +55,7 @@
               "id": "name",
               "properties": {
                 "text": {
-                  "$expr": "concat(state.prefix, row.name)"
+                  "$expr": "$concat(state.prefix, row.name)"
                 }
               }
             }

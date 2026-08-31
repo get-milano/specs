@@ -1,0 +1,119 @@
+{
+  "name": "replace-node-references-recomputed",
+  "description": "After the swap, emissions address the new document's nodes; a node the new document lacks is an unknown node",
+  "document": {
+    "version": "2.1.0",
+    "state": {
+      "n": "int"
+    },
+    "root": {
+      "type": "Column",
+      "id": "c",
+      "children": [
+        {
+          "type": "Text",
+          "id": "r",
+          "properties": {
+            "text": {
+              "$expr": "$str(state.n)"
+            }
+          }
+        },
+        {
+          "type": "Button",
+          "id": "go",
+          "properties": {
+            "label": "Go",
+            "enabled": true
+          },
+          "on": {
+            "tap": [
+              {
+                "action": "$set",
+                "key": "n",
+                "value": {
+                  "$expr": "state.n + 5"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    }
+  },
+  "state": {
+    "n": 0
+  },
+  "steps": [
+    {
+      "replace": {
+        "document": {
+          "version": "2.1.0",
+          "state": {
+            "n": "int"
+          },
+          "root": {
+            "type": "Column",
+            "id": "c",
+            "children": [
+              {
+                "type": "Text",
+                "id": "r",
+                "properties": {
+                  "text": {
+                    "$expr": "$str(state.n)"
+                  }
+                }
+              },
+              {
+                "type": "Button",
+                "id": "again",
+                "properties": {
+                  "label": "Again",
+                  "enabled": true
+                },
+                "on": {
+                  "tap": [
+                    {
+                      "action": "$set",
+                      "key": "n",
+                      "value": {
+                        "$expr": "state.n + 1"
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "event": {
+        "node": "again",
+        "name": "tap"
+      }
+    },
+    {
+      "event": {
+        "node": "go",
+        "name": "tap"
+      }
+    }
+  ],
+  "expect": {
+    "state": {
+      "n": 1
+    },
+    "occurrences": [
+      {
+        "kind": "invalidEmission",
+        "node": "go",
+        "name": "tap",
+        "expected": "declared event",
+        "found": "unknown node"
+      }
+    ]
+  }
+}

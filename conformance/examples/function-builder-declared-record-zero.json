@@ -1,0 +1,68 @@
+{
+  "name": "function-builder-declared-record-zero",
+  "description": "A builder may declare a function for its surface; the zero value of a record has every field at its zero",
+  "document": {
+    "version": "2.1.0",
+    "root": {
+      "type": "Text",
+      "id": "t",
+      "properties": {
+        "text": {
+          "$expr": "$concat(profile('u').name, '/', $str(profile('u').age))"
+        }
+      }
+    }
+  },
+  "config": {
+    "functions": {
+      "declare": {
+        "profile": {
+          "arguments": [
+            "string"
+          ],
+          "returns": {
+            "record": {
+              "name": "string",
+              "age": "int"
+            }
+          }
+        }
+      },
+      "results": {
+        "profile": [
+          {
+            "arguments": [
+              "u"
+            ],
+            "throws": true
+          }
+        ]
+      }
+    }
+  },
+  "expect": {
+    "view": {
+      "type": "Text",
+      "reference": "t",
+      "properties": {
+        "text": "/0"
+      }
+    },
+    "occurrences": [
+      {
+        "kind": "invalidFunctionResult",
+        "node": "t",
+        "name": "profile",
+        "expected": "record",
+        "found": "error"
+      },
+      {
+        "kind": "invalidFunctionResult",
+        "node": "t",
+        "name": "profile",
+        "expected": "record",
+        "found": "error"
+      }
+    ]
+  }
+}

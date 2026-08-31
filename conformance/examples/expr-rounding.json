@@ -1,0 +1,310 @@
+{
+  "name": "expr-rounding",
+  "description": "floor, ceil, and round are IEEE 754 doubles in and out: round breaks ties away from zero, a zero result keeps the argument's sign, and non-finite values pass through",
+  "document": {
+    "version": "2.1.0",
+    "root": {
+      "type": "Column",
+      "id": "root",
+      "children": [
+        {
+          "type": "Text",
+          "id": "p0",
+          "properties": {
+            "text": {
+              "$expr": "$str($floor(2.7))"
+            }
+          }
+        },
+        {
+          "type": "Text",
+          "id": "p1",
+          "properties": {
+            "text": {
+              "$expr": "$str($floor(-0.5))"
+            }
+          }
+        },
+        {
+          "type": "Text",
+          "id": "p2",
+          "properties": {
+            "text": {
+              "$expr": "$str($floor(-(0.0)))"
+            }
+          }
+        },
+        {
+          "type": "Text",
+          "id": "p3",
+          "properties": {
+            "text": {
+              "$expr": "$str($ceil(2.1))"
+            }
+          }
+        },
+        {
+          "type": "Text",
+          "id": "p4",
+          "properties": {
+            "text": {
+              "$expr": "$str($ceil(-0.5))"
+            }
+          }
+        },
+        {
+          "type": "Text",
+          "id": "p5",
+          "properties": {
+            "text": {
+              "$expr": "$str($ceil(-1.5))"
+            }
+          }
+        },
+        {
+          "type": "Text",
+          "id": "p6",
+          "properties": {
+            "text": {
+              "$expr": "$str($round(0.5))"
+            }
+          }
+        },
+        {
+          "type": "Text",
+          "id": "p7",
+          "properties": {
+            "text": {
+              "$expr": "$str($round(1.5))"
+            }
+          }
+        },
+        {
+          "type": "Text",
+          "id": "p8",
+          "properties": {
+            "text": {
+              "$expr": "$str($round(2.5))"
+            }
+          }
+        },
+        {
+          "type": "Text",
+          "id": "p9",
+          "properties": {
+            "text": {
+              "$expr": "$str($round(-2.5))"
+            }
+          }
+        },
+        {
+          "type": "Text",
+          "id": "p10",
+          "properties": {
+            "text": {
+              "$expr": "$str($round(-0.4))"
+            }
+          }
+        },
+        {
+          "type": "Text",
+          "id": "p11",
+          "properties": {
+            "text": {
+              "$expr": "$str($round(0.49999999999999994))"
+            }
+          }
+        },
+        {
+          "type": "Text",
+          "id": "p12",
+          "properties": {
+            "text": {
+              "$expr": "$str($round(4503599627370497.0))"
+            }
+          }
+        },
+        {
+          "type": "Text",
+          "id": "p13",
+          "properties": {
+            "text": {
+              "$expr": "$str($round(1.0 / 0.0))"
+            }
+          }
+        },
+        {
+          "type": "Text",
+          "id": "p14",
+          "properties": {
+            "text": {
+              "$expr": "$str($floor(0.0 / 0.0))"
+            }
+          }
+        },
+        {
+          "type": "Text",
+          "id": "p15",
+          "properties": {
+            "text": {
+              "$expr": "$str($ceil((0.0 - 1.0) / 0.0))"
+            }
+          }
+        },
+        {
+          "type": "Text",
+          "id": "p16",
+          "properties": {
+            "text": {
+              "$expr": "$str($int($round(2.5)))"
+            }
+          }
+        },
+        {
+          "type": "Text",
+          "id": "p17",
+          "properties": {
+            "text": {
+              "$expr": "$str($int($floor(-2.5)))"
+            }
+          }
+        }
+      ]
+    }
+  },
+  "expect": {
+    "view": {
+      "type": "Column",
+      "reference": "root",
+      "children": [
+        {
+          "type": "Text",
+          "reference": "p0",
+          "properties": {
+            "text": "2.0"
+          }
+        },
+        {
+          "type": "Text",
+          "reference": "p1",
+          "properties": {
+            "text": "-1.0"
+          }
+        },
+        {
+          "type": "Text",
+          "reference": "p2",
+          "properties": {
+            "text": "-0.0"
+          }
+        },
+        {
+          "type": "Text",
+          "reference": "p3",
+          "properties": {
+            "text": "3.0"
+          }
+        },
+        {
+          "type": "Text",
+          "reference": "p4",
+          "properties": {
+            "text": "-0.0"
+          }
+        },
+        {
+          "type": "Text",
+          "reference": "p5",
+          "properties": {
+            "text": "-1.0"
+          }
+        },
+        {
+          "type": "Text",
+          "reference": "p6",
+          "properties": {
+            "text": "1.0"
+          }
+        },
+        {
+          "type": "Text",
+          "reference": "p7",
+          "properties": {
+            "text": "2.0"
+          }
+        },
+        {
+          "type": "Text",
+          "reference": "p8",
+          "properties": {
+            "text": "3.0"
+          }
+        },
+        {
+          "type": "Text",
+          "reference": "p9",
+          "properties": {
+            "text": "-3.0"
+          }
+        },
+        {
+          "type": "Text",
+          "reference": "p10",
+          "properties": {
+            "text": "-0.0"
+          }
+        },
+        {
+          "type": "Text",
+          "reference": "p11",
+          "properties": {
+            "text": "0.0"
+          }
+        },
+        {
+          "type": "Text",
+          "reference": "p12",
+          "properties": {
+            "text": "4503599627370497.0"
+          }
+        },
+        {
+          "type": "Text",
+          "reference": "p13",
+          "properties": {
+            "text": "inf"
+          }
+        },
+        {
+          "type": "Text",
+          "reference": "p14",
+          "properties": {
+            "text": "nan"
+          }
+        },
+        {
+          "type": "Text",
+          "reference": "p15",
+          "properties": {
+            "text": "-inf"
+          }
+        },
+        {
+          "type": "Text",
+          "reference": "p16",
+          "properties": {
+            "text": "3"
+          }
+        },
+        {
+          "type": "Text",
+          "reference": "p17",
+          "properties": {
+            "text": "-3"
+          }
+        }
+      ]
+    },
+    "occurrences": []
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "name": "gen-string-155",
+  "description": "Generated (seed 20260831): $substring(',lead', $length('abc'), $length('abc'))",
+  "document": {
+    "version": "2.1.0",
+    "root": {
+      "type": "Text",
+      "id": "r",
+      "properties": {
+        "text": {
+          "$expr": "$substring(',lead', $length('abc'), $length('abc'))"
+        }
+      }
+    }
+  },
+  "expect": {
+    "view": {
+      "type": "Text",
+      "reference": "r",
+      "properties": {
+        "text": ""
+      }
+    },
+    "occurrences": []
+  }
+}

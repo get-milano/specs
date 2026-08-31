@@ -30,7 +30,7 @@
           "id": "count",
           "properties": {
             "text": {
-              "$expr": "str(state.n)"
+              "$expr": "$str(state.n)"
             }
           }
         },
@@ -54,7 +54,7 @@
                 "action": "$set",
                 "key": "s",
                 "value": {
-                  "$expr": "concat(state.s, state.s)"
+                  "$expr": "$concat(state.s, state.s)"
                 }
               },
               {

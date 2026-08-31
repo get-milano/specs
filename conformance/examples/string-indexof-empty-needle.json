@@ -1,0 +1,26 @@
+{
+  "name": "string-indexof-empty-needle",
+  "description": "An empty needle occurs at the start",
+  "document": {
+    "version": "2.1.0",
+    "root": {
+      "type": "Text",
+      "id": "r",
+      "properties": {
+        "text": {
+          "$expr": "$str($indexOf('hello', ''))"
+        }
+      }
+    }
+  },
+  "expect": {
+    "view": {
+      "type": "Text",
+      "reference": "r",
+      "properties": {
+        "text": "0"
+      }
+    },
+    "occurrences": []
+  }
+}

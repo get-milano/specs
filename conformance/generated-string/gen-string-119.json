@@ -1,0 +1,26 @@
+{
+  "name": "gen-string-119",
+  "description": "Generated (seed 20260831): $join($split('a,,b', 'o'), '..')",
+  "document": {
+    "version": "2.1.0",
+    "root": {
+      "type": "Text",
+      "id": "r",
+      "properties": {
+        "text": {
+          "$expr": "$join($split('a,,b', 'o'), '..')"
+        }
+      }
+    }
+  },
+  "expect": {
+    "view": {
+      "type": "Text",
+      "reference": "r",
+      "properties": {
+        "text": "a,,b"
+      }
+    },
+    "occurrences": []
+  }
+}

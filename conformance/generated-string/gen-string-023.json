@@ -1,0 +1,26 @@
+{
+  "name": "gen-string-023",
+  "description": "Generated (seed 20260831): $substring('tab\tnewline\n', $indexOf('a\ud83d\ude00b', '\ud83d\ude00'), $length(''))",
+  "document": {
+    "version": "2.1.0",
+    "root": {
+      "type": "Text",
+      "id": "r",
+      "properties": {
+        "text": {
+          "$expr": "$substring('tab\tnewline\n', $indexOf('a\ud83d\ude00b', '\ud83d\ude00'), $length(''))"
+        }
+      }
+    }
+  },
+  "expect": {
+    "view": {
+      "type": "Text",
+      "reference": "r",
+      "properties": {
+        "text": ""
+      }
+    },
+    "occurrences": []
+  }
+}

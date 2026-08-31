@@ -1,0 +1,51 @@
+{
+  "name": "array-append-promotes-int",
+  "description": "An int literal appended to a double array is promoted to double, as in every declared position",
+  "document": {
+    "version": "2.1.0",
+    "state": {
+      "prices": {
+        "array": "double"
+      }
+    },
+    "root": {
+      "type": "Button",
+      "id": "add",
+      "properties": {
+        "label": "Add",
+        "enabled": true
+      },
+      "on": {
+        "tap": [
+          {
+            "action": "$append",
+            "key": "prices",
+            "value": 3
+          }
+        ]
+      }
+    }
+  },
+  "state": {
+    "prices": [
+      1.5
+    ]
+  },
+  "steps": [
+    {
+      "event": {
+        "node": "add",
+        "name": "tap"
+      }
+    }
+  ],
+  "expect": {
+    "state": {
+      "prices": [
+        1.5,
+        3.0
+      ]
+    },
+    "occurrences": []
+  }
+}

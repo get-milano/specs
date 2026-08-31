@@ -40,7 +40,8 @@
       "type": "SchemaViolation",
       "rule": "action-capability",
       "node": "a",
-      "expected": "granted action"
+      "expected": "granted action",
+      "found": "secret"
     }
   }
 }

@@ -1,0 +1,26 @@
+{
+  "name": "string-replace-no-rescan",
+  "description": "A replacement containing the needle is not scanned again",
+  "document": {
+    "version": "2.1.0",
+    "root": {
+      "type": "Text",
+      "id": "r",
+      "properties": {
+        "text": {
+          "$expr": "$replace('ab', 'a', 'aa')"
+        }
+      }
+    }
+  },
+  "expect": {
+    "view": {
+      "type": "Text",
+      "reference": "r",
+      "properties": {
+        "text": "aab"
+      }
+    },
+    "occurrences": []
+  }
+}

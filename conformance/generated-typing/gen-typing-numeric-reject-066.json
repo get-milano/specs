@@ -1,0 +1,34 @@
+{
+  "name": "gen-typing-numeric-reject-066",
+  "description": "Generated (exhaustive): $max(state.iOpt, state.s) in a double position is rejected at the gate",
+  "document": {
+    "version": "2.1.0",
+    "state": {
+      "iOpt": "int?",
+      "s": "string"
+    },
+    "root": {
+      "type": "Column",
+      "id": "root",
+      "children": [
+        {
+          "type": "Probe",
+          "id": "p",
+          "properties": {
+            "d": {
+              "$expr": "$max(state.iOpt, state.s)"
+            }
+          }
+        }
+      ]
+    }
+  },
+  "expect": {
+    "error": {
+      "type": "SchemaViolation",
+      "rule": "expression",
+      "node": "p",
+      "expected": "double"
+    }
+  }
+}

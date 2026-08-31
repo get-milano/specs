@@ -1,0 +1,26 @@
+{
+  "name": "gen-numeric-fn-041",
+  "description": "Generated (seed 20260830): $str($floor($abs(9007199254740992.0)))",
+  "document": {
+    "version": "2.1.0",
+    "root": {
+      "type": "Text",
+      "id": "r",
+      "properties": {
+        "text": {
+          "$expr": "$str($floor($abs(9007199254740992.0)))"
+        }
+      }
+    }
+  },
+  "expect": {
+    "view": {
+      "type": "Text",
+      "reference": "r",
+      "properties": {
+        "text": "9007199254740992.0"
+      }
+    },
+    "occurrences": []
+  }
+}

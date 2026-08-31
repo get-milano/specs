@@ -11,7 +11,7 @@
       "id": "result",
       "properties": {
         "text": {
-          "$expr": "str(if(state.count != 0, 100 / state.count, 0))"
+          "$expr": "$str($if(state.count != 0, 100 / state.count, 0))"
         }
       }
     }

@@ -1,0 +1,46 @@
+{
+  "name": "gate-lifecycle-event-root",
+  "description": "Lifecycle signals carry no payload: event is not a root inside their bindings",
+  "document": {
+    "version": "2.1.0",
+    "state": {
+      "count": "int"
+    },
+    "root": {
+      "type": "Column",
+      "id": "root",
+      "children": [
+        {
+          "type": "Text",
+          "id": "t",
+          "properties": {
+            "text": {
+              "$expr": "$str(state.count)"
+            }
+          }
+        }
+      ]
+    },
+    "on": {
+      "appear": [
+        {
+          "action": "$set",
+          "key": "count",
+          "value": {
+            "$expr": "event"
+          }
+        }
+      ]
+    }
+  },
+  "state": {
+    "count": 0
+  },
+  "expect": {
+    "error": {
+      "type": "SchemaViolation",
+      "rule": "expression",
+      "expected": "int"
+    }
+  }
+}

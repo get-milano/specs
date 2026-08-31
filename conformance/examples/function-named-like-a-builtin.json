@@ -1,0 +1,75 @@
+{
+  "name": "function-named-like-a-builtin",
+  "description": "A host function may carry a built-in's name: the bare call is the host's, the $ call is the contract's, and the two are independent",
+  "document": {
+    "version": "2.1.0",
+    "state": {
+      "amount": "double"
+    },
+    "root": {
+      "type": "Column",
+      "id": "c",
+      "children": [
+        {
+          "type": "Text",
+          "id": "host",
+          "properties": {
+            "text": {
+              "$expr": "round(state.amount, 2)"
+            }
+          }
+        },
+        {
+          "type": "Text",
+          "id": "builtin",
+          "properties": {
+            "text": {
+              "$expr": "$str($round(state.amount))"
+            }
+          }
+        }
+      ]
+    }
+  },
+  "state": {
+    "amount": 2.5
+  },
+  "config": {
+    "functions": {
+      "results": {
+        "round": [
+          {
+            "arguments": [
+              2.5,
+              2
+            ],
+            "returns": "2.50"
+          }
+        ]
+      }
+    }
+  },
+  "expect": {
+    "view": {
+      "type": "Column",
+      "reference": "c",
+      "children": [
+        {
+          "type": "Text",
+          "reference": "host",
+          "properties": {
+            "text": "2.50"
+          }
+        },
+        {
+          "type": "Text",
+          "reference": "builtin",
+          "properties": {
+            "text": "3.0"
+          }
+        }
+      ]
+    },
+    "occurrences": []
+  }
+}

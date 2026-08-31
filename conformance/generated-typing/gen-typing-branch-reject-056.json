@@ -1,6 +1,6 @@
 {
   "name": "gen-typing-branch-reject-056",
-  "description": "Generated (exhaustive): if(state.b, 'a', null) in a enum position is rejected at the gate",
+  "description": "Generated (exhaustive): $if(state.b, 'a', null) in a enum position is rejected at the gate",
   "document": {
     "version": "1.0.0",
     "state": {
@@ -15,7 +15,7 @@
           "id": "p",
           "properties": {
             "e": {
-              "$expr": "if(state.b, 'a', null)"
+              "$expr": "$if(state.b, 'a', null)"
             }
           }
         }

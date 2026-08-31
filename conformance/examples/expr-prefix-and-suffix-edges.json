@@ -1,0 +1,26 @@
+{
+  "name": "expr-prefix-and-suffix-edges",
+  "description": "The empty needle, the empty subject, and the needle that is the whole subject",
+  "document": {
+    "version": "2.0.0",
+    "root": {
+      "type": "Text",
+      "id": "result",
+      "properties": {
+        "text": {
+          "$expr": "$if($startsWith('abc', ''), '1', '0') + $if($endsWith('abc', ''), '1', '0') + $if($startsWith('', 'a'), '1', '0') + $if($endsWith('', ''), '1', '0') + $if($startsWith('abc', 'abc'), '1', '0') + $if($endsWith('abc', 'abc'), '1', '0')"
+        }
+      }
+    }
+  },
+  "expect": {
+    "view": {
+      "type": "Text",
+      "reference": "result",
+      "properties": {
+        "text": "110111"
+      }
+    },
+    "occurrences": []
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "name": "gate-context-descriptor-not-a-type",
+  "description": "An object descriptor carries `enum`, `array`, or `record`: one carrying none of them is malformed",
+  "documentText": "{\"version\": \"2.0.0\", \"context\": {\"x\": {}}, \"root\": {\"type\": \"Text\", \"id\": \"r\", \"properties\": {\"text\": \"x\"}}}",
+  "context": {
+    "x": "v"
+  },
+  "expect": {
+    "error": {
+      "type": "SchemaViolation",
+      "rule": "context-declaration",
+      "expected": "type descriptor",
+      "found": "x"
+    }
+  }
+}

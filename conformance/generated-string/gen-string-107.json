@@ -1,0 +1,26 @@
+{
+  "name": "gen-string-107",
+  "description": "Generated (seed 20260831): $replace($join($split('\\\\', 'l'), ''), ',', '')",
+  "document": {
+    "version": "2.1.0",
+    "root": {
+      "type": "Text",
+      "id": "r",
+      "properties": {
+        "text": {
+          "$expr": "$replace($join($split('\\\\', 'l'), ''), ',', '')"
+        }
+      }
+    }
+  },
+  "expect": {
+    "view": {
+      "type": "Text",
+      "reference": "r",
+      "properties": {
+        "text": "\\"
+      }
+    },
+    "occurrences": []
+  }
+}

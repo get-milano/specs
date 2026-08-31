@@ -1,0 +1,53 @@
+{
+  "name": "replace-provider-required-for-new-key",
+  "description": "A replacement declaring state the surface has no provider for is the state-declaration violation, as at build",
+  "document": {
+    "version": "2.1.0",
+    "root": {
+      "type": "Text",
+      "id": "r",
+      "properties": {
+        "text": "x"
+      }
+    }
+  },
+  "config": {
+    "stateDataProvider": false
+  },
+  "steps": [
+    {
+      "replace": {
+        "document": {
+          "version": "2.1.0",
+          "state": {
+            "n": "int"
+          },
+          "root": {
+            "type": "Text",
+            "id": "r",
+            "properties": {
+              "text": {
+                "$expr": "$str(state.n)"
+              }
+            }
+          }
+        },
+        "error": {
+          "type": "SchemaViolation",
+          "rule": "state-declaration",
+          "expected": "state data provider"
+        }
+      }
+    }
+  ],
+  "expect": {
+    "view": {
+      "type": "Text",
+      "reference": "r",
+      "properties": {
+        "text": "x"
+      }
+    },
+    "occurrences": []
+  }
+}

@@ -1,0 +1,80 @@
+{
+  "name": "repeat-key-int",
+  "description": "An int key renders in decimal in the instance reference",
+  "document": {
+    "version": "2.1.0",
+    "state": {
+      "rows": {
+        "array": {
+          "record": {
+            "n": "int",
+            "name": "string"
+          }
+        }
+      }
+    },
+    "root": {
+      "type": "Column",
+      "id": "list",
+      "children": [
+        {
+          "type": "$repeat",
+          "id": "each",
+          "items": {
+            "$expr": "state.rows"
+          },
+          "as": "row",
+          "key": {
+            "$expr": "row.n"
+          },
+          "children": [
+            {
+              "type": "Text",
+              "id": "name",
+              "properties": {
+                "text": {
+                  "$expr": "row.name"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "state": {
+    "rows": [
+      {
+        "n": 7,
+        "name": "Seven"
+      },
+      {
+        "n": -3,
+        "name": "Minus three"
+      }
+    ]
+  },
+  "expect": {
+    "view": {
+      "type": "Column",
+      "reference": "list",
+      "children": [
+        {
+          "type": "Text",
+          "reference": "name[7]",
+          "properties": {
+            "text": "Seven"
+          }
+        },
+        {
+          "type": "Text",
+          "reference": "name[-3]",
+          "properties": {
+            "text": "Minus three"
+          }
+        }
+      ]
+    },
+    "occurrences": []
+  }
+}

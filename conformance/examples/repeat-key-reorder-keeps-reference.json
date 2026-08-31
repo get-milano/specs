@@ -1,0 +1,101 @@
+{
+  "name": "repeat-key-reorder-keeps-reference",
+  "description": "When the array is reordered, a keyed instance keeps its reference and moves; only row_index changes",
+  "document": {
+    "version": "2.1.0",
+    "context": {
+      "rows": {
+        "array": {
+          "record": {
+            "id": "string",
+            "name": "string",
+            "url": "string"
+          }
+        }
+      }
+    },
+    "root": {
+      "type": "Column",
+      "id": "list",
+      "children": [
+        {
+          "type": "$repeat",
+          "id": "each",
+          "items": {
+            "$expr": "context.rows"
+          },
+          "as": "row",
+          "key": {
+            "$expr": "row.id"
+          },
+          "children": [
+            {
+              "type": "Text",
+              "id": "name",
+              "properties": {
+                "text": {
+                  "$expr": "$concat($str(row_index), ':', row.name)"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "context": {
+    "rows": [
+      {
+        "id": "alpha",
+        "name": "Alpha",
+        "url": "https://example.com/a"
+      },
+      {
+        "id": "beta",
+        "name": "Beta",
+        "url": "https://example.com/b"
+      }
+    ]
+  },
+  "steps": [
+    {
+      "contextUpdate": {
+        "rows": [
+          {
+            "id": "beta",
+            "name": "Beta",
+            "url": "https://example.com/b"
+          },
+          {
+            "id": "alpha",
+            "name": "Alpha",
+            "url": "https://example.com/a"
+          }
+        ]
+      }
+    }
+  ],
+  "expect": {
+    "view": {
+      "type": "Column",
+      "reference": "list",
+      "children": [
+        {
+          "type": "Text",
+          "reference": "name[beta]",
+          "properties": {
+            "text": "0:Beta"
+          }
+        },
+        {
+          "type": "Text",
+          "reference": "name[alpha]",
+          "properties": {
+            "text": "1:Alpha"
+          }
+        }
+      ]
+    },
+    "occurrences": []
+  }
+}

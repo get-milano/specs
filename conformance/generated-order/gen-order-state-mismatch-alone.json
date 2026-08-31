@@ -36,7 +36,8 @@
     "error": {
       "type": "SchemaViolation",
       "rule": "state-declaration",
-      "expected": "int"
+      "expected": "int",
+      "found": "string"
     }
   }
 }

@@ -1,0 +1,24 @@
+{
+  "name": "string-indexof-refuses-int-needle",
+  "description": "indexOf takes two strings",
+  "document": {
+    "version": "2.1.0",
+    "root": {
+      "type": "Text",
+      "id": "r",
+      "properties": {
+        "text": {
+          "$expr": "$str($indexOf('hello', 2))"
+        }
+      }
+    }
+  },
+  "expect": {
+    "error": {
+      "type": "SchemaViolation",
+      "rule": "expression",
+      "node": "r",
+      "expected": "string"
+    }
+  }
+}

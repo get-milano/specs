@@ -1,7 +1,7 @@
 {
-  "milano": "2.0.0",
+  "milano": "2.1.0",
   "name": "examples",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "components": {
     "Banner": {
       "properties": {
@@ -80,6 +80,36 @@
         "key": "string"
       },
       "strict": true
+    },
+    "Row": {
+      "properties": {
+        "spacing": "int?"
+      },
+      "children": true
+    },
+    "Card": {
+      "properties": {
+        "cornerRadius": "int?",
+        "accessibilityLabel": "string?"
+      },
+      "children": true,
+      "events": {
+        "tap": null
+      }
+    },
+    "Icon": {
+      "properties": {
+        "name": {
+          "enum": [
+            "person",
+            "list",
+            "search",
+            "edit",
+            "settings",
+            "help"
+          ]
+        }
+      }
     }
   },
   "actions": {
@@ -94,7 +124,85 @@
         "surname": "string",
         "email": "string",
         "phone": "string?"
+      },
+      "failure": {
+        "enum": [
+          "invalid",
+          "unavailable"
+        ]
       }
+    },
+    "navigate": {
+      "parameters": {
+        "screen": {
+          "enum": [
+            "profile",
+            "catalog",
+            "settings",
+            "help"
+          ]
+        }
+      }
+    },
+    "logEvent": {
+      "parameters": {
+        "event": "string",
+        "surface": "string",
+        "position": "int"
+      }
+    }
+  },
+  "functions": {
+    "formatMoney": {
+      "arguments": [
+        "int",
+        "string"
+      ],
+      "returns": "string"
+    },
+    "shout": {
+      "arguments": [
+        "string"
+      ],
+      "returns": "string"
+    },
+    "parseInt": {
+      "arguments": [
+        "string"
+      ],
+      "returns": "int?"
+    },
+    "scale": {
+      "arguments": [
+        "double",
+        "int"
+      ],
+      "returns": "double"
+    },
+    "tone": {
+      "arguments": [
+        {
+          "enum": [
+            "info",
+            "warning",
+            "danger"
+          ]
+        }
+      ],
+      "returns": {
+        "enum": [
+          "info",
+          "warning",
+          "danger"
+        ]
+      }
+    },
+    "round": {
+      "arguments": [
+        "double",
+        "int"
+      ],
+      "returns": "string"
     }
   }
 }

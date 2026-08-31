@@ -72,6 +72,19 @@ enum class SubmitMode(
     }
 }
 
+/** Members of the failure enum of action `submit`. Gate-guaranteed: decoding never fails. */
+enum class SubmitFailure(
+    val value: String,
+) {
+    Offline("offline"),
+    Rejected("rejected"),
+    ;
+
+    companion object {
+        fun from(value: String): SubmitFailure = entries.first { it.value == value }
+    }
+}
+
 /** Fields of the element of the `items` array on `Widget`. Non-null accessors are gate-guaranteed. */
 class WidgetItemsItem(
     val value: MilanoValue,
@@ -101,9 +114,11 @@ class WidgetPayload(
 ) {
     val id: String get() = (value.recordOrNull?.get("id") ?: MilanoValue.Null).stringOrNull!!
     val count: Long? get() = (value.recordOrNull?.get("count") ?: MilanoValue.Null).intOrNull
-    val kind: WidgetPayloadKind get() = WidgetPayloadKind.from((value.recordOrNull?.get("kind") ?: MilanoValue.Null).stringOrNull!!)
+    val kind: WidgetPayloadKind
+        get() = WidgetPayloadKind.from((value.recordOrNull?.get("kind") ?: MilanoValue.Null).stringOrNull!!)
     val owner: WidgetPayloadOwner get() = WidgetPayloadOwner(value.recordOrNull?.get("owner") ?: MilanoValue.Null)
-    val labels: List<String>? get() = (value.recordOrNull?.get("labels") ?: MilanoValue.Null).arrayOrNull?.map { item -> item.stringOrNull!! }
+    val labels: List<String>?
+        get() = (value.recordOrNull?.get("labels") ?: MilanoValue.Null).arrayOrNull?.map { item -> item.stringOrNull!! }
 
     companion object {
         fun of(
@@ -120,7 +135,10 @@ class WidgetPayload(
                         "count" to (count?.let { MilanoValue.IntValue(it) } ?: MilanoValue.Null),
                         "kind" to (MilanoValue.StringValue(kind.value)),
                         "owner" to (owner.value),
-                        "labels" to (labels?.let { MilanoValue.ArrayValue(it.map { item -> MilanoValue.StringValue(item) }) } ?: MilanoValue.Null),
+                        "labels" to (
+                            labels?.let { MilanoValue.ArrayValue(it.map { item -> MilanoValue.StringValue(item) }) }
+                                ?: MilanoValue.Null
+                        ),
                     ),
                 ),
             )
@@ -134,9 +152,7 @@ class WidgetPayloadOwner(
     val name: String get() = (value.recordOrNull?.get("name") ?: MilanoValue.Null).stringOrNull!!
 
     companion object {
-        fun of(
-            name: String,
-        ): WidgetPayloadOwner =
+        fun of(name: String): WidgetPayloadOwner =
             WidgetPayloadOwner(
                 MilanoValue.RecordValue(
                     mapOf(
@@ -152,7 +168,8 @@ class WidgetSubmitPayload(
     val value: MilanoValue,
 ) {
     val id: String get() = (value.recordOrNull?.get("id") ?: MilanoValue.Null).stringOrNull!!
-    val lines: List<Long> get() = (value.recordOrNull?.get("lines") ?: MilanoValue.Null).arrayOrNull!!.map { item -> item.intOrNull!! }
+    val lines: List<Long>
+        get() = (value.recordOrNull?.get("lines") ?: MilanoValue.Null).arrayOrNull!!.map { item -> item.intOrNull!! }
 
     companion object {
         fun of(
@@ -175,7 +192,8 @@ class OrderCart(
     val value: MilanoValue,
 ) {
     val id: String get() = (value.recordOrNull?.get("id") ?: MilanoValue.Null).stringOrNull!!
-    val lines: List<Long> get() = (value.recordOrNull?.get("lines") ?: MilanoValue.Null).arrayOrNull!!.map { item -> item.intOrNull!! }
+    val lines: List<Long>
+        get() = (value.recordOrNull?.get("lines") ?: MilanoValue.Null).arrayOrNull!!.map { item -> item.intOrNull!! }
 
     companion object {
         fun of(
@@ -200,9 +218,7 @@ class OrderNote(
     val text: String get() = (value.recordOrNull?.get("text") ?: MilanoValue.Null).stringOrNull!!
 
     companion object {
-        fun of(
-            text: String,
-        ): OrderNote =
+        fun of(text: String): OrderNote =
             OrderNote(
                 MilanoValue.RecordValue(
                     mapOf(
@@ -220,13 +236,34 @@ class OrderResult(
     val reference: String get() = (value.recordOrNull?.get("reference") ?: MilanoValue.Null).stringOrNull!!
 
     companion object {
-        fun of(
-            reference: String,
-        ): OrderResult =
+        fun of(reference: String): OrderResult =
             OrderResult(
                 MilanoValue.RecordValue(
                     mapOf(
                         "reference" to (MilanoValue.StringValue(reference)),
+                    ),
+                ),
+            )
+    }
+}
+
+/** Fields of the failure record of action `order`. Non-null accessors are gate-guaranteed. */
+class OrderFailure(
+    val value: MilanoValue,
+) {
+    val code: Long get() = (value.recordOrNull?.get("code") ?: MilanoValue.Null).intOrNull!!
+    val reason: String get() = (value.recordOrNull?.get("reason") ?: MilanoValue.Null).stringOrNull!!
+
+    companion object {
+        fun of(
+            code: Long,
+            reason: String,
+        ): OrderFailure =
+            OrderFailure(
+                MilanoValue.RecordValue(
+                    mapOf(
+                        "code" to (MilanoValue.IntValue(code)),
+                        "reason" to (MilanoValue.StringValue(reason)),
                     ),
                 ),
             )
@@ -288,13 +325,22 @@ sealed interface FixtureAction {
         val url: String,
     ) : FixtureAction
 
-    /** The handler completes it with a `{"record": {"reference": "string"}}` result, bound to `result` in onSuccess. */
+    /**
+     * The handler completes it with a `{"record": {"reference": "string"}}` result, bound to `result` in
+     * onSuccess.
+     * The handler fails it with a `{"record": {"code": "int", "reason": "string"}}` payload (a
+     * MilanoActionFailure), bound to `failure` in onFailure.
+     */
     data class Order(
         val cart: OrderCart,
         val note: OrderNote?,
     ) : FixtureAction
 
-    /** The handler completes it with a `string` result, bound to `result` in onSuccess. */
+    /**
+     * The handler completes it with a `string` result, bound to `result` in onSuccess.
+     * The handler fails it with a `{"enum": ["rejected", "offline"]}` payload (a MilanoActionFailure),
+     * bound to `failure` in onFailure.
+     */
     data class Submit(
         val mode: SubmitMode,
     ) : FixtureAction

@@ -1,0 +1,26 @@
+{
+  "name": "string-substring-basic",
+  "description": "substring takes the scalars between the two indices",
+  "document": {
+    "version": "2.1.0",
+    "root": {
+      "type": "Text",
+      "id": "r",
+      "properties": {
+        "text": {
+          "$expr": "$substring('hello world', 0, 5)"
+        }
+      }
+    }
+  },
+  "expect": {
+    "view": {
+      "type": "Text",
+      "reference": "r",
+      "properties": {
+        "text": "hello"
+      }
+    },
+    "occurrences": []
+  }
+}

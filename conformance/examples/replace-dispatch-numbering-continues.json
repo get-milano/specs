@@ -1,0 +1,79 @@
+{
+  "name": "replace-dispatch-numbering-continues",
+  "description": "The dispatch numbering continues across a replacement",
+  "document": {
+    "version": "2.1.0",
+    "root": {
+      "type": "Button",
+      "id": "go",
+      "properties": {
+        "label": "Go",
+        "enabled": true
+      },
+      "on": {
+        "tap": [
+          {
+            "action": "openUrl",
+            "url": "a"
+          }
+        ]
+      }
+    }
+  },
+  "steps": [
+    {
+      "event": {
+        "node": "go",
+        "name": "tap"
+      }
+    },
+    {
+      "replace": {
+        "document": {
+          "version": "2.1.0",
+          "root": {
+            "type": "Button",
+            "id": "go",
+            "properties": {
+              "label": "Go",
+              "enabled": true
+            },
+            "on": {
+              "tap": [
+                {
+                  "action": "openUrl",
+                  "url": "b"
+                }
+              ]
+            }
+          }
+        }
+      }
+    },
+    {
+      "event": {
+        "node": "go",
+        "name": "tap"
+      }
+    }
+  ],
+  "expect": {
+    "dispatched": [
+      {
+        "action": "openUrl",
+        "parameters": {
+          "url": "a"
+        },
+        "dispatch": 0
+      },
+      {
+        "action": "openUrl",
+        "parameters": {
+          "url": "b"
+        },
+        "dispatch": 1
+      }
+    ],
+    "occurrences": []
+  }
+}

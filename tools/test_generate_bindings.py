@@ -400,7 +400,7 @@ class EnumSites(unittest.TestCase):
         self.assertEqual(
             [name for name, _, _ in sites],
             ["FxWidgetLayout", "FxWidgetPayloadKind", "FxWidgetTone",
-             "FxWidgetPickPayload", "FxSubmitMode"],
+             "FxWidgetPickPayload", "FxSubmitMode", "FxSubmitFailure"],
         )
 
     def test_members_are_sorted_whatever_the_declaration_order(self):
@@ -432,7 +432,8 @@ class RecordSites(unittest.TestCase):
         self.assertEqual(
             names,
             ["FxWidgetItemsItem", "FxWidgetPayload", "FxWidgetPayloadOwner",
-             "FxWidgetSubmitPayload", "FxOrderCart", "FxOrderNote", "FxOrderResult"],
+             "FxWidgetSubmitPayload", "FxOrderCart", "FxOrderNote", "FxOrderResult",
+             "FxOrderFailure"],
         )
         self.assertEqual(lookup[("property", "Widget", "payload", "field", "owner")],
                          "FxWidgetPayloadOwner")
@@ -652,6 +653,41 @@ class ResultDeclarations(unittest.TestCase):
         note = gb.result_note({"result": {"enum": ["b", "a"]}})
         self.assertIn('"enum"', note)
         self.assertEqual(note, gb.result_note({"result": {"enum": ["b", "a"]}}))
+
+
+class FailureDeclarations(unittest.TestCase):
+    """Contract 2.1: a failure payload is a declaration site like a result,
+    so it earns a doc note on the action and a nominal type when it is an
+    enum or a record."""
+
+    def test_an_action_without_a_failure_gets_no_note(self):
+        self.assertIsNone(gb.failure_note({}))
+        self.assertIsNone(gb.failure_note({"result": "string"}))
+
+    def test_a_failure_is_named_in_the_note_with_how_to_raise_it(self):
+        note = gb.failure_note({"failure": {"enum": ["b", "a"]}})
+        self.assertIn('"enum"', note)
+        self.assertIn("onFailure", note)
+        self.assertIn("MilanoActionFailure", note)
+
+    def test_both_notes_appear_in_a_fixed_order(self):
+        notes = gb.action_notes({"result": "string", "failure": "int"})
+        self.assertEqual(len(notes), 2)
+        self.assertIn("result", notes[0])
+        self.assertIn("failure", notes[1])
+
+    def test_failure_sites_get_their_own_types_in_every_language(self):
+        swift = gb.generate_swift(FIXTURE, "Fx")
+        kotlin = gb.generate_kotlin(FIXTURE, "com.example.fixture", "")
+        ts = gb.generate_ts(FIXTURE, "Fx", "@get-milano/core")
+        self.assertIn("public enum FxSubmitFailure: String {", swift)
+        self.assertIn("public struct FxOrderFailure {", swift)
+        self.assertIn("enum class SubmitFailure(", kotlin)
+        self.assertIn("class OrderFailure(", kotlin)
+        self.assertIn('export type FxSubmitFailure = "offline" | "rejected";', ts)
+        self.assertIn("export class FxOrderFailure {", ts)
+        for produced in (swift, kotlin, ts):
+            self.assertIn("bound to `failure` in onFailure", produced)
 
 
 class CommandLineFailures(unittest.TestCase):

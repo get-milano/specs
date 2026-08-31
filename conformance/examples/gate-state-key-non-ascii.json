@@ -1,12 +1,13 @@
 {
   "name": "gate-state-key-non-ascii",
   "description": "Declaration keys follow the ASCII identifier grammar: a Unicode letter is not a letter here, so a state key spelled with one is a SchemaViolation",
-  "documentText": "{\"version\": \"2.0.0\", \"state\": {\"café\": \"int\"}, \"root\": {\"type\": \"Text\", \"properties\": {\"text\": \"x\"}}}",
+  "documentText": "{\"version\": \"2.0.0\", \"state\": {\"caf\u00e9\": \"int\"}, \"root\": {\"type\": \"Text\", \"properties\": {\"text\": \"x\"}}}",
   "expect": {
     "error": {
       "type": "SchemaViolation",
       "rule": "state-declaration",
-      "found": "café"
+      "found": "caf\u00e9",
+      "expected": "identifier"
     }
   }
 }

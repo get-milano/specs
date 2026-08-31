@@ -1,0 +1,150 @@
+{
+  "name": "replace-appeared-state-persists",
+  "description": "The appeared state persists and no lifecycle signal is synthesized: the new document's appear list does not run on the swap, and its disappear list runs on the next disappear",
+  "document": {
+    "version": "2.1.0",
+    "state": {
+      "n": "int"
+    },
+    "root": {
+      "type": "Column",
+      "id": "c",
+      "children": [
+        {
+          "type": "Text",
+          "id": "r",
+          "properties": {
+            "text": {
+              "$expr": "$str(state.n)"
+            }
+          }
+        },
+        {
+          "type": "Button",
+          "id": "go",
+          "properties": {
+            "label": "Go",
+            "enabled": true
+          },
+          "on": {
+            "tap": [
+              {
+                "action": "$set",
+                "key": "n",
+                "value": {
+                  "$expr": "state.n + 5"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "on": {
+      "appear": [
+        {
+          "action": "$set",
+          "key": "n",
+          "value": {
+            "$expr": "state.n + 1"
+          }
+        }
+      ]
+    }
+  },
+  "state": {
+    "n": 0
+  },
+  "steps": [
+    {
+      "appear": true
+    },
+    {
+      "replace": {
+        "document": {
+          "version": "2.1.0",
+          "state": {
+            "n": "int"
+          },
+          "root": {
+            "type": "Column",
+            "id": "c",
+            "children": [
+              {
+                "type": "Text",
+                "id": "r",
+                "properties": {
+                  "text": {
+                    "$expr": "$str(state.n)"
+                  }
+                }
+              },
+              {
+                "type": "Button",
+                "id": "go",
+                "properties": {
+                  "label": "Go",
+                  "enabled": true
+                },
+                "on": {
+                  "tap": [
+                    {
+                      "action": "$set",
+                      "key": "n",
+                      "value": {
+                        "$expr": "state.n + 5"
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          "on": {
+            "appear": [
+              {
+                "action": "$set",
+                "key": "n",
+                "value": {
+                  "$expr": "state.n + 10"
+                }
+              }
+            ],
+            "disappear": [
+              {
+                "action": "$set",
+                "key": "n",
+                "value": {
+                  "$expr": "state.n + 100"
+                }
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "disappear": true
+    }
+  ],
+  "expect": {
+    "state": {
+      "n": 101
+    },
+    "occurrences": [],
+    "interactions": [
+      {
+        "kind": "viewBuilt"
+      },
+      {
+        "kind": "viewAppeared"
+      },
+      {
+        "kind": "viewReplaced"
+      },
+      {
+        "kind": "viewDisappeared"
+      }
+    ]
+  }
+}

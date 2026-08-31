@@ -1,0 +1,130 @@
+{
+  "name": "repeat-key-nested",
+  "description": "Each enclosing repeat contributes its own identity: a keyed outer and an indexed inner mix as line[shirt][1]",
+  "document": {
+    "version": "2.1.0",
+    "state": {
+      "groups": {
+        "array": {
+          "record": {
+            "id": "string",
+            "label": "string",
+            "sizes": {
+              "array": "string"
+            }
+          }
+        }
+      }
+    },
+    "root": {
+      "type": "Column",
+      "id": "list",
+      "children": [
+        {
+          "type": "$repeat",
+          "id": "g",
+          "items": {
+            "$expr": "state.groups"
+          },
+          "as": "group",
+          "key": {
+            "$expr": "group.id"
+          },
+          "children": [
+            {
+              "type": "Text",
+              "id": "title",
+              "properties": {
+                "text": {
+                  "$expr": "group.label"
+                }
+              }
+            },
+            {
+              "type": "$repeat",
+              "id": "s",
+              "items": {
+                "$expr": "group.sizes"
+              },
+              "as": "size",
+              "children": [
+                {
+                  "type": "Text",
+                  "id": "line",
+                  "properties": {
+                    "text": {
+                      "$expr": "$concat(group.label, ' ', size)"
+                    }
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "state": {
+    "groups": [
+      {
+        "id": "shirt",
+        "label": "Shirt",
+        "sizes": [
+          "S",
+          "M"
+        ]
+      },
+      {
+        "id": "hat",
+        "label": "Hat",
+        "sizes": [
+          "L"
+        ]
+      }
+    ]
+  },
+  "expect": {
+    "view": {
+      "type": "Column",
+      "reference": "list",
+      "children": [
+        {
+          "type": "Text",
+          "reference": "title[shirt]",
+          "properties": {
+            "text": "Shirt"
+          }
+        },
+        {
+          "type": "Text",
+          "reference": "line[shirt][0]",
+          "properties": {
+            "text": "Shirt S"
+          }
+        },
+        {
+          "type": "Text",
+          "reference": "line[shirt][1]",
+          "properties": {
+            "text": "Shirt M"
+          }
+        },
+        {
+          "type": "Text",
+          "reference": "title[hat]",
+          "properties": {
+            "text": "Hat"
+          }
+        },
+        {
+          "type": "Text",
+          "reference": "line[hat][0]",
+          "properties": {
+            "text": "Hat L"
+          }
+        }
+      ]
+    },
+    "occurrences": []
+  }
+}

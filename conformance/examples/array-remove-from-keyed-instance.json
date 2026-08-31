@@ -1,0 +1,112 @@
+{
+  "name": "array-remove-from-keyed-instance",
+  "description": "Inside a keyed repeat, the index binding is the element's position at dispatch time, so an instance removes itself with it whatever its position has become",
+  "document": {
+    "version": "2.1.0",
+    "state": {
+      "rows": {
+        "array": {
+          "record": {
+            "name": "string",
+            "done": "bool"
+          }
+        }
+      }
+    },
+    "root": {
+      "type": "Column",
+      "id": "c",
+      "children": [
+        {
+          "type": "$repeat",
+          "id": "list",
+          "items": {
+            "$expr": "state.rows"
+          },
+          "as": "row",
+          "key": {
+            "$expr": "row.name"
+          },
+          "children": [
+            {
+              "type": "Button",
+              "id": "del",
+              "properties": {
+                "label": {
+                  "$expr": "row.name"
+                },
+                "enabled": true
+              },
+              "on": {
+                "tap": [
+                  {
+                    "action": "$remove",
+                    "key": "rows",
+                    "at": {
+                      "$expr": "row_index"
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "state": {
+    "rows": [
+      {
+        "name": "a",
+        "done": false
+      },
+      {
+        "name": "b",
+        "done": false
+      },
+      {
+        "name": "c",
+        "done": false
+      }
+    ]
+  },
+  "steps": [
+    {
+      "event": {
+        "node": "del[b]",
+        "name": "tap"
+      }
+    },
+    {
+      "event": {
+        "node": "del[c]",
+        "name": "tap"
+      }
+    }
+  ],
+  "expect": {
+    "state": {
+      "rows": [
+        {
+          "name": "a",
+          "done": false
+        }
+      ]
+    },
+    "view": {
+      "type": "Column",
+      "reference": "c",
+      "children": [
+        {
+          "type": "Button",
+          "reference": "del[a]",
+          "properties": {
+            "label": "a",
+            "enabled": true
+          }
+        }
+      ]
+    },
+    "occurrences": []
+  }
+}

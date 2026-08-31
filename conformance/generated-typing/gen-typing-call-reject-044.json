@@ -1,6 +1,6 @@
 {
   "name": "gen-typing-call-reject-044",
-  "description": "Generated (exhaustive): int('a') in a string position is rejected at the gate",
+  "description": "Generated (exhaustive): $int('a') in a string position is rejected at the gate",
   "document": {
     "version": "1.0.0",
     "root": {
@@ -12,7 +12,7 @@
           "id": "p",
           "properties": {
             "s": {
-              "$expr": "int('a')"
+              "$expr": "$int('a')"
             }
           }
         }

@@ -1,0 +1,26 @@
+{
+  "name": "expr-prefix-and-suffix",
+  "description": "$startsWith and $endsWith over a subject, both ways round and a needle longer than the subject",
+  "document": {
+    "version": "2.0.0",
+    "root": {
+      "type": "Text",
+      "id": "result",
+      "properties": {
+        "text": {
+          "$expr": "$if($startsWith('milano', 'mil'), '1', '0') + $if($endsWith('milano', 'ano'), '1', '0') + $if($startsWith('milano', 'ano'), '1', '0') + $if($endsWith('milano', 'mil'), '1', '0') + $if($startsWith('mil', 'milano'), '1', '0') + $if($startsWith('milano', 'Mil'), '1', '0')"
+        }
+      }
+    }
+  },
+  "expect": {
+    "view": {
+      "type": "Text",
+      "reference": "result",
+      "properties": {
+        "text": "110000"
+      }
+    },
+    "occurrences": []
+  }
+}

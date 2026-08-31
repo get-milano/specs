@@ -1,0 +1,98 @@
+{
+  "name": "completion-failure-applied",
+  "description": "A failure completion carries the value the handler failed with: failure binds inside onFailure with the declared type, and the analytics record carries it",
+  "document": {
+    "version": "2.1.0",
+    "state": {
+      "message": "string"
+    },
+    "root": {
+      "type": "Button",
+      "id": "b",
+      "properties": {
+        "label": "Go",
+        "enabled": true
+      },
+      "on": {
+        "tap": [
+          {
+            "action": "fetchCode",
+            "onFailure": [
+              {
+                "action": "$set",
+                "key": "message",
+                "value": {
+                  "$expr": "failure"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "state": {
+    "message": "start"
+  },
+  "steps": [
+    {
+      "event": {
+        "node": "b",
+        "name": "tap"
+      }
+    },
+    {
+      "complete": {
+        "dispatch": 0,
+        "outcome": "failure",
+        "payload": "boom"
+      }
+    }
+  ],
+  "expect": {
+    "state": {
+      "message": "boom"
+    },
+    "dispatched": [
+      {
+        "action": "fetchCode",
+        "parameters": {},
+        "dispatch": 0
+      }
+    ],
+    "occurrences": [],
+    "interactions": [
+      {
+        "kind": "viewBuilt"
+      },
+      {
+        "kind": "event",
+        "node": "b",
+        "name": "tap"
+      },
+      {
+        "kind": "actionDispatched",
+        "node": "b",
+        "name": "fetchCode",
+        "dispatch": 0,
+        "value": {}
+      },
+      {
+        "kind": "completionFailed",
+        "node": "b",
+        "name": "fetchCode",
+        "dispatch": 0,
+        "value": "boom"
+      }
+    ]
+  },
+  "config": {
+    "actions": {
+      "declare": {
+        "fetchCode": {
+          "failure": "string"
+        }
+      }
+    }
+  }
+}

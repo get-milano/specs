@@ -1,0 +1,24 @@
+{
+  "name": "gate-host-function-not-declared",
+  "description": "A bare name the surface declares no function for is the expression violation: bare names never fall back to the contract's functions",
+  "document": {
+    "version": "2.1.0",
+    "root": {
+      "type": "Text",
+      "id": "t",
+      "properties": {
+        "text": {
+          "$expr": "trim('  x  ')"
+        }
+      }
+    }
+  },
+  "expect": {
+    "error": {
+      "type": "SchemaViolation",
+      "rule": "expression",
+      "node": "t",
+      "expected": "string"
+    }
+  }
+}

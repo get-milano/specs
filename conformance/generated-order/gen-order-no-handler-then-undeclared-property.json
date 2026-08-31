@@ -41,7 +41,8 @@
     "error": {
       "type": "SchemaViolation",
       "rule": "undeclared-property",
-      "node": "b"
+      "node": "b",
+      "found": "extra"
     }
   }
 }

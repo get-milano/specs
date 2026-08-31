@@ -1,0 +1,50 @@
+{
+  "name": "lookup-reads-the-member-s-field",
+  "description": "A lookup reads the record field the enum names",
+  "document": {
+    "version": "2.1.0",
+    "state": {
+      "status": {
+        "enum": [
+          "ok",
+          "late",
+          "failed"
+        ]
+      },
+      "labels": {
+        "record": {
+          "ok": "string",
+          "late": "string",
+          "failed": "string"
+        }
+      }
+    },
+    "root": {
+      "type": "Text",
+      "id": "t",
+      "properties": {
+        "text": {
+          "$expr": "state.labels[state.status]"
+        }
+      }
+    }
+  },
+  "state": {
+    "status": "late",
+    "labels": {
+      "ok": "Ready",
+      "late": "Running late",
+      "failed": "Failed"
+    }
+  },
+  "expect": {
+    "view": {
+      "type": "Text",
+      "reference": "t",
+      "properties": {
+        "text": "Running late"
+      }
+    },
+    "occurrences": []
+  }
+}

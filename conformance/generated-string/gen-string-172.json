@@ -1,0 +1,26 @@
+{
+  "name": "gen-string-172",
+  "description": "Generated (seed 20260831): $str($length($split('trail,', '\\\\')))",
+  "document": {
+    "version": "2.1.0",
+    "root": {
+      "type": "Text",
+      "id": "r",
+      "properties": {
+        "text": {
+          "$expr": "$str($length($split('trail,', '\\\\')))"
+        }
+      }
+    }
+  },
+  "expect": {
+    "view": {
+      "type": "Text",
+      "reference": "r",
+      "properties": {
+        "text": "1"
+      }
+    },
+    "occurrences": []
+  }
+}

@@ -8,7 +8,7 @@
       "id": "result",
       "properties": {
         "text": {
-          "$expr": "if(false && 1 / 0 == 0, 'yes', 'no')"
+          "$expr": "$if(false && 1 / 0 == 0, 'yes', 'no')"
         }
       }
     }

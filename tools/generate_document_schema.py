@@ -107,8 +107,33 @@ def specialize(document_schema, vocabulary):
         }
     })
 
+    # The $if construct (contract 2.1), the same way: its own keys are
+    # required, and it carries none of a component's.
+    per_component.append({
+        "if": {"properties": {"type": {"const": "$if"}}},
+        "then": {
+            "required": ["condition", "then"],
+            "properties": {
+                "properties": {"type": "object", "maxProperties": 0},
+                "on": {"type": "object", "maxProperties": 0}
+            }
+        }
+    })
+
+    # The $switch construct (contract 2.1), the same way.
+    per_component.append({
+        "if": {"properties": {"type": {"const": "$switch"}}},
+        "then": {
+            "required": ["subject", "cases"],
+            "properties": {
+                "properties": {"type": "object", "maxProperties": 0},
+                "on": {"type": "object", "maxProperties": 0}
+            }
+        }
+    })
+
     node = schema["$defs"]["node"]
-    node["properties"]["type"] = {"enum": sorted(components) + ["$repeat"]}
+    node["properties"]["type"] = {"enum": sorted(components) + ["$if", "$repeat", "$switch"]}
     node["allOf"] = per_component
     return schema
 

@@ -99,10 +99,10 @@ def families():
                                      "state.s", "state.i", "state.e", "state.sOpt"]]
     branches = ["state.s", "state.sOpt", "state.e", "state.i", "state.d",
                 "'a'", "'z'", "null", "state.sOpt ?? 'y'"]
-    yield "branch", ([f"if(state.b, {then}, {otherwise})"
+    yield "branch", ([f"$if(state.b, {then}, {otherwise})"
                       for then in branches for otherwise in branches]
-                     + ["if(state.bOpt, 'x', 'y')", "if(1, 'x', 'y')",
-                        "if(state.b, null, null)"])
+                     + ["$if(state.bOpt, 'x', 'y')", "$if(1, 'x', 'y')",
+                        "$if(state.b, null, null)"])
     yield "equality", [f"{left} == {right}"
                        for left, right in unordered_pairs(SCALARS + OPTIONAL_SCALARS + ["'x'", "'a'", "'z'", "1",
                                                                      "null", "state.r"])]
@@ -116,12 +116,42 @@ def families():
     call_operands = ["state.s", "state.sOpt", "state.e", "state.i", "state.iOpt",
                      "state.d", "state.b", "'a'", "1", "1.5", "null"]
     yield "call", ([f"{function}({operand})"
-                    for function in ["str", "length", "isEmpty", "trim", "int", "double"]
+                    for function in ["$str", "$length", "$isEmpty", "$trim", "$int", "$double"]
                     for operand in call_operands]
-                   + [f"concat({operand}, 'y')" for operand in call_operands]
-                   + ["concat('x')", "str(state.s, state.s)", "nope(1)", "contains(state.e, 'a')"])
+                   + [f"$concat({operand}, 'y')" for operand in call_operands]
+                   + ["$concat('x')", "$str(state.s, state.s)", "$contains(state.e, 'a')",
+                      # A name in neither namespace: an undeclared host
+                      # function, and a built-in the contract does not define.
+                      "nope(1)", "$nope(1)", "$str"])
     yield "access", ["state.r.f", "state.r.g", "state.rOpt.f", "state.s.f", "state.r.h",
-                     "state.missing", "state", "context", "nope", "event", "result"]
+                     "state.missing", "state", "context", "nope", "event", "result",
+                     "failure"]
+    # Contract 2.1's numeric functions, in documents declaring 2.1: abs
+    # keeps its numeric type, min and max promote like the operators, the
+    # rounding functions take exactly a double.
+    numeric_operands = ["state.i", "state.d", "state.iOpt", "state.dOpt", "state.s",
+                        "state.e", "state.b", "1", "1.5", "null"]
+    yield "numeric", ([f"{function}({operand})"
+                       for function in ["$abs", "$floor", "$ceil", "$round"]
+                       for operand in numeric_operands]
+                      + [f"{function}({left}, {right})"
+                         for function in ["$min", "$max"]
+                         for left, right in unordered_pairs(["state.i", "state.d", "state.iOpt",
+                                                             "state.s", "1", "1.5"])]
+                      + ["$min(state.i)", "$max(state.i, state.d, 1)", "$min(1, 2, 3)",
+                         "$abs(state.i, state.i)", "$round(state.d, 1)"])
+    # The same functions in a document declaring contract 1.0, beside the
+    # functions 1.0 has: a feature of a later minor is refused by name.
+    yield "contract", ([f"{function}({operand})"
+                        for function in ["$abs", "$floor", "$ceil", "$round"]
+                        for operand in ["state.i", "state.d"]]
+                       + [f"{function}(state.i, state.d)" for function in ["$min", "$max"]]
+                       + ["$str(state.i)", "$double(state.i)", "$int(state.d)"])
+
+
+# The contract version the family's documents declare; 1.0 unless the
+# family exists to exercise a later minor.
+FAMILY_VERSIONS = {"numeric": "2.1.0"}
 
 
 # Where an expression that does not type on its own is placed: the slot its
@@ -129,7 +159,7 @@ def families():
 # pins the rule itself; in a mismatched slot it could be the slot.
 FALLBACK_TARGET = {
     "position": "s", "coalesce": "s", "branch": "sOpt", "equality": "b",
-    "arithmetic": "s", "call": "s", "access": "s",
+    "arithmetic": "s", "call": "s", "access": "s", "numeric": "d", "contract": "d",
 }
 
 
@@ -151,12 +181,14 @@ def candidate_targets(ty, family="position"):
     }.get(ty.kind, ["s"])
 
 
-def static_type(expression):
+def static_type(expression, version="1.0.0"):
     """The expression's type with no expectation, or None when it does
-    not type-check on its own."""
+    not type-check on its own under the declared contract version."""
+    contract = tuple(int(part) for part in version.split(".")[:2])
     try:
         ast = Parser(tokenize(expression)).parse()
-        return Checker({k: parse_type(v) for k, v in STATE.items()}, {}).check(ast)
+        return Checker({k: parse_type(v) for k, v in STATE.items()}, {},
+                       contract=contract).check(ast)
     except ExprError:
         return None
 
@@ -168,7 +200,7 @@ def referenced_keys(expressions):
     return sorted(key for key in keys if key in STATE)
 
 
-def document(nodes):
+def document(nodes, version="1.0.0"):
     """A Column of Probe nodes, each carrying one expression in one target,
     declaring only the state the expressions read."""
     keys = referenced_keys(expression for _, expression, _ in nodes)
@@ -181,7 +213,7 @@ def document(nodes):
             for node_id, expression, target in nodes
         ],
     }
-    doc = {"version": "1.0.0"}
+    doc = {"version": version}
     if keys:
         doc["state"] = {key: STATE[key] for key in keys}
     doc["root"] = root
@@ -195,9 +227,9 @@ def build(doc, state):
     return resolved, gate.occurrences
 
 
-def classify(expression, target):
+def classify(expression, target, version="1.0.0"):
     """Accept (resolved node) or reject (error fields) for one pair."""
-    doc, state = document([("p", expression, target)])
+    doc, state = document([("p", expression, target)], version)
     try:
         resolved, occurrences = build(doc, state)
     except GateError as error:
@@ -212,10 +244,11 @@ def type_name(descriptor):
 def vectors():
     """Every vector, in emission order: (name, vector)."""
     for family, expressions in families():
+        version = FAMILY_VERSIONS.get(family, "1.0.0")
         accepted, rejected = [], []
         for expression in expressions:
-            for target in candidate_targets(static_type(expression), family):
-                verdict, detail = classify(expression, target)
+            for target in candidate_targets(static_type(expression, version), family):
+                verdict, detail = classify(expression, target, version)
                 if verdict == "accept":
                     accepted.append((expression, target))
                 else:
@@ -225,7 +258,7 @@ def vectors():
             group = accepted[chunk:chunk + PACK]
             nodes = [(f"p{index}", expression, target)
                      for index, (expression, target) in enumerate(group)]
-            doc, state = document(nodes)
+            doc, state = document(nodes, version)
             resolved, occurrences = build(doc, state)
             name = f"gen-typing-{family}-accept-{chunk // PACK:03d}"
             listing = "; ".join(f"{node_id}: {expression} in {target}"
@@ -241,10 +274,10 @@ def vectors():
             yield name, vector
 
         for index, (expression, target, fields) in enumerate(rejected):
-            doc, state = document([("p", expression, target)])
+            doc, state = document([("p", expression, target)], version)
             name = f"gen-typing-{family}-reject-{index:03d}"
             expect = {"type": fields["type"]}
-            for key in ("rule", "node", "expected"):
+            for key in ("rule", "node", "expected", "found"):
                 if key in fields:
                     expect[key] = fields[key]
             vector = {

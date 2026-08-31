@@ -1,0 +1,26 @@
+{
+  "name": "gen-numeric-fn-038",
+  "description": "Generated (seed 20260830): $str($max((9223372036854775807 % 100), 9007199254740992.0) % 9223372036854775807)",
+  "document": {
+    "version": "2.1.0",
+    "root": {
+      "type": "Text",
+      "id": "r",
+      "properties": {
+        "text": {
+          "$expr": "$str($max((9223372036854775807 % 100), 9007199254740992.0) % 9223372036854775807)"
+        }
+      }
+    }
+  },
+  "expect": {
+    "view": {
+      "type": "Text",
+      "reference": "r",
+      "properties": {
+        "text": "9007199254740992.0"
+      }
+    },
+    "occurrences": []
+  }
+}

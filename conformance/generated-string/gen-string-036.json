@@ -1,0 +1,26 @@
+{
+  "name": "gen-string-036",
+  "description": "Generated (seed 20260831): $substring('ada@example.com', $indexOf('a,,b', 'ab'), $length('ada@example.com'))",
+  "document": {
+    "version": "2.1.0",
+    "root": {
+      "type": "Text",
+      "id": "r",
+      "properties": {
+        "text": {
+          "$expr": "$substring('ada@example.com', $indexOf('a,,b', 'ab'), $length('ada@example.com'))"
+        }
+      }
+    }
+  },
+  "expect": {
+    "view": {
+      "type": "Text",
+      "reference": "r",
+      "properties": {
+        "text": "ada@example.com"
+      }
+    },
+    "occurrences": []
+  }
+}

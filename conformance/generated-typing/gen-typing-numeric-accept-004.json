@@ -1,0 +1,222 @@
+{
+  "name": "gen-typing-numeric-accept-004",
+  "description": "Generated (exhaustive): accepted in their declared positions. p0: $min(1.5, 1.5) in d; p1: $min(1.5, 1.5) in dOpt; p2: $max(state.i, state.i) in i; p3: $max(state.i, state.i) in iOpt; p4: $max(state.i, state.i) in d; p5: $max(state.i, state.i) in dOpt; p6: $max(state.i, state.d) in d; p7: $max(state.i, state.d) in dOpt; p8: $max(state.i, 1) in i; p9: $max(state.i, 1) in iOpt; p10: $max(state.i, 1) in d; p11: $max(state.i, 1) in dOpt",
+  "document": {
+    "version": "2.1.0",
+    "state": {
+      "d": "double",
+      "i": "int"
+    },
+    "root": {
+      "type": "Column",
+      "id": "root",
+      "children": [
+        {
+          "type": "Probe",
+          "id": "p0",
+          "properties": {
+            "d": {
+              "$expr": "$min(1.5, 1.5)"
+            }
+          }
+        },
+        {
+          "type": "Probe",
+          "id": "p1",
+          "properties": {
+            "dOpt": {
+              "$expr": "$min(1.5, 1.5)"
+            }
+          }
+        },
+        {
+          "type": "Probe",
+          "id": "p2",
+          "properties": {
+            "i": {
+              "$expr": "$max(state.i, state.i)"
+            }
+          }
+        },
+        {
+          "type": "Probe",
+          "id": "p3",
+          "properties": {
+            "iOpt": {
+              "$expr": "$max(state.i, state.i)"
+            }
+          }
+        },
+        {
+          "type": "Probe",
+          "id": "p4",
+          "properties": {
+            "d": {
+              "$expr": "$max(state.i, state.i)"
+            }
+          }
+        },
+        {
+          "type": "Probe",
+          "id": "p5",
+          "properties": {
+            "dOpt": {
+              "$expr": "$max(state.i, state.i)"
+            }
+          }
+        },
+        {
+          "type": "Probe",
+          "id": "p6",
+          "properties": {
+            "d": {
+              "$expr": "$max(state.i, state.d)"
+            }
+          }
+        },
+        {
+          "type": "Probe",
+          "id": "p7",
+          "properties": {
+            "dOpt": {
+              "$expr": "$max(state.i, state.d)"
+            }
+          }
+        },
+        {
+          "type": "Probe",
+          "id": "p8",
+          "properties": {
+            "i": {
+              "$expr": "$max(state.i, 1)"
+            }
+          }
+        },
+        {
+          "type": "Probe",
+          "id": "p9",
+          "properties": {
+            "iOpt": {
+              "$expr": "$max(state.i, 1)"
+            }
+          }
+        },
+        {
+          "type": "Probe",
+          "id": "p10",
+          "properties": {
+            "d": {
+              "$expr": "$max(state.i, 1)"
+            }
+          }
+        },
+        {
+          "type": "Probe",
+          "id": "p11",
+          "properties": {
+            "dOpt": {
+              "$expr": "$max(state.i, 1)"
+            }
+          }
+        }
+      ]
+    }
+  },
+  "state": {
+    "d": 2.5,
+    "i": 7
+  },
+  "expect": {
+    "view": {
+      "type": "Column",
+      "reference": "root",
+      "children": [
+        {
+          "type": "Probe",
+          "reference": "p0",
+          "properties": {
+            "d": 1.5
+          }
+        },
+        {
+          "type": "Probe",
+          "reference": "p1",
+          "properties": {
+            "dOpt": 1.5
+          }
+        },
+        {
+          "type": "Probe",
+          "reference": "p2",
+          "properties": {
+            "i": 7
+          }
+        },
+        {
+          "type": "Probe",
+          "reference": "p3",
+          "properties": {
+            "iOpt": 7
+          }
+        },
+        {
+          "type": "Probe",
+          "reference": "p4",
+          "properties": {
+            "d": 7.0
+          }
+        },
+        {
+          "type": "Probe",
+          "reference": "p5",
+          "properties": {
+            "dOpt": 7.0
+          }
+        },
+        {
+          "type": "Probe",
+          "reference": "p6",
+          "properties": {
+            "d": 7.0
+          }
+        },
+        {
+          "type": "Probe",
+          "reference": "p7",
+          "properties": {
+            "dOpt": 7.0
+          }
+        },
+        {
+          "type": "Probe",
+          "reference": "p8",
+          "properties": {
+            "i": 7
+          }
+        },
+        {
+          "type": "Probe",
+          "reference": "p9",
+          "properties": {
+            "iOpt": 7
+          }
+        },
+        {
+          "type": "Probe",
+          "reference": "p10",
+          "properties": {
+            "d": 7.0
+          }
+        },
+        {
+          "type": "Probe",
+          "reference": "p11",
+          "properties": {
+            "dOpt": 7.0
+          }
+        }
+      ]
+    },
+    "occurrences": []
+  }
+}

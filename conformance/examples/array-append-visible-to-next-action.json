@@ -1,0 +1,78 @@
+{
+  "name": "array-append-visible-to-next-action",
+  "description": "The array an $append produces is visible to the next action of the same list",
+  "document": {
+    "version": "2.1.0",
+    "state": {
+      "items": {
+        "array": "string"
+      },
+      "n": "int"
+    },
+    "root": {
+      "type": "Column",
+      "id": "c",
+      "children": [
+        {
+          "type": "Text",
+          "id": "count",
+          "properties": {
+            "text": {
+              "$expr": "$str($length(state.items))"
+            }
+          }
+        },
+        {
+          "type": "Button",
+          "id": "add",
+          "properties": {
+            "label": "Add",
+            "enabled": true
+          },
+          "on": {
+            "tap": [
+              {
+                "action": "$append",
+                "key": "items",
+                "value": "x"
+              },
+              {
+                "action": "$set",
+                "key": "n",
+                "value": {
+                  "$expr": "$length(state.items)"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    }
+  },
+  "state": {
+    "items": [
+      "a",
+      "b"
+    ],
+    "n": 0
+  },
+  "steps": [
+    {
+      "event": {
+        "node": "add",
+        "name": "tap"
+      }
+    }
+  ],
+  "expect": {
+    "state": {
+      "items": [
+        "a",
+        "b",
+        "x"
+      ],
+      "n": 3
+    },
+    "occurrences": []
+  }
+}

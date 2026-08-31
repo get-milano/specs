@@ -1,0 +1,127 @@
+{
+  "name": "array-update-field",
+  "description": "$update replaces one field of one element; every other field and element is unchanged, and the array's dependents re-resolve",
+  "document": {
+    "version": "2.1.0",
+    "state": {
+      "rows": {
+        "array": {
+          "record": {
+            "name": "string",
+            "done": "bool"
+          }
+        }
+      },
+      "n": "int"
+    },
+    "root": {
+      "type": "Column",
+      "id": "c",
+      "children": [
+        {
+          "type": "Button",
+          "id": "toggle",
+          "properties": {
+            "label": "Toggle",
+            "enabled": true
+          },
+          "on": {
+            "tap": [
+              {
+                "action": "$update",
+                "key": "rows",
+                "at": 0,
+                "field": "done",
+                "value": true
+              }
+            ]
+          }
+        },
+        {
+          "type": "$repeat",
+          "id": "list",
+          "items": {
+            "$expr": "state.rows"
+          },
+          "as": "row",
+          "children": [
+            {
+              "type": "Text",
+              "id": "row_text",
+              "properties": {
+                "text": {
+                  "$expr": "$concat(row.name, $if(row.done, ' done', ''))"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "state": {
+    "rows": [
+      {
+        "name": "a",
+        "done": false
+      },
+      {
+        "name": "b",
+        "done": false
+      }
+    ],
+    "n": 0
+  },
+  "steps": [
+    {
+      "event": {
+        "node": "toggle",
+        "name": "tap"
+      }
+    }
+  ],
+  "expect": {
+    "state": {
+      "rows": [
+        {
+          "name": "a",
+          "done": true
+        },
+        {
+          "name": "b",
+          "done": false
+        }
+      ],
+      "n": 0
+    },
+    "view": {
+      "type": "Column",
+      "reference": "c",
+      "children": [
+        {
+          "type": "Button",
+          "reference": "toggle",
+          "properties": {
+            "label": "Toggle",
+            "enabled": true
+          }
+        },
+        {
+          "type": "Text",
+          "reference": "row_text[0]",
+          "properties": {
+            "text": "a done"
+          }
+        },
+        {
+          "type": "Text",
+          "reference": "row_text[1]",
+          "properties": {
+            "text": "b"
+          }
+        }
+      ]
+    },
+    "occurrences": []
+  }
+}

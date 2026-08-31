@@ -1,0 +1,92 @@
+{
+  "name": "completion-failure-record-field",
+  "description": "A record failure payload is read by field inside onFailure",
+  "document": {
+    "version": "2.1.0",
+    "state": {
+      "message": "string",
+      "code": "int"
+    },
+    "root": {
+      "type": "Button",
+      "id": "b",
+      "properties": {
+        "label": "Go",
+        "enabled": true
+      },
+      "on": {
+        "tap": [
+          {
+            "action": "fetchCode",
+            "onFailure": [
+              {
+                "action": "$set",
+                "key": "message",
+                "value": {
+                  "$expr": "failure.reason"
+                }
+              },
+              {
+                "action": "$set",
+                "key": "code",
+                "value": {
+                  "$expr": "failure.code"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "state": {
+    "message": "start",
+    "code": 0
+  },
+  "steps": [
+    {
+      "event": {
+        "node": "b",
+        "name": "tap"
+      }
+    },
+    {
+      "complete": {
+        "dispatch": 0,
+        "outcome": "failure",
+        "payload": {
+          "code": 429,
+          "reason": "slow down"
+        }
+      }
+    }
+  ],
+  "expect": {
+    "state": {
+      "message": "slow down",
+      "code": 429
+    },
+    "dispatched": [
+      {
+        "action": "fetchCode",
+        "parameters": {},
+        "dispatch": 0
+      }
+    ],
+    "occurrences": []
+  },
+  "config": {
+    "actions": {
+      "declare": {
+        "fetchCode": {
+          "failure": {
+            "record": {
+              "code": "int",
+              "reason": "string"
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -47,7 +47,8 @@
       "type": "SchemaViolation",
       "rule": "action-encoding",
       "node": "a",
-      "expected": "declared state key"
+      "expected": "declared state key",
+      "found": "undeclared"
     }
   }
 }

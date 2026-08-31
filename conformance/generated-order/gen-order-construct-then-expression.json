@@ -33,7 +33,8 @@
       "type": "SchemaViolation",
       "rule": "construct",
       "node": "a",
-      "expected": "component type"
+      "expected": "component type",
+      "found": "$Button"
     }
   }
 }

@@ -1,0 +1,48 @@
+{
+  "name": "function-builder-override",
+  "description": "A builder declaration overrides the vocabulary's signature for its surface",
+  "document": {
+    "version": "2.1.0",
+    "root": {
+      "type": "Text",
+      "id": "t",
+      "properties": {
+        "text": {
+          "$expr": "shout(5)"
+        }
+      }
+    }
+  },
+  "config": {
+    "functions": {
+      "declare": {
+        "shout": {
+          "arguments": [
+            "int"
+          ],
+          "returns": "string"
+        }
+      },
+      "results": {
+        "shout": [
+          {
+            "arguments": [
+              5
+            ],
+            "returns": "FIVE"
+          }
+        ]
+      }
+    }
+  },
+  "expect": {
+    "view": {
+      "type": "Text",
+      "reference": "t",
+      "properties": {
+        "text": "FIVE"
+      }
+    },
+    "occurrences": []
+  }
+}

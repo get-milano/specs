@@ -29,7 +29,9 @@
   "expect": {
     "error": {
       "type": "SchemaViolation",
-      "rule": "state-declaration"
+      "rule": "state-declaration",
+      "expected": "enum member",
+      "found": "severe"
     }
   }
 }

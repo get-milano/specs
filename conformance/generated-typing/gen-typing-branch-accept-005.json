@@ -1,6 +1,6 @@
 {
   "name": "gen-typing-branch-accept-005",
-  "description": "Generated (exhaustive): accepted in their declared positions. p0: if(state.b, state.sOpt ?? 'y', state.sOpt ?? 'y') in sOpt",
+  "description": "Generated (exhaustive): accepted in their declared positions. p0: $if(state.b, state.sOpt ?? 'y', state.sOpt ?? 'y') in sOpt",
   "document": {
     "version": "1.0.0",
     "state": {
@@ -16,7 +16,7 @@
           "id": "p0",
           "properties": {
             "sOpt": {
-              "$expr": "if(state.b, state.sOpt ?? 'y', state.sOpt ?? 'y')"
+              "$expr": "$if(state.b, state.sOpt ?? 'y', state.sOpt ?? 'y')"
             }
           }
         }

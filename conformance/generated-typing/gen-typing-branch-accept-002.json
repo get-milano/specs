@@ -1,6 +1,6 @@
 {
   "name": "gen-typing-branch-accept-002",
-  "description": "Generated (exhaustive): accepted in their declared positions. p0: if(state.b, 'a', state.s) in s; p1: if(state.b, 'a', state.s) in sOpt; p2: if(state.b, 'a', 'a') in s; p3: if(state.b, 'a', 'a') in sOpt; p4: if(state.b, 'a', 'a') in e; p5: if(state.b, 'a', 'z') in s; p6: if(state.b, 'a', 'z') in sOpt; p7: if(state.b, 'a', null) in sOpt; p8: if(state.b, 'a', state.sOpt ?? 'y') in s; p9: if(state.b, 'a', state.sOpt ?? 'y') in sOpt; p10: if(state.b, 'z', state.s) in s; p11: if(state.b, 'z', state.s) in sOpt",
+  "description": "Generated (exhaustive): accepted in their declared positions. p0: $if(state.b, 'a', state.s) in s; p1: $if(state.b, 'a', state.s) in sOpt; p2: $if(state.b, 'a', 'a') in s; p3: $if(state.b, 'a', 'a') in sOpt; p4: $if(state.b, 'a', 'a') in e; p5: $if(state.b, 'a', 'z') in s; p6: $if(state.b, 'a', 'z') in sOpt; p7: $if(state.b, 'a', null) in sOpt; p8: $if(state.b, 'a', state.sOpt ?? 'y') in s; p9: $if(state.b, 'a', state.sOpt ?? 'y') in sOpt; p10: $if(state.b, 'z', state.s) in s; p11: $if(state.b, 'z', state.s) in sOpt",
   "document": {
     "version": "1.0.0",
     "state": {
@@ -17,7 +17,7 @@
           "id": "p0",
           "properties": {
             "s": {
-              "$expr": "if(state.b, 'a', state.s)"
+              "$expr": "$if(state.b, 'a', state.s)"
             }
           }
         },
@@ -26,7 +26,7 @@
           "id": "p1",
           "properties": {
             "sOpt": {
-              "$expr": "if(state.b, 'a', state.s)"
+              "$expr": "$if(state.b, 'a', state.s)"
             }
           }
         },
@@ -35,7 +35,7 @@
           "id": "p2",
           "properties": {
             "s": {
-              "$expr": "if(state.b, 'a', 'a')"
+              "$expr": "$if(state.b, 'a', 'a')"
             }
           }
         },
@@ -44,7 +44,7 @@
           "id": "p3",
           "properties": {
             "sOpt": {
-              "$expr": "if(state.b, 'a', 'a')"
+              "$expr": "$if(state.b, 'a', 'a')"
             }
           }
         },
@@ -53,7 +53,7 @@
           "id": "p4",
           "properties": {
             "e": {
-              "$expr": "if(state.b, 'a', 'a')"
+              "$expr": "$if(state.b, 'a', 'a')"
             }
           }
         },
@@ -62,7 +62,7 @@
           "id": "p5",
           "properties": {
             "s": {
-              "$expr": "if(state.b, 'a', 'z')"
+              "$expr": "$if(state.b, 'a', 'z')"
             }
           }
         },
@@ -71,7 +71,7 @@
           "id": "p6",
           "properties": {
             "sOpt": {
-              "$expr": "if(state.b, 'a', 'z')"
+              "$expr": "$if(state.b, 'a', 'z')"
             }
           }
         },
@@ -80,7 +80,7 @@
           "id": "p7",
           "properties": {
             "sOpt": {
-              "$expr": "if(state.b, 'a', null)"
+              "$expr": "$if(state.b, 'a', null)"
             }
           }
         },
@@ -89,7 +89,7 @@
           "id": "p8",
           "properties": {
             "s": {
-              "$expr": "if(state.b, 'a', state.sOpt ?? 'y')"
+              "$expr": "$if(state.b, 'a', state.sOpt ?? 'y')"
             }
           }
         },
@@ -98,7 +98,7 @@
           "id": "p9",
           "properties": {
             "sOpt": {
-              "$expr": "if(state.b, 'a', state.sOpt ?? 'y')"
+              "$expr": "$if(state.b, 'a', state.sOpt ?? 'y')"
             }
           }
         },
@@ -107,7 +107,7 @@
           "id": "p10",
           "properties": {
             "s": {
-              "$expr": "if(state.b, 'z', state.s)"
+              "$expr": "$if(state.b, 'z', state.s)"
             }
           }
         },
@@ -116,7 +116,7 @@
           "id": "p11",
           "properties": {
             "sOpt": {
-              "$expr": "if(state.b, 'z', state.s)"
+              "$expr": "$if(state.b, 'z', state.s)"
             }
           }
         }

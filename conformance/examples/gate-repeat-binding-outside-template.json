@@ -64,7 +64,8 @@
     "error": {
       "type": "SchemaViolation",
       "rule": "expression",
-      "node": "outside"
+      "node": "outside",
+      "expected": "string"
     }
   }
 }

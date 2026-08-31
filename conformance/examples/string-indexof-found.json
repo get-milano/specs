@@ -1,0 +1,26 @@
+{
+  "name": "string-indexof-found",
+  "description": "indexOf answers the scalar index of the first occurrence",
+  "document": {
+    "version": "2.1.0",
+    "root": {
+      "type": "Text",
+      "id": "r",
+      "properties": {
+        "text": {
+          "$expr": "$str($indexOf('hello world', 'world'))"
+        }
+      }
+    }
+  },
+  "expect": {
+    "view": {
+      "type": "Text",
+      "reference": "r",
+      "properties": {
+        "text": "6"
+      }
+    },
+    "occurrences": []
+  }
+}

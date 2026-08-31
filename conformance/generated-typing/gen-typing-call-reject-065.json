@@ -1,6 +1,6 @@
 {
   "name": "gen-typing-call-reject-065",
-  "description": "Generated (exhaustive): concat('a', 'y') in a enum position is rejected at the gate",
+  "description": "Generated (exhaustive): $concat('a', 'y') in a enum position is rejected at the gate",
   "document": {
     "version": "1.0.0",
     "root": {
@@ -12,7 +12,7 @@
           "id": "p",
           "properties": {
             "e": {
-              "$expr": "concat('a', 'y')"
+              "$expr": "$concat('a', 'y')"
             }
           }
         }

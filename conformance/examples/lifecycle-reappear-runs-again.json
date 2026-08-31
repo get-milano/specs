@@ -1,0 +1,71 @@
+{
+  "name": "lifecycle-reappear-runs-again",
+  "description": "The appear list runs once per acceptance: a view that leaves and returns appears again",
+  "document": {
+    "version": "2.1.0",
+    "state": {
+      "count": "int"
+    },
+    "root": {
+      "type": "Column",
+      "id": "root",
+      "children": [
+        {
+          "type": "Text",
+          "id": "t",
+          "properties": {
+            "text": {
+              "$expr": "$str(state.count)"
+            }
+          }
+        }
+      ]
+    },
+    "on": {
+      "appear": [
+        {
+          "action": "$set",
+          "key": "count",
+          "value": {
+            "$expr": "state.count + 1"
+          }
+        }
+      ]
+    }
+  },
+  "state": {
+    "count": 0
+  },
+  "steps": [
+    {
+      "appear": true
+    },
+    {
+      "disappear": true
+    },
+    {
+      "appear": true
+    }
+  ],
+  "expect": {
+    "state": {
+      "count": 2
+    },
+    "dispatched": [],
+    "occurrences": [],
+    "interactions": [
+      {
+        "kind": "viewBuilt"
+      },
+      {
+        "kind": "viewAppeared"
+      },
+      {
+        "kind": "viewDisappeared"
+      },
+      {
+        "kind": "viewAppeared"
+      }
+    ]
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "name": "gen-numeric-fn-047",
+  "description": "Generated (seed 20260830): $str($min((1.0 / 0.0), 7))",
+  "document": {
+    "version": "2.1.0",
+    "root": {
+      "type": "Text",
+      "id": "r",
+      "properties": {
+        "text": {
+          "$expr": "$str($min((1.0 / 0.0), 7))"
+        }
+      }
+    }
+  },
+  "expect": {
+    "view": {
+      "type": "Text",
+      "reference": "r",
+      "properties": {
+        "text": "7.0"
+      }
+    },
+    "occurrences": []
+  }
+}

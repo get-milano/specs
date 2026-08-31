@@ -1,0 +1,48 @@
+{
+  "name": "gate-limit-node-count-counts-branches",
+  "description": "Both branches of an $if count against the node count limit, not only the one a build materializes: pinned at a configured limit of three with four nodes, of which one is in the untaken branch",
+  "config": {
+    "limits": {
+      "maxNodeCount": 3
+    }
+  },
+  "document": {
+    "version": "2.1.0",
+    "root": {
+      "type": "Column",
+      "id": "c",
+      "children": [
+        {
+          "type": "$if",
+          "condition": {
+            "$expr": "true"
+          },
+          "then": [
+            {
+              "type": "Text",
+              "properties": {
+                "text": "taken"
+              }
+            }
+          ],
+          "else": [
+            {
+              "type": "Text",
+              "properties": {
+                "text": "untaken"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "expect": {
+    "error": {
+      "type": "LimitExceeded",
+      "limit": "maxNodeCount",
+      "value": 3,
+      "actual": 4
+    }
+  }
+}

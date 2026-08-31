@@ -1,0 +1,39 @@
+{
+  "name": "lifecycle-no-bindings-still-recorded",
+  "description": "A document binding nothing still accepts the signals: the appeared state flips, the records are emitted, and nothing is reported as a defect",
+  "document": {
+    "version": "2.1.0",
+    "root": {
+      "type": "Text",
+      "id": "t",
+      "properties": {
+        "text": "x"
+      }
+    }
+  },
+  "steps": [
+    {
+      "appear": true
+    },
+    {
+      "appear": true
+    },
+    {
+      "disappear": true
+    }
+  ],
+  "expect": {
+    "occurrences": [],
+    "interactions": [
+      {
+        "kind": "viewBuilt"
+      },
+      {
+        "kind": "viewAppeared"
+      },
+      {
+        "kind": "viewDisappeared"
+      }
+    ]
+  }
+}

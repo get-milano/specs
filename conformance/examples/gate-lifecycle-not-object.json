@@ -1,0 +1,10 @@
+{
+  "name": "gate-lifecycle-not-object",
+  "description": "The on section is a JSON object of signal bindings; any other shape is MalformedDocument",
+  "documentText": "{\"version\": \"2.1.0\", \"root\": {\"type\": \"Text\", \"id\": \"t\", \"properties\": {\"text\": \"x\"}}, \"on\": []}",
+  "expect": {
+    "error": {
+      "type": "MalformedDocument"
+    }
+  }
+}

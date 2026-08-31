@@ -1,0 +1,26 @@
+{
+  "name": "gen-string-083",
+  "description": "Generated (seed 20260831): $substring(',lead', $indexOf('4111111111111111', 'l'), $length('e\u0301'))",
+  "document": {
+    "version": "2.1.0",
+    "root": {
+      "type": "Text",
+      "id": "r",
+      "properties": {
+        "text": {
+          "$expr": "$substring(',lead', $indexOf('4111111111111111', 'l'), $length('e\u0301'))"
+        }
+      }
+    }
+  },
+  "expect": {
+    "view": {
+      "type": "Text",
+      "reference": "r",
+      "properties": {
+        "text": ",l"
+      }
+    },
+    "occurrences": []
+  }
+}

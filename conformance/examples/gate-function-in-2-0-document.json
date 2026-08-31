@@ -1,0 +1,25 @@
+{
+  "name": "gate-function-in-2-0-document",
+  "description": "A 2.0 document calling a declared function is the contract-feature violation naming the function, not the expression violation an unknown name raises",
+  "document": {
+    "version": "2.0.0",
+    "root": {
+      "type": "Text",
+      "id": "t",
+      "properties": {
+        "text": {
+          "$expr": "formatMoney(1, 'EUR')"
+        }
+      }
+    }
+  },
+  "expect": {
+    "error": {
+      "type": "SchemaViolation",
+      "rule": "contract-feature",
+      "node": "t",
+      "expected": "2.1",
+      "found": "formatMoney"
+    }
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "name": "string-split-never-empty-array",
+  "description": "A split is never the empty array, so isEmpty over one is always false",
+  "document": {
+    "version": "2.1.0",
+    "root": {
+      "type": "Text",
+      "id": "r",
+      "properties": {
+        "text": {
+          "$expr": "$str($isEmpty($split('', ',')))"
+        }
+      }
+    }
+  },
+  "expect": {
+    "view": {
+      "type": "Text",
+      "reference": "r",
+      "properties": {
+        "text": "false"
+      }
+    },
+    "occurrences": []
+  }
+}

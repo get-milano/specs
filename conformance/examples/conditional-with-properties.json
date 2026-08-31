@@ -1,0 +1,38 @@
+{
+  "name": "conditional-with-properties",
+  "description": "An $if carries no properties",
+  "document": {
+    "version": "2.1.0",
+    "root": {
+      "type": "Column",
+      "id": "c",
+      "children": [
+        {
+          "type": "$if",
+          "condition": {
+            "$expr": "true"
+          },
+          "then": [
+            {
+              "type": "Text",
+              "properties": {
+                "text": "a"
+              }
+            }
+          ],
+          "properties": {
+            "text": "x"
+          }
+        }
+      ]
+    }
+  },
+  "expect": {
+    "error": {
+      "type": "SchemaViolation",
+      "rule": "conditional",
+      "node": "root/children[0]",
+      "expected": "no properties"
+    }
+  }
+}

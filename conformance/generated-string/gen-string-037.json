@@ -1,0 +1,26 @@
+{
+  "name": "gen-string-037",
+  "description": "Generated (seed 20260831): $join($split('\u00e9', '\\\\'), '\\\\')",
+  "document": {
+    "version": "2.1.0",
+    "root": {
+      "type": "Text",
+      "id": "r",
+      "properties": {
+        "text": {
+          "$expr": "$join($split('\u00e9', '\\\\'), '\\\\')"
+        }
+      }
+    }
+  },
+  "expect": {
+    "view": {
+      "type": "Text",
+      "reference": "r",
+      "properties": {
+        "text": "\u00e9"
+      }
+    },
+    "occurrences": []
+  }
+}

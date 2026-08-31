@@ -1,0 +1,34 @@
+{
+  "name": "conditional-condition-must-be-an-expression",
+  "description": "A literal condition is an encoding violation: documents carry no data",
+  "document": {
+    "version": "2.1.0",
+    "root": {
+      "type": "Column",
+      "id": "c",
+      "children": [
+        {
+          "type": "$if",
+          "condition": true,
+          "then": [
+            {
+              "type": "Text",
+              "properties": {
+                "text": "a"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "expect": {
+    "error": {
+      "type": "SchemaViolation",
+      "rule": "conditional",
+      "node": "root/children[0]",
+      "expected": "condition expression",
+      "found": "bool"
+    }
+  }
+}

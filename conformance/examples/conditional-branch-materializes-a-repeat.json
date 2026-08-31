@@ -1,0 +1,71 @@
+{
+  "name": "conditional-branch-materializes-a-repeat",
+  "description": "A repeat inside the taken branch materializes its instances",
+  "document": {
+    "version": "2.1.0",
+    "state": {
+      "items": {
+        "array": "string"
+      }
+    },
+    "root": {
+      "type": "Column",
+      "id": "c",
+      "children": [
+        {
+          "type": "$if",
+          "condition": {
+            "$expr": "!$isEmpty(state.items)"
+          },
+          "then": [
+            {
+              "type": "$repeat",
+              "id": "row",
+              "items": {
+                "$expr": "state.items"
+              },
+              "as": "item",
+              "children": [
+                {
+                  "type": "Text",
+                  "properties": {
+                    "text": "x"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "state": {
+    "items": [
+      "a",
+      "b"
+    ]
+  },
+  "expect": {
+    "view": {
+      "type": "Column",
+      "reference": "c",
+      "children": [
+        {
+          "type": "Text",
+          "reference": "root/children[0]/then[0]/children[0][0]",
+          "properties": {
+            "text": "x"
+          }
+        },
+        {
+          "type": "Text",
+          "reference": "root/children[0]/then[0]/children[0][1]",
+          "properties": {
+            "text": "x"
+          }
+        }
+      ]
+    },
+    "occurrences": []
+  }
+}

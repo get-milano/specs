@@ -1,0 +1,110 @@
+{
+  "name": "replace-metadata-record",
+  "description": "The viewReplaced record carries the new document's metadata as its value",
+  "document": {
+    "version": "2.1.0",
+    "state": {
+      "n": "int"
+    },
+    "root": {
+      "type": "Column",
+      "id": "c",
+      "children": [
+        {
+          "type": "Text",
+          "id": "r",
+          "properties": {
+            "text": {
+              "$expr": "$str(state.n)"
+            }
+          }
+        },
+        {
+          "type": "Button",
+          "id": "go",
+          "properties": {
+            "label": "Go",
+            "enabled": true
+          },
+          "on": {
+            "tap": [
+              {
+                "action": "$set",
+                "key": "n",
+                "value": {
+                  "$expr": "state.n + 5"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    }
+  },
+  "state": {
+    "n": 0
+  },
+  "steps": [
+    {
+      "replace": {
+        "document": {
+          "version": "2.1.0",
+          "state": {
+            "n": "int"
+          },
+          "root": {
+            "type": "Column",
+            "id": "c",
+            "children": [
+              {
+                "type": "Text",
+                "id": "r",
+                "properties": {
+                  "text": {
+                    "$expr": "$str(state.n)"
+                  }
+                }
+              },
+              {
+                "type": "Button",
+                "id": "go",
+                "properties": {
+                  "label": "Go",
+                  "enabled": true
+                },
+                "on": {
+                  "tap": [
+                    {
+                      "action": "$set",
+                      "key": "n",
+                      "value": {
+                        "$expr": "state.n + 5"
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          "metadata": {
+            "campaign": "x"
+          }
+        }
+      }
+    }
+  ],
+  "expect": {
+    "interactions": [
+      {
+        "kind": "viewBuilt"
+      },
+      {
+        "kind": "viewReplaced",
+        "value": {
+          "campaign": "x"
+        }
+      }
+    ],
+    "occurrences": []
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "name": "gate-builtin-without-arguments",
+  "description": "A built-in's name is valid only in call position: without an argument list it is the expression violation",
+  "document": {
+    "version": "2.1.0",
+    "root": {
+      "type": "Text",
+      "id": "t",
+      "properties": {
+        "text": {
+          "$expr": "$trim"
+        }
+      }
+    }
+  },
+  "expect": {
+    "error": {
+      "type": "SchemaViolation",
+      "rule": "expression",
+      "node": "t",
+      "expected": "string"
+    }
+  }
+}

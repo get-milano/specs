@@ -1,0 +1,96 @@
+{
+  "name": "function-call-in-action",
+  "description": "A host function evaluates inside action values too",
+  "document": {
+    "version": "2.1.0",
+    "state": {
+      "label": "string"
+    },
+    "root": {
+      "type": "Column",
+      "id": "c",
+      "children": [
+        {
+          "type": "Text",
+          "id": "t",
+          "properties": {
+            "text": {
+              "$expr": "state.label"
+            }
+          }
+        },
+        {
+          "type": "Button",
+          "id": "go",
+          "properties": {
+            "label": "Go",
+            "enabled": true
+          },
+          "on": {
+            "tap": [
+              {
+                "action": "$set",
+                "key": "label",
+                "value": {
+                  "$expr": "shout(state.label)"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    }
+  },
+  "state": {
+    "label": "hi"
+  },
+  "config": {
+    "functions": {
+      "results": {
+        "shout": [
+          {
+            "arguments": [
+              "hi"
+            ],
+            "returns": "HI"
+          }
+        ]
+      }
+    }
+  },
+  "steps": [
+    {
+      "event": {
+        "node": "go",
+        "name": "tap"
+      }
+    }
+  ],
+  "expect": {
+    "state": {
+      "label": "HI"
+    },
+    "view": {
+      "type": "Column",
+      "reference": "c",
+      "children": [
+        {
+          "type": "Text",
+          "reference": "t",
+          "properties": {
+            "text": "HI"
+          }
+        },
+        {
+          "type": "Button",
+          "reference": "go",
+          "properties": {
+            "label": "Go",
+            "enabled": true
+          }
+        }
+      ]
+    },
+    "occurrences": []
+  }
+}

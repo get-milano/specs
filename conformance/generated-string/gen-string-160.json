@@ -1,0 +1,26 @@
+{
+  "name": "gen-string-160",
+  "description": "Generated (seed 20260831): $substring('e\u0301', $indexOf('abc', ''), $length(',lead'))",
+  "document": {
+    "version": "2.1.0",
+    "root": {
+      "type": "Text",
+      "id": "r",
+      "properties": {
+        "text": {
+          "$expr": "$substring('e\u0301', $indexOf('abc', ''), $length(',lead'))"
+        }
+      }
+    }
+  },
+  "expect": {
+    "view": {
+      "type": "Text",
+      "reference": "r",
+      "properties": {
+        "text": "e\u0301"
+      }
+    },
+    "occurrences": []
+  }
+}

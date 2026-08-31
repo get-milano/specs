@@ -1,0 +1,42 @@
+{
+  "name": "function-enum-argument",
+  "description": "A member literal in an enum argument position refines to the enum, and the enum return is the property's enum",
+  "document": {
+    "version": "2.1.0",
+    "root": {
+      "type": "Badge",
+      "id": "b",
+      "properties": {
+        "label": "x",
+        "tone": {
+          "$expr": "tone('info')"
+        }
+      }
+    }
+  },
+  "config": {
+    "functions": {
+      "results": {
+        "tone": [
+          {
+            "arguments": [
+              "info"
+            ],
+            "returns": "warning"
+          }
+        ]
+      }
+    }
+  },
+  "expect": {
+    "view": {
+      "type": "Badge",
+      "reference": "b",
+      "properties": {
+        "label": "x",
+        "tone": "warning"
+      }
+    },
+    "occurrences": []
+  }
+}

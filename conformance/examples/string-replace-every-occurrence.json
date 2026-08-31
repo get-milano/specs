@@ -1,0 +1,26 @@
+{
+  "name": "string-replace-every-occurrence",
+  "description": "replace rewrites every occurrence, not the first",
+  "document": {
+    "version": "2.1.0",
+    "root": {
+      "type": "Text",
+      "id": "r",
+      "properties": {
+        "text": {
+          "$expr": "$replace('a,b,c', ',', '-')"
+        }
+      }
+    }
+  },
+  "expect": {
+    "view": {
+      "type": "Text",
+      "reference": "r",
+      "properties": {
+        "text": "a-b-c"
+      }
+    },
+    "occurrences": []
+  }
+}

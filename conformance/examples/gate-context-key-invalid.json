@@ -6,7 +6,8 @@
     "error": {
       "type": "SchemaViolation",
       "rule": "context-declaration",
-      "found": "$x"
+      "found": "$x",
+      "expected": "identifier"
     }
   }
 }

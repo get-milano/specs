@@ -1,0 +1,28 @@
+{
+  "name": "gate-repeat-key-literal",
+  "description": "key is an expression, never a literal: documents carry no data",
+  "documentText": "{\"version\": \"2.1.0\", \"state\": {\"rows\": {\"array\": {\"record\": {\"id\": \"string\", \"name\": \"string\", \"url\": \"string\"}}}}, \"root\": {\"type\": \"Column\", \"id\": \"list\", \"children\": [{\"type\": \"$repeat\", \"id\": \"each\", \"items\": {\"$expr\": \"state.rows\"}, \"as\": \"row\", \"key\": \"abc\", \"children\": [{\"type\": \"Text\", \"id\": \"name\", \"properties\": {\"text\": {\"$expr\": \"row.name\"}}}]}]}}",
+  "state": {
+    "rows": [
+      {
+        "id": "alpha",
+        "name": "Alpha",
+        "url": "https://example.com/a"
+      },
+      {
+        "id": "beta",
+        "name": "Beta",
+        "url": "https://example.com/b"
+      }
+    ]
+  },
+  "expect": {
+    "error": {
+      "type": "SchemaViolation",
+      "rule": "repeat",
+      "node": "each",
+      "expected": "key expression",
+      "found": "string"
+    }
+  }
+}

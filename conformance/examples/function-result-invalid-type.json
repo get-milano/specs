@@ -1,0 +1,49 @@
+{
+  "name": "function-result-invalid-type",
+  "description": "An answer that does not match the declared return is an invalid function result: reported with the function's name, the declared type, and the value's kind, and the call evaluates to the zero value",
+  "document": {
+    "version": "2.1.0",
+    "root": {
+      "type": "Text",
+      "id": "t",
+      "properties": {
+        "text": {
+          "$expr": "formatMoney(1250, 'EUR')"
+        }
+      }
+    }
+  },
+  "config": {
+    "functions": {
+      "results": {
+        "formatMoney": [
+          {
+            "arguments": [
+              1250,
+              "EUR"
+            ],
+            "returns": 12.5
+          }
+        ]
+      }
+    }
+  },
+  "expect": {
+    "view": {
+      "type": "Text",
+      "reference": "t",
+      "properties": {
+        "text": ""
+      }
+    },
+    "occurrences": [
+      {
+        "kind": "invalidFunctionResult",
+        "node": "t",
+        "name": "formatMoney",
+        "expected": "string",
+        "found": "double"
+      }
+    ]
+  }
+}

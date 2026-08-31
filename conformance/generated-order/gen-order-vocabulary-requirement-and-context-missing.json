@@ -36,7 +36,8 @@
     "error": {
       "type": "SchemaViolation",
       "rule": "vocabulary-requirement",
-      "expected": "other"
+      "expected": "other",
+      "found": "generated_order"
     }
   }
 }

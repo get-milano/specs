@@ -1,0 +1,55 @@
+{
+  "name": "gate-failure-root-in-2-0-document",
+  "description": "The failure root in a document declaring contract 2.0 is the contract-feature violation naming failure, whatever the surface declares",
+  "document": {
+    "version": "2.0.0",
+    "state": {
+      "label": "string"
+    },
+    "root": {
+      "type": "Button",
+      "id": "b",
+      "properties": {
+        "label": "Go",
+        "enabled": true
+      },
+      "on": {
+        "tap": [
+          {
+            "action": "fetchCode",
+            "onFailure": [
+              {
+                "action": "$set",
+                "key": "label",
+                "value": {
+                  "$expr": "failure"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "state": {
+    "label": ""
+  },
+  "expect": {
+    "error": {
+      "type": "SchemaViolation",
+      "rule": "contract-feature",
+      "node": "b",
+      "expected": "2.1",
+      "found": "failure"
+    }
+  },
+  "config": {
+    "actions": {
+      "declare": {
+        "fetchCode": {
+          "failure": "string"
+        }
+      }
+    }
+  }
+}

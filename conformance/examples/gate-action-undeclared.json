@@ -25,7 +25,8 @@
       "type": "SchemaViolation",
       "rule": "action-capability",
       "node": "track",
-      "found": "trackTap"
+      "found": "trackTap",
+      "expected": "granted action"
     }
   }
 }

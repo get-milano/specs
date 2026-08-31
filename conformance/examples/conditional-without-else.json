@@ -1,0 +1,62 @@
+{
+  "name": "conditional-without-else",
+  "description": "A false condition and no else branch materializes nothing",
+  "document": {
+    "version": "2.1.0",
+    "root": {
+      "type": "Column",
+      "id": "c",
+      "children": [
+        {
+          "type": "Text",
+          "properties": {
+            "text": "before"
+          }
+        },
+        {
+          "type": "$if",
+          "condition": {
+            "$expr": "false"
+          },
+          "then": [
+            {
+              "type": "Text",
+              "properties": {
+                "text": "hidden"
+              }
+            }
+          ]
+        },
+        {
+          "type": "Text",
+          "properties": {
+            "text": "after"
+          }
+        }
+      ]
+    }
+  },
+  "expect": {
+    "view": {
+      "type": "Column",
+      "reference": "c",
+      "children": [
+        {
+          "type": "Text",
+          "reference": "root/children[0]",
+          "properties": {
+            "text": "before"
+          }
+        },
+        {
+          "type": "Text",
+          "reference": "root/children[2]",
+          "properties": {
+            "text": "after"
+          }
+        }
+      ]
+    },
+    "occurrences": []
+  }
+}

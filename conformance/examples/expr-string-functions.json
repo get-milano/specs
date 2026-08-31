@@ -8,7 +8,7 @@
       "id": "result",
       "properties": {
         "text": {
-          "$expr": "trim('  x  ') + str(length('héllo')) + if(contains('milano', 'lan'), '!', '?')"
+          "$expr": "$trim('  x  ') + $str($length('héllo')) + $if($contains('milano', 'lan'), '!', '?')"
         }
       }
     }

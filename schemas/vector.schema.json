@@ -74,6 +74,9 @@
                   },
                   "result": {
                     "$ref": "document.schema.json#/$defs/type"
+                  },
+                  "failure": {
+                    "$ref": "document.schema.json#/$defs/type"
                   }
                 },
                 "additionalProperties": false
@@ -113,6 +116,66 @@
         },
         "actionHandler": {
           "type": "boolean"
+        },
+        "functionHandler": {
+          "type": "boolean"
+        },
+        "functions": {
+          "type": "object",
+          "properties": {
+            "declare": {
+              "type": "object",
+              "propertyNames": {
+                "$ref": "#/$defs/identifier"
+              },
+              "additionalProperties": {
+                "type": "object",
+                "required": [
+                  "arguments",
+                  "returns"
+                ],
+                "properties": {
+                  "arguments": {
+                    "type": "array",
+                    "minItems": 1,
+                    "items": {
+                      "$ref": "document.schema.json#/$defs/type"
+                    }
+                  },
+                  "returns": {
+                    "$ref": "document.schema.json#/$defs/type"
+                  }
+                },
+                "additionalProperties": false
+              }
+            },
+            "results": {
+              "type": "object",
+              "propertyNames": {
+                "$ref": "#/$defs/identifier"
+              },
+              "additionalProperties": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": [
+                    "arguments"
+                  ],
+                  "properties": {
+                    "arguments": {
+                      "type": "array"
+                    },
+                    "returns": {},
+                    "throws": {
+                      "const": true
+                    }
+                  },
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "additionalProperties": false
         }
       },
       "additionalProperties": false
@@ -185,6 +248,12 @@
             "$ref": "#/$defs/identifier"
           }
         },
+        "appear": {
+          "const": true
+        },
+        "disappear": {
+          "const": true
+        },
         "teardown": {
           "const": true
         },
@@ -207,6 +276,50 @@
             },
             "payload": {}
           },
+          "additionalProperties": false
+        },
+        "replace": {
+          "type": "object",
+          "properties": {
+            "document": {
+              "$ref": "document.schema.json"
+            },
+            "documentText": {
+              "type": "string",
+              "minLength": 1
+            },
+            "state": {
+              "type": "object",
+              "propertyNames": {
+                "$ref": "#/$defs/identifier"
+              }
+            },
+            "error": {
+              "$ref": "#/$defs/error"
+            }
+          },
+          "oneOf": [
+            {
+              "required": [
+                "document"
+              ],
+              "not": {
+                "required": [
+                  "documentText"
+                ]
+              }
+            },
+            {
+              "required": [
+                "documentText"
+              ],
+              "not": {
+                "required": [
+                  "document"
+                ]
+              }
+            }
+          ],
           "additionalProperties": false
         }
       },
@@ -241,6 +354,10 @@
                 "propertyNames": {
                   "$ref": "#/$defs/identifier"
                 }
+              },
+              "dispatch": {
+                "type": "integer",
+                "minimum": 0
               }
             },
             "additionalProperties": false
@@ -264,10 +381,12 @@
                   "invalidCompletion",
                   "duplicateCompletion",
                   "completionAfterTeardown",
+                  "completionAfterReplace",
                   "rejectedContextUpdate",
                   "rejectedMutation",
                   "divisionByZero",
-                  "saturation"
+                  "saturation",
+                  "invalidFunctionResult"
                 ]
               },
               "node": {
@@ -291,21 +410,7 @@
           }
         },
         "error": {
-          "type": "object",
-          "required": [
-            "type"
-          ],
-          "properties": {
-            "type": {
-              "enum": [
-                "MalformedDocument",
-                "UnsupportedVersion",
-                "SchemaViolation",
-                "UnknownComponentType",
-                "LimitExceeded"
-              ]
-            }
-          }
+          "$ref": "#/$defs/error"
         },
         "interactions": {
           "type": "array",
@@ -318,6 +423,9 @@
               "kind": {
                 "enum": [
                   "viewBuilt",
+                  "viewReplaced",
+                  "viewAppeared",
+                  "viewDisappeared",
                   "viewTornDown",
                   "event",
                   "actionDispatched",
@@ -345,7 +453,11 @@
                 "type": "string",
                 "minLength": 1
               },
-              "value": {}
+              "value": {},
+              "dispatch": {
+                "type": "integer",
+                "minimum": 0
+              }
             },
             "additionalProperties": false
           }
@@ -385,6 +497,23 @@
         }
       },
       "additionalProperties": false
+    },
+    "error": {
+      "type": "object",
+      "required": [
+        "type"
+      ],
+      "properties": {
+        "type": {
+          "enum": [
+            "MalformedDocument",
+            "UnsupportedVersion",
+            "SchemaViolation",
+            "UnknownComponentType",
+            "LimitExceeded"
+          ]
+        }
+      }
     }
   }
 }

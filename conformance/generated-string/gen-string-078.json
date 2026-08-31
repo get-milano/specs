@@ -1,0 +1,26 @@
+{
+  "name": "gen-string-078",
+  "description": "Generated (seed 20260831): $substring('aaa', 4, 9223372036854775807)",
+  "document": {
+    "version": "2.1.0",
+    "root": {
+      "type": "Text",
+      "id": "r",
+      "properties": {
+        "text": {
+          "$expr": "$substring('aaa', 4, 9223372036854775807)"
+        }
+      }
+    }
+  },
+  "expect": {
+    "view": {
+      "type": "Text",
+      "reference": "r",
+      "properties": {
+        "text": ""
+      }
+    },
+    "occurrences": []
+  }
+}

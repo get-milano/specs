@@ -1,0 +1,82 @@
+{
+  "name": "function-invalid-result-in-action-has-no-node",
+  "description": "An invalid result during action evaluation is reported with no node, like an arithmetic report there",
+  "document": {
+    "version": "2.1.0",
+    "state": {
+      "label": "string"
+    },
+    "root": {
+      "type": "Column",
+      "id": "c",
+      "children": [
+        {
+          "type": "Text",
+          "id": "t",
+          "properties": {
+            "text": {
+              "$expr": "state.label"
+            }
+          }
+        },
+        {
+          "type": "Button",
+          "id": "go",
+          "properties": {
+            "label": "Go",
+            "enabled": true
+          },
+          "on": {
+            "tap": [
+              {
+                "action": "$set",
+                "key": "label",
+                "value": {
+                  "$expr": "shout('x')"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    }
+  },
+  "state": {
+    "label": "hi"
+  },
+  "config": {
+    "functions": {
+      "results": {
+        "shout": [
+          {
+            "arguments": [
+              "x"
+            ],
+            "throws": true
+          }
+        ]
+      }
+    }
+  },
+  "steps": [
+    {
+      "event": {
+        "node": "go",
+        "name": "tap"
+      }
+    }
+  ],
+  "expect": {
+    "state": {
+      "label": ""
+    },
+    "occurrences": [
+      {
+        "kind": "invalidFunctionResult",
+        "name": "shout",
+        "expected": "string",
+        "found": "error"
+      }
+    ]
+  }
+}

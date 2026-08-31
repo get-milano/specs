@@ -1,0 +1,26 @@
+{
+  "name": "gen-string-120",
+  "description": "Generated (seed 20260831): $join($split('  padded  ', 'aa'), 'X')",
+  "document": {
+    "version": "2.1.0",
+    "root": {
+      "type": "Text",
+      "id": "r",
+      "properties": {
+        "text": {
+          "$expr": "$join($split('  padded  ', 'aa'), 'X')"
+        }
+      }
+    }
+  },
+  "expect": {
+    "view": {
+      "type": "Text",
+      "reference": "r",
+      "properties": {
+        "text": "  padded  "
+      }
+    },
+    "occurrences": []
+  }
+}

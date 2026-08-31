@@ -1,0 +1,57 @@
+{
+  "name": "lifecycle-set-rejected-anchors-no-node",
+  "description": "A rejected mutation from a lifecycle binding is reported with no node, since no binding of a node dispatched it",
+  "document": {
+    "version": "2.1.0",
+    "state": {
+      "s": "string"
+    },
+    "root": {
+      "type": "Text",
+      "id": "t",
+      "properties": {
+        "text": {
+          "$expr": "state.s"
+        }
+      }
+    },
+    "on": {
+      "appear": [
+        {
+          "action": "$set",
+          "key": "s",
+          "value": {
+            "$expr": "$concat(state.s, state.s)"
+          }
+        }
+      ]
+    }
+  },
+  "state": {
+    "s": "abc"
+  },
+  "config": {
+    "limits": {
+      "maxValueSize": 4
+    }
+  },
+  "steps": [
+    {
+      "appear": true
+    }
+  ],
+  "expect": {
+    "state": {
+      "s": "abc"
+    },
+    "dispatched": [],
+    "occurrences": [
+      {
+        "kind": "rejectedMutation",
+        "name": "s",
+        "expected": "maxValueSize",
+        "found": "6"
+      }
+    ]
+  }
+}

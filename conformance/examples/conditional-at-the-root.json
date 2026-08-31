@@ -1,0 +1,29 @@
+{
+  "name": "conditional-at-the-root",
+  "description": "An $if is never the root",
+  "document": {
+    "version": "2.1.0",
+    "root": {
+      "type": "$if",
+      "condition": {
+        "$expr": "true"
+      },
+      "then": [
+        {
+          "type": "Text",
+          "properties": {
+            "text": "a"
+          }
+        }
+      ]
+    }
+  },
+  "expect": {
+    "error": {
+      "type": "SchemaViolation",
+      "rule": "conditional",
+      "node": "root",
+      "expected": "not the root"
+    }
+  }
+}

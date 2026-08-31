@@ -1,0 +1,26 @@
+{
+  "name": "gen-string-115",
+  "description": "Generated (seed 20260831): $substring('\u00e9', $indexOf('\\'quoted\\'', 'a'), $length('a,,b'))",
+  "document": {
+    "version": "2.1.0",
+    "root": {
+      "type": "Text",
+      "id": "r",
+      "properties": {
+        "text": {
+          "$expr": "$substring('\u00e9', $indexOf('\\'quoted\\'', 'a'), $length('a,,b'))"
+        }
+      }
+    }
+  },
+  "expect": {
+    "view": {
+      "type": "Text",
+      "reference": "r",
+      "properties": {
+        "text": "\u00e9"
+      }
+    },
+    "occurrences": []
+  }
+}

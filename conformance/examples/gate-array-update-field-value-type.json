@@ -1,0 +1,71 @@
+{
+  "name": "gate-array-update-field-value-type",
+  "description": "The value is typed as the field: a string in a bool field is refused",
+  "document": {
+    "version": "2.1.0",
+    "state": {
+      "rows": {
+        "array": {
+          "record": {
+            "name": "string",
+            "done": "bool"
+          }
+        }
+      },
+      "n": "int"
+    },
+    "root": {
+      "type": "Column",
+      "id": "c",
+      "children": [
+        {
+          "type": "Button",
+          "id": "toggle",
+          "properties": {
+            "label": "Toggle",
+            "enabled": true
+          },
+          "on": {
+            "tap": [
+              {
+                "action": "$update",
+                "key": "rows",
+                "at": 0,
+                "field": "done",
+                "value": "yes"
+              }
+            ]
+          }
+        },
+        {
+          "type": "$repeat",
+          "id": "list",
+          "items": {
+            "$expr": "state.rows"
+          },
+          "as": "row",
+          "children": [
+            {
+              "type": "Text",
+              "id": "row_text",
+              "properties": {
+                "text": {
+                  "$expr": "$concat(row.name, $if(row.done, ' done', ''))"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "expect": {
+    "error": {
+      "type": "SchemaViolation",
+      "rule": "action-encoding",
+      "node": "toggle",
+      "expected": "bool",
+      "found": "string"
+    }
+  }
+}

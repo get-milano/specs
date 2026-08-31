@@ -1,0 +1,24 @@
+{
+  "name": "gate-function-unknown",
+  "description": "A name that is neither a built-in nor a declared function is the expression violation",
+  "document": {
+    "version": "2.1.0",
+    "root": {
+      "type": "Text",
+      "id": "t",
+      "properties": {
+        "text": {
+          "$expr": "nosuch(1)"
+        }
+      }
+    }
+  },
+  "expect": {
+    "error": {
+      "type": "SchemaViolation",
+      "rule": "expression",
+      "node": "t",
+      "expected": "string"
+    }
+  }
+}

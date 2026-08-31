@@ -1,0 +1,124 @@
+{
+  "name": "switch-emission-from-a-branch",
+  "description": "A node inside a case dispatches like any other, for the reason a conditional's does",
+  "document": {
+    "version": "2.1.0",
+    "state": {
+      "status": {
+        "enum": [
+          "listed",
+          "empty"
+        ]
+      },
+      "rows": {
+        "array": {
+          "record": {
+            "name": "string"
+          }
+        }
+      }
+    },
+    "root": {
+      "type": "Column",
+      "id": "c",
+      "children": [
+        {
+          "type": "$switch",
+          "subject": {
+            "$expr": "state.status"
+          },
+          "cases": {
+            "listed": [
+              {
+                "type": "$repeat",
+                "id": "row",
+                "items": {
+                  "$expr": "state.rows"
+                },
+                "as": "item",
+                "key": {
+                  "$expr": "item.name"
+                },
+                "children": [
+                  {
+                    "type": "Button",
+                    "id": "del",
+                    "properties": {
+                      "label": {
+                        "$expr": "item.name"
+                      },
+                      "enabled": true
+                    },
+                    "on": {
+                      "tap": [
+                        {
+                          "action": "$remove",
+                          "key": "rows",
+                          "at": {
+                            "$expr": "item_index"
+                          }
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ],
+            "empty": [
+              {
+                "type": "Text",
+                "properties": {
+                  "text": "Nothing yet"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    }
+  },
+  "state": {
+    "status": "listed",
+    "rows": [
+      {
+        "name": "a"
+      },
+      {
+        "name": "b"
+      }
+    ]
+  },
+  "steps": [
+    {
+      "event": {
+        "node": "del[a]",
+        "name": "tap"
+      }
+    }
+  ],
+  "expect": {
+    "state": {
+      "status": "listed",
+      "rows": [
+        {
+          "name": "b"
+        }
+      ]
+    },
+    "view": {
+      "type": "Column",
+      "reference": "c",
+      "children": [
+        {
+          "type": "Button",
+          "reference": "del[b]",
+          "properties": {
+            "enabled": true,
+            "label": "b"
+          }
+        }
+      ]
+    },
+    "occurrences": []
+  }
+}

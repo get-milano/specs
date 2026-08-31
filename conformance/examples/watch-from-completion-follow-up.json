@@ -1,0 +1,106 @@
+{
+  "name": "watch-from-completion-follow-up",
+  "description": "A mutation in a completion's follow-up triggers the watch like any other",
+  "document": {
+    "version": "2.1.0",
+    "state": {
+      "a": "int",
+      "b": "int",
+      "c": "int"
+    },
+    "root": {
+      "type": "Column",
+      "id": "c",
+      "children": [
+        {
+          "type": "Text",
+          "id": "a",
+          "properties": {
+            "text": {
+              "$expr": "$str(state.a)"
+            }
+          }
+        },
+        {
+          "type": "Text",
+          "id": "b",
+          "properties": {
+            "text": {
+              "$expr": "$str(state.b)"
+            }
+          }
+        },
+        {
+          "type": "Button",
+          "id": "go",
+          "properties": {
+            "label": "Go",
+            "enabled": true
+          },
+          "on": {
+            "tap": [
+              {
+                "action": "openUrl",
+                "url": "u",
+                "onSuccess": [
+                  {
+                    "action": "$set",
+                    "key": "a",
+                    "value": 4
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "watch": {
+      "a": [
+        {
+          "action": "$set",
+          "key": "b",
+          "value": {
+            "$expr": "state.a * 2"
+          }
+        }
+      ]
+    }
+  },
+  "state": {
+    "a": 0,
+    "b": 0,
+    "c": 0
+  },
+  "steps": [
+    {
+      "event": {
+        "node": "go",
+        "name": "tap"
+      }
+    },
+    {
+      "complete": {
+        "dispatch": 0,
+        "outcome": "success"
+      }
+    }
+  ],
+  "expect": {
+    "state": {
+      "a": 4,
+      "b": 8,
+      "c": 0
+    },
+    "dispatched": [
+      {
+        "action": "openUrl",
+        "parameters": {
+          "url": "u"
+        },
+        "dispatch": 0
+      }
+    ],
+    "occurrences": []
+  }
+}

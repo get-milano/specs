@@ -12,7 +12,7 @@
       "properties": {
         "text": "x",
         "visible": {
-          "$expr": "if(state.flag, null, null)"
+          "$expr": "$if(state.flag, null, null)"
         }
       }
     }

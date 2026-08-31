@@ -1,6 +1,6 @@
 {
   "name": "gen-typing-call-accept-000",
-  "description": "Generated (exhaustive): accepted in their declared positions. p0: str(state.s) in s; p1: str(state.s) in sOpt; p2: str(state.e) in s; p3: str(state.e) in sOpt; p4: str(state.i) in s; p5: str(state.i) in sOpt; p6: str(state.d) in s; p7: str(state.d) in sOpt; p8: str(state.b) in s; p9: str(state.b) in sOpt; p10: str('a') in s; p11: str('a') in sOpt",
+  "description": "Generated (exhaustive): accepted in their declared positions. p0: $str(state.s) in s; p1: $str(state.s) in sOpt; p2: $str(state.e) in s; p3: $str(state.e) in sOpt; p4: $str(state.i) in s; p5: $str(state.i) in sOpt; p6: $str(state.d) in s; p7: $str(state.d) in sOpt; p8: $str(state.b) in s; p9: $str(state.b) in sOpt; p10: $str('a') in s; p11: $str('a') in sOpt",
   "document": {
     "version": "1.0.0",
     "state": {
@@ -24,7 +24,7 @@
           "id": "p0",
           "properties": {
             "s": {
-              "$expr": "str(state.s)"
+              "$expr": "$str(state.s)"
             }
           }
         },
@@ -33,7 +33,7 @@
           "id": "p1",
           "properties": {
             "sOpt": {
-              "$expr": "str(state.s)"
+              "$expr": "$str(state.s)"
             }
           }
         },
@@ -42,7 +42,7 @@
           "id": "p2",
           "properties": {
             "s": {
-              "$expr": "str(state.e)"
+              "$expr": "$str(state.e)"
             }
           }
         },
@@ -51,7 +51,7 @@
           "id": "p3",
           "properties": {
             "sOpt": {
-              "$expr": "str(state.e)"
+              "$expr": "$str(state.e)"
             }
           }
         },
@@ -60,7 +60,7 @@
           "id": "p4",
           "properties": {
             "s": {
-              "$expr": "str(state.i)"
+              "$expr": "$str(state.i)"
             }
           }
         },
@@ -69,7 +69,7 @@
           "id": "p5",
           "properties": {
             "sOpt": {
-              "$expr": "str(state.i)"
+              "$expr": "$str(state.i)"
             }
           }
         },
@@ -78,7 +78,7 @@
           "id": "p6",
           "properties": {
             "s": {
-              "$expr": "str(state.d)"
+              "$expr": "$str(state.d)"
             }
           }
         },
@@ -87,7 +87,7 @@
           "id": "p7",
           "properties": {
             "sOpt": {
-              "$expr": "str(state.d)"
+              "$expr": "$str(state.d)"
             }
           }
         },
@@ -96,7 +96,7 @@
           "id": "p8",
           "properties": {
             "s": {
-              "$expr": "str(state.b)"
+              "$expr": "$str(state.b)"
             }
           }
         },
@@ -105,7 +105,7 @@
           "id": "p9",
           "properties": {
             "sOpt": {
-              "$expr": "str(state.b)"
+              "$expr": "$str(state.b)"
             }
           }
         },
@@ -114,7 +114,7 @@
           "id": "p10",
           "properties": {
             "s": {
-              "$expr": "str('a')"
+              "$expr": "$str('a')"
             }
           }
         },
@@ -123,7 +123,7 @@
           "id": "p11",
           "properties": {
             "sOpt": {
-              "$expr": "str('a')"
+              "$expr": "$str('a')"
             }
           }
         }

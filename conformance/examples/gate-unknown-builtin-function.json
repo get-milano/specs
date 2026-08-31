@@ -1,0 +1,24 @@
+{
+  "name": "gate-unknown-builtin-function",
+  "description": "A $ name the contract does not define is the expression violation, like any other unknown function",
+  "document": {
+    "version": "2.1.0",
+    "root": {
+      "type": "Text",
+      "id": "t",
+      "properties": {
+        "text": {
+          "$expr": "$nosuch('x')"
+        }
+      }
+    }
+  },
+  "expect": {
+    "error": {
+      "type": "SchemaViolation",
+      "rule": "expression",
+      "node": "t",
+      "expected": "string"
+    }
+  }
+}

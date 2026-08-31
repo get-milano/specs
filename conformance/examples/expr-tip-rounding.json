@@ -12,7 +12,7 @@
       "id": "result",
       "properties": {
         "text": {
-          "$expr": "str(double(int(state.amount * (1.0 + state.tipPercent / 100.0) * 100.0 + 0.5)) / 100.0)"
+          "$expr": "$str($double($int(state.amount * (1.0 + state.tipPercent / 100.0) * 100.0 + 0.5)) / 100.0)"
         }
       }
     }

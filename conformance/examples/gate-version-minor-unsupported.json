@@ -2,7 +2,7 @@
   "name": "gate-version-minor-unsupported",
   "description": "A document declaring a minor above what the runtime implements for its major is an UnsupportedVersion naming the declared version and the supported ranges",
   "document": {
-    "version": "2.1.0",
+    "version": "2.2.0",
     "root": {
       "type": "Text",
       "id": "t",
@@ -14,10 +14,10 @@
   "expect": {
     "error": {
       "type": "UnsupportedVersion",
-      "declared": "2.1.0",
+      "declared": "2.2.0",
       "supported": [
         "1.0",
-        "2.0"
+        "2.1"
       ]
     }
   }

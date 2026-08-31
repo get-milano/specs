@@ -1,0 +1,36 @@
+{
+  "name": "gate-function-handler-after-action-handler",
+  "description": "The action handler check precedes the function handler check",
+  "document": {
+    "version": "2.1.0",
+    "root": {
+      "type": "Button",
+      "id": "go",
+      "properties": {
+        "label": {
+          "$expr": "shout('x')"
+        },
+        "enabled": true
+      },
+      "on": {
+        "tap": [
+          {
+            "action": "openUrl",
+            "url": "u"
+          }
+        ]
+      }
+    }
+  },
+  "config": {
+    "functionHandler": false,
+    "actionHandler": false
+  },
+  "expect": {
+    "error": {
+      "type": "SchemaViolation",
+      "rule": "action-handler",
+      "expected": "action handler"
+    }
+  }
+}

@@ -1,0 +1,34 @@
+{
+  "name": "gate-array-action-in-lifecycle-list",
+  "description": "In a lifecycle list an array action's violations carry no node",
+  "document": {
+    "version": "2.1.0",
+    "state": {
+      "n": "int"
+    },
+    "root": {
+      "type": "Text",
+      "id": "t",
+      "properties": {
+        "text": "x"
+      }
+    },
+    "on": {
+      "appear": [
+        {
+          "action": "$append",
+          "key": "n",
+          "value": 1
+        }
+      ]
+    }
+  },
+  "expect": {
+    "error": {
+      "type": "SchemaViolation",
+      "rule": "action-encoding",
+      "expected": "array state key",
+      "found": "n"
+    }
+  }
+}

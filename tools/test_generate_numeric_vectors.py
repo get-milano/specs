@@ -40,6 +40,13 @@ class Determinism(unittest.TestCase):
         second = gnv.build_expressions(random.Random(gnv.SEED))
         self.assertEqual(first, second)
 
+    def test_the_function_pool_is_reproducible_and_its_own(self):
+        first = gnv.build_function_expressions(random.Random(gnv.FUNCTION_SEED))
+        second = gnv.build_function_expressions(random.Random(gnv.FUNCTION_SEED))
+        self.assertEqual(first, second)
+        self.assertGreaterEqual(len(set(first)), gnv.FUNCTION_COUNT)
+        self.assertNotEqual(gnv.FUNCTION_SEED, gnv.SEED)
+
     def test_a_different_seed_produces_a_different_pool(self):
         # Guards against a build that ignores the rng and returns a constant
         # list, which would satisfy the test above perfectly.
@@ -87,21 +94,39 @@ class RegeneratesTheCommittedSuite(unittest.TestCase):
     def test_the_declared_count_was_emitted(self):
         vectors = [p for p in self.regenerated.glob("*.json")
                    if p.name != "vocabulary.json"]
-        self.assertEqual(len(vectors), gnv.COUNT)
+        self.assertEqual(len(vectors), gnv.COUNT + gnv.FUNCTION_COUNT)
 
     def test_names_are_sequential_and_zero_padded(self):
         # The names are the suite's stable identity: an engine reporting a
         # failure names one, so a renumbering would orphan every reference.
-        names = sorted(p.stem for p in self.regenerated.glob("gen-numeric-*.json"))
+        names = sorted(p.stem for p in self.regenerated.glob("gen-numeric-[0-9]*.json"))
         self.assertEqual(names,
                          [f"gen-numeric-{i:03d}" for i in range(gnv.COUNT)])
+        functions = sorted(p.stem for p in self.regenerated.glob("gen-numeric-fn-*.json"))
+        self.assertEqual(functions,
+                         [f"gen-numeric-fn-{i:03d}" for i in range(gnv.FUNCTION_COUNT)])
+
+    def test_the_first_batch_declares_contract_1_0_and_the_function_batch_2_1(self):
+        # The numeric functions arrived with contract 2.1 and are refused
+        # in a document declaring less (document model spec, Validation),
+        # so the batch that composes them has to declare it; the original
+        # batch keeps pinning 1.0's acceptance, byte for byte.
+        for path in self.regenerated.glob("gen-numeric-*.json"):
+            version = json.loads(path.read_text())["document"]["version"]
+            expected = "2.1.0" if "-fn-" in path.name else "1.0.0"
+            self.assertEqual(version, expected, path.name)
+
+    def test_the_function_batch_uses_every_function(self):
+        text = "".join(path.read_text() for path in self.regenerated.glob("gen-numeric-fn-*.json"))
+        for function in ("$abs(", "$min(", "$max(", "$floor(", "$ceil(", "$round("):
+            self.assertIn(function, text, f"{function} never composed")
 
 
 class VectorShape(unittest.TestCase):
     """What one generated vector claims, and who decided it."""
 
     def test_a_vector_carries_the_expectation_the_checker_computed(self):
-        vector = gnv.vector_for("gen-numeric-test", "str(1 + 1)")
+        vector = gnv.vector_for("gen-numeric-test", "$str(1 + 1)")
         self.assertEqual(vector["name"], "gen-numeric-test")
         self.assertEqual(vector["expect"]["view"]["properties"]["text"], "2")
         self.assertEqual(vector["expect"]["occurrences"], [])
@@ -109,14 +134,21 @@ class VectorShape(unittest.TestCase):
     def test_the_description_records_the_seed_and_the_expression(self):
         # A generated vector has no author to ask, so it has to say where it
         # came from and how to reproduce it.
-        vector = gnv.vector_for("gen-numeric-test", "str(2 * 3)")
+        vector = gnv.vector_for("gen-numeric-test", "$str(2 * 3)")
         self.assertIn(str(gnv.SEED), vector["description"])
-        self.assertIn("str(2 * 3)", vector["description"])
+        self.assertIn("$str(2 * 3)", vector["description"])
+
+    def test_a_function_vector_declares_the_contract_it_needs(self):
+        vector = gnv.vector_for("gen-numeric-fn-test", "$str($round(2.5))",
+                                "2.1.0", gnv.FUNCTION_SEED)
+        self.assertEqual(vector["document"]["version"], "2.1.0")
+        self.assertEqual(vector["expect"]["view"]["properties"]["text"], "3.0")
+        self.assertIn(str(gnv.FUNCTION_SEED), vector["description"])
 
     def test_reported_occurrences_are_carried_into_the_expectation(self):
         # The interesting half of the numeric suite: an engine has to report
         # the same arithmetic occurrence, not just compute the same digits.
-        vector = gnv.vector_for("gen-numeric-test", "str(1 / 0)")
+        vector = gnv.vector_for("gen-numeric-test", "$str(1 / 0)")
         self.assertEqual(vector["expect"]["view"]["properties"]["text"], "0")
         self.assertEqual(vector["expect"]["occurrences"],
                          [{"kind": "divisionByZero", "node": "r", "name": "text"}])
@@ -126,7 +158,7 @@ class VectorShape(unittest.TestCase):
         # except once hid a crash on `inf % x`, and with it every vector
         # that would have pinned the case; the generator has to fail.
         original = gnv.vector_for
-        gnv.vector_for = lambda name, expression: (_ for _ in ()).throw(
+        gnv.vector_for = lambda name, expression, *rest: (_ for _ in ()).throw(
             RuntimeError("checker defect"))
         with tempfile.TemporaryDirectory() as directory:
             root, suite = gnv.ROOT, gnv.SUITE
@@ -144,7 +176,7 @@ class VectorShape(unittest.TestCase):
         # chance; if it silently emitted instead, the suite would carry a
         # vector no engine could satisfy.
         with self.assertRaises(rc.GateError):
-            gnv.vector_for("gen-numeric-test", "str('a' + 1)")
+            gnv.vector_for("gen-numeric-test", "$str('a' + 1)")
 
 
 class TheCommittedSuiteItself(unittest.TestCase):

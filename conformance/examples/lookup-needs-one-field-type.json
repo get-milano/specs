@@ -1,0 +1,38 @@
+{
+  "name": "lookup-needs-one-field-type",
+  "description": "A record whose fields disagree has no single type to give",
+  "document": {
+    "version": "2.1.0",
+    "state": {
+      "status": {
+        "enum": [
+          "ok",
+          "late"
+        ]
+      },
+      "labels": {
+        "record": {
+          "ok": "string",
+          "late": "int"
+        }
+      }
+    },
+    "root": {
+      "type": "Text",
+      "id": "t",
+      "properties": {
+        "text": {
+          "$expr": "state.labels[state.status]"
+        }
+      }
+    }
+  },
+  "expect": {
+    "error": {
+      "type": "SchemaViolation",
+      "rule": "expression",
+      "node": "t",
+      "expected": "string"
+    }
+  }
+}

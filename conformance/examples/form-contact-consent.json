@@ -1,15 +1,16 @@
 {
   "name": "form-contact-consent",
-  "description": "End-to-end contact form: state provider, unidirectional flow via events and $set, $when consent gating, vocabulary-declared action, async submit completion, onSuccess",
+  "description": "End-to-end contact form: state provider, unidirectional flow via events and $set, $when consent gating, vocabulary-declared action, async submit completion, onSuccess; the failure payload is bound but never arrives, since the completion succeeds; the failure payload is bound but never arrives, since the completion succeeds",
   "document": {
-    "version": "2.0.0",
+    "version": "2.1.0",
     "state": {
       "name": "string",
       "surname": "string",
       "email": "string",
       "phone": "string?",
       "consent": "bool",
-      "submitted": "bool"
+      "submitted": "bool",
+      "error": "string"
     },
     "root": {
       "type": "Column",
@@ -126,7 +127,7 @@
           "properties": {
             "label": "Send",
             "enabled": {
-              "$expr": "state.consent && !isEmpty(trim(state.name)) && !isEmpty(trim(state.surname)) && !isEmpty(trim(state.email)) && !state.submitted"
+              "$expr": "state.consent && !$isEmpty($trim(state.name)) && !$isEmpty($trim(state.surname)) && !$isEmpty($trim(state.email)) && !state.submitted"
             }
           },
           "on": {
@@ -134,19 +135,19 @@
               {
                 "action": "$when",
                 "condition": {
-                  "$expr": "state.consent && !isEmpty(trim(state.name)) && !isEmpty(trim(state.surname)) && !isEmpty(trim(state.email)) && !state.submitted"
+                  "$expr": "state.consent && !$isEmpty($trim(state.name)) && !$isEmpty($trim(state.surname)) && !$isEmpty($trim(state.email)) && !state.submitted"
                 },
                 "then": [
                   {
                     "action": "submitContact",
                     "name": {
-                      "$expr": "trim(state.name)"
+                      "$expr": "$trim(state.name)"
                     },
                     "surname": {
-                      "$expr": "trim(state.surname)"
+                      "$expr": "$trim(state.surname)"
                     },
                     "email": {
-                      "$expr": "trim(state.email)"
+                      "$expr": "$trim(state.email)"
                     },
                     "phone": {
                       "$expr": "state.phone"
@@ -156,6 +157,15 @@
                         "action": "$set",
                         "key": "submitted",
                         "value": true
+                      }
+                    ],
+                    "onFailure": [
+                      {
+                        "action": "$set",
+                        "key": "error",
+                        "value": {
+                          "$expr": "$if(failure == 'invalid', 'Check your details and try again.', 'We could not reach the server. Try again later.')"
+                        }
                       }
                     ]
                   }
@@ -169,7 +179,19 @@
           "id": "thanks",
           "properties": {
             "text": {
-              "$expr": "if(state.submitted, 'Thanks! We will be in touch.', '')"
+              "$expr": "$if(state.submitted, 'Thanks! We will be in touch.', '')"
+            }
+          }
+        },
+        {
+          "type": "Text",
+          "id": "problem",
+          "properties": {
+            "text": {
+              "$expr": "state.error"
+            },
+            "visible": {
+              "$expr": "!$isEmpty(state.error)"
             }
           }
         }
@@ -182,7 +204,8 @@
     "email": "",
     "phone": null,
     "consent": false,
-    "submitted": false
+    "submitted": false,
+    "error": ""
   },
   "steps": [
     {
@@ -239,7 +262,8 @@
       "email": "ada@example.com",
       "phone": null,
       "consent": true,
-      "submitted": true
+      "submitted": true,
+      "error": ""
     },
     "dispatched": [
       {
@@ -249,7 +273,8 @@
           "surname": "Lovelace",
           "email": "ada@example.com",
           "phone": null
-        }
+        },
+        "dispatch": 0
       }
     ],
     "occurrences": []

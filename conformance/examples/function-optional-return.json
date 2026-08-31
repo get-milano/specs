@@ -1,0 +1,59 @@
+{
+  "name": "function-optional-return",
+  "description": "An optional return is an optional like any other, resolved with ??; a null answer satisfies it",
+  "document": {
+    "version": "2.1.0",
+    "context": {
+      "raw": "string"
+    },
+    "root": {
+      "type": "Text",
+      "id": "t",
+      "properties": {
+        "text": {
+          "$expr": "$str(parseInt(context.raw) ?? 0)"
+        }
+      }
+    }
+  },
+  "context": {
+    "raw": "12"
+  },
+  "config": {
+    "functions": {
+      "results": {
+        "parseInt": [
+          {
+            "arguments": [
+              "12"
+            ],
+            "returns": 12
+          },
+          {
+            "arguments": [
+              "x"
+            ],
+            "returns": null
+          }
+        ]
+      }
+    }
+  },
+  "steps": [
+    {
+      "contextUpdate": {
+        "raw": "x"
+      }
+    }
+  ],
+  "expect": {
+    "view": {
+      "type": "Text",
+      "reference": "t",
+      "properties": {
+        "text": "0"
+      }
+    },
+    "occurrences": []
+  }
+}

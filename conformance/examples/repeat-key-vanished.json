@@ -1,0 +1,118 @@
+{
+  "name": "repeat-key-vanished",
+  "description": "An emission naming a key no element renders any more is an invalid emission: dropped and reported with the key found",
+  "document": {
+    "version": "2.1.0",
+    "context": {
+      "rows": {
+        "array": {
+          "record": {
+            "id": "string",
+            "name": "string",
+            "url": "string"
+          }
+        }
+      }
+    },
+    "state": {
+      "picked": "int"
+    },
+    "root": {
+      "type": "Column",
+      "id": "list",
+      "children": [
+        {
+          "type": "$repeat",
+          "id": "each",
+          "items": {
+            "$expr": "context.rows"
+          },
+          "as": "row",
+          "key": {
+            "$expr": "row.id"
+          },
+          "children": [
+            {
+              "type": "Button",
+              "id": "open",
+              "properties": {
+                "label": {
+                  "$expr": "row.name"
+                },
+                "enabled": true
+              },
+              "on": {
+                "tap": [
+                  {
+                    "action": "openUrl",
+                    "url": {
+                      "$expr": "row.url"
+                    }
+                  },
+                  {
+                    "action": "$set",
+                    "key": "picked",
+                    "value": {
+                      "$expr": "row_index"
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "context": {
+    "rows": [
+      {
+        "id": "alpha",
+        "name": "Alpha",
+        "url": "https://example.com/a"
+      },
+      {
+        "id": "beta",
+        "name": "Beta",
+        "url": "https://example.com/b"
+      }
+    ]
+  },
+  "state": {
+    "picked": -1
+  },
+  "steps": [
+    {
+      "contextUpdate": {
+        "rows": [
+          {
+            "id": "beta",
+            "name": "Beta",
+            "url": "https://example.com/b"
+          }
+        ]
+      }
+    },
+    {
+      "event": {
+        "node": "open[alpha]",
+        "name": "tap"
+      }
+    }
+  ],
+  "expect": {
+    "state": {
+      "picked": -1
+    },
+    "dispatched": [],
+    "occurrences": [
+      {
+        "kind": "invalidEmission",
+        "node": "open[alpha]",
+        "name": "tap",
+        "expected": "repeat element",
+        "found": "key alpha"
+      }
+    ]
+  }
+}

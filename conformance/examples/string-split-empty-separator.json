@@ -1,0 +1,26 @@
+{
+  "name": "string-split-empty-separator",
+  "description": "An empty separator gives one element rather than one per scalar",
+  "document": {
+    "version": "2.1.0",
+    "root": {
+      "type": "Text",
+      "id": "r",
+      "properties": {
+        "text": {
+          "$expr": "$str($length($split('hello', '')))"
+        }
+      }
+    }
+  },
+  "expect": {
+    "view": {
+      "type": "Text",
+      "reference": "r",
+      "properties": {
+        "text": "1"
+      }
+    },
+    "occurrences": []
+  }
+}

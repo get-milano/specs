@@ -13,7 +13,8 @@
       "type": "SchemaViolation",
       "rule": "construct",
       "node": "r",
-      "found": "$widget"
+      "found": "$widget",
+      "expected": "component type"
     }
   }
 }

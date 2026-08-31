@@ -1,0 +1,79 @@
+{
+  "name": "conditional-inside-a-repeat",
+  "description": "Each instance chooses its own branch, and the reference carries both",
+  "document": {
+    "version": "2.1.0",
+    "state": {
+      "items": {
+        "array": "string"
+      }
+    },
+    "root": {
+      "type": "Column",
+      "id": "c",
+      "children": [
+        {
+          "type": "$repeat",
+          "id": "row",
+          "items": {
+            "$expr": "state.items"
+          },
+          "as": "item",
+          "children": [
+            {
+              "type": "$if",
+              "condition": {
+                "$expr": "$isEmpty(item)"
+              },
+              "then": [
+                {
+                  "type": "Text",
+                  "properties": {
+                    "text": "blank"
+                  }
+                }
+              ],
+              "else": [
+                {
+                  "type": "Text",
+                  "properties": {
+                    "text": "filled"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "state": {
+    "items": [
+      "",
+      "b"
+    ]
+  },
+  "expect": {
+    "view": {
+      "type": "Column",
+      "reference": "c",
+      "children": [
+        {
+          "type": "Text",
+          "reference": "root/children[0]/children[0]/then[0][0]",
+          "properties": {
+            "text": "blank"
+          }
+        },
+        {
+          "type": "Text",
+          "reference": "root/children[0]/children[0]/else[0][1]",
+          "properties": {
+            "text": "filled"
+          }
+        }
+      ]
+    },
+    "occurrences": []
+  }
+}

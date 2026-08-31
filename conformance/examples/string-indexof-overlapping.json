@@ -1,0 +1,26 @@
+{
+  "name": "string-indexof-overlapping",
+  "description": "Overlapping needles report the leftmost start",
+  "document": {
+    "version": "2.1.0",
+    "root": {
+      "type": "Text",
+      "id": "r",
+      "properties": {
+        "text": {
+          "$expr": "$str($indexOf('aaa', 'aa'))"
+        }
+      }
+    }
+  },
+  "expect": {
+    "view": {
+      "type": "Text",
+      "reference": "r",
+      "properties": {
+        "text": "0"
+      }
+    },
+    "occurrences": []
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "name": "string-substring-clamps-low",
+  "description": "A negative start clamps to zero",
+  "document": {
+    "version": "2.1.0",
+    "root": {
+      "type": "Text",
+      "id": "r",
+      "properties": {
+        "text": {
+          "$expr": "$substring('hello', 0 - 4, 2)"
+        }
+      }
+    }
+  },
+  "expect": {
+    "view": {
+      "type": "Text",
+      "reference": "r",
+      "properties": {
+        "text": "he"
+      }
+    },
+    "occurrences": []
+  }
+}

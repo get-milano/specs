@@ -1,0 +1,134 @@
+{
+  "name": "expr-abs",
+  "description": "abs keeps its numeric type: int magnitude wraps at the minimum int with no report, double magnitude follows IEEE 754 (signed zero clears, NaN stays)",
+  "document": {
+    "version": "2.1.0",
+    "root": {
+      "type": "Column",
+      "id": "root",
+      "children": [
+        {
+          "type": "Text",
+          "id": "p0",
+          "properties": {
+            "text": {
+              "$expr": "$str($abs(0 - 5))"
+            }
+          }
+        },
+        {
+          "type": "Text",
+          "id": "p1",
+          "properties": {
+            "text": {
+              "$expr": "$str($abs(7))"
+            }
+          }
+        },
+        {
+          "type": "Text",
+          "id": "p2",
+          "properties": {
+            "text": {
+              "$expr": "$str($abs(0 - 9223372036854775807 - 1))"
+            }
+          }
+        },
+        {
+          "type": "Text",
+          "id": "p3",
+          "properties": {
+            "text": {
+              "$expr": "$str($abs(0.0 - 2.5))"
+            }
+          }
+        },
+        {
+          "type": "Text",
+          "id": "p4",
+          "properties": {
+            "text": {
+              "$expr": "$str($abs(-(0.0)))"
+            }
+          }
+        },
+        {
+          "type": "Text",
+          "id": "p5",
+          "properties": {
+            "text": {
+              "$expr": "$str($abs(0.0 / 0.0))"
+            }
+          }
+        },
+        {
+          "type": "Text",
+          "id": "p6",
+          "properties": {
+            "text": {
+              "$expr": "$str($abs((0.0 - 1.0) / 0.0))"
+            }
+          }
+        }
+      ]
+    }
+  },
+  "expect": {
+    "view": {
+      "type": "Column",
+      "reference": "root",
+      "children": [
+        {
+          "type": "Text",
+          "reference": "p0",
+          "properties": {
+            "text": "5"
+          }
+        },
+        {
+          "type": "Text",
+          "reference": "p1",
+          "properties": {
+            "text": "7"
+          }
+        },
+        {
+          "type": "Text",
+          "reference": "p2",
+          "properties": {
+            "text": "-9223372036854775808"
+          }
+        },
+        {
+          "type": "Text",
+          "reference": "p3",
+          "properties": {
+            "text": "2.5"
+          }
+        },
+        {
+          "type": "Text",
+          "reference": "p4",
+          "properties": {
+            "text": "0.0"
+          }
+        },
+        {
+          "type": "Text",
+          "reference": "p5",
+          "properties": {
+            "text": "nan"
+          }
+        },
+        {
+          "type": "Text",
+          "reference": "p6",
+          "properties": {
+            "text": "inf"
+          }
+        }
+      ]
+    },
+    "occurrences": []
+  }
+}

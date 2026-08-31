@@ -1,0 +1,92 @@
+{
+  "name": "watch-runs-before-next-action",
+  "description": "The watch list runs as part of the mutation: the next action of the list that changed the key sees what the watch assigned",
+  "document": {
+    "version": "2.1.0",
+    "state": {
+      "a": "int",
+      "b": "int",
+      "c": "int"
+    },
+    "root": {
+      "type": "Column",
+      "id": "c",
+      "children": [
+        {
+          "type": "Text",
+          "id": "a",
+          "properties": {
+            "text": {
+              "$expr": "$str(state.a)"
+            }
+          }
+        },
+        {
+          "type": "Text",
+          "id": "b",
+          "properties": {
+            "text": {
+              "$expr": "$str(state.b)"
+            }
+          }
+        },
+        {
+          "type": "Button",
+          "id": "go",
+          "properties": {
+            "label": "Go",
+            "enabled": true
+          },
+          "on": {
+            "tap": [
+              {
+                "action": "$set",
+                "key": "a",
+                "value": 3
+              },
+              {
+                "action": "$set",
+                "key": "c",
+                "value": {
+                  "$expr": "state.b"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "watch": {
+      "a": [
+        {
+          "action": "$set",
+          "key": "b",
+          "value": {
+            "$expr": "state.a * 2"
+          }
+        }
+      ]
+    }
+  },
+  "state": {
+    "a": 0,
+    "b": 0,
+    "c": 0
+  },
+  "steps": [
+    {
+      "event": {
+        "node": "go",
+        "name": "tap"
+      }
+    }
+  ],
+  "expect": {
+    "state": {
+      "a": 3,
+      "b": 6,
+      "c": 6
+    },
+    "occurrences": []
+  }
+}

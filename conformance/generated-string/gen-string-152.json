@@ -1,0 +1,26 @@
+{
+  "name": "gen-string-152",
+  "description": "Generated (seed 20260831): $replace($join($split('\ud83d\ude00', '\\\\'), 'ab'), '\\'', '..')",
+  "document": {
+    "version": "2.1.0",
+    "root": {
+      "type": "Text",
+      "id": "r",
+      "properties": {
+        "text": {
+          "$expr": "$replace($join($split('\ud83d\ude00', '\\\\'), 'ab'), '\\'', '..')"
+        }
+      }
+    }
+  },
+  "expect": {
+    "view": {
+      "type": "Text",
+      "reference": "r",
+      "properties": {
+        "text": "\ud83d\ude00"
+      }
+    },
+    "occurrences": []
+  }
+}

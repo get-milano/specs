@@ -45,7 +45,8 @@
       "type": "SchemaViolation",
       "rule": "event-binding",
       "node": "b",
-      "expected": "declared event"
+      "expected": "declared event",
+      "found": "nope"
     }
   }
 }

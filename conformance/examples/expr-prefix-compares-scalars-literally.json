@@ -1,0 +1,26 @@
+{
+  "name": "expr-prefix-compares-scalars-literally",
+  "description": "Substring functions compare Unicode scalar sequences literally: a combining sequence is not a prefix of its precomposed form, and a surrogate pair is one scalar",
+  "document": {
+    "version": "2.0.0",
+    "root": {
+      "type": "Text",
+      "id": "result",
+      "properties": {
+        "text": {
+          "$expr": "$if($startsWith('\u00e9llo', '\u00e9'), '1', '0') + $if($startsWith('e\u0301llo', '\u00e9'), '1', '0') + $if($endsWith('a\ud83d\ude00', '\ud83d\ude00'), '1', '0') + $if($startsWith('a\ud83d\ude00b', 'a\ud83d\ude00'), '1', '0')"
+        }
+      }
+    }
+  },
+  "expect": {
+    "view": {
+      "type": "Text",
+      "reference": "result",
+      "properties": {
+        "text": "1011"
+      }
+    },
+    "occurrences": []
+  }
+}

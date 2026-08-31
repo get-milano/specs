@@ -1,0 +1,214 @@
+{
+  "name": "expr-min-max",
+  "description": "min and max take two or more arguments, stay int when every argument is int and promote otherwise, keep the leftmost of equals (so signed zeros are decided by position), and propagate NaN",
+  "document": {
+    "version": "2.1.0",
+    "root": {
+      "type": "Column",
+      "id": "root",
+      "children": [
+        {
+          "type": "Text",
+          "id": "p0",
+          "properties": {
+            "text": {
+              "$expr": "$str($min(3, 1, 2))"
+            }
+          }
+        },
+        {
+          "type": "Text",
+          "id": "p1",
+          "properties": {
+            "text": {
+              "$expr": "$str($max(3, 1, 2))"
+            }
+          }
+        },
+        {
+          "type": "Text",
+          "id": "p2",
+          "properties": {
+            "text": {
+              "$expr": "$str($min(1, 2.5))"
+            }
+          }
+        },
+        {
+          "type": "Text",
+          "id": "p3",
+          "properties": {
+            "text": {
+              "$expr": "$str($max(2, 2.5))"
+            }
+          }
+        },
+        {
+          "type": "Text",
+          "id": "p4",
+          "properties": {
+            "text": {
+              "$expr": "$str($max(2, 1.5))"
+            }
+          }
+        },
+        {
+          "type": "Text",
+          "id": "p5",
+          "properties": {
+            "text": {
+              "$expr": "$str($min(0.0, -(0.0)))"
+            }
+          }
+        },
+        {
+          "type": "Text",
+          "id": "p6",
+          "properties": {
+            "text": {
+              "$expr": "$str($min(-(0.0), 0.0))"
+            }
+          }
+        },
+        {
+          "type": "Text",
+          "id": "p7",
+          "properties": {
+            "text": {
+              "$expr": "$str($max(0.0, -(0.0)))"
+            }
+          }
+        },
+        {
+          "type": "Text",
+          "id": "p8",
+          "properties": {
+            "text": {
+              "$expr": "$str($max(1.0, 0.0 / 0.0))"
+            }
+          }
+        },
+        {
+          "type": "Text",
+          "id": "p9",
+          "properties": {
+            "text": {
+              "$expr": "$str($min(0.0 / 0.0, 1.0))"
+            }
+          }
+        },
+        {
+          "type": "Text",
+          "id": "p10",
+          "properties": {
+            "text": {
+              "$expr": "$str($min(1.0 / 0.0, 5.0))"
+            }
+          }
+        },
+        {
+          "type": "Text",
+          "id": "p11",
+          "properties": {
+            "text": {
+              "$expr": "$str($max(9223372036854775807, 0 - 9223372036854775807 - 1))"
+            }
+          }
+        }
+      ]
+    }
+  },
+  "expect": {
+    "view": {
+      "type": "Column",
+      "reference": "root",
+      "children": [
+        {
+          "type": "Text",
+          "reference": "p0",
+          "properties": {
+            "text": "1"
+          }
+        },
+        {
+          "type": "Text",
+          "reference": "p1",
+          "properties": {
+            "text": "3"
+          }
+        },
+        {
+          "type": "Text",
+          "reference": "p2",
+          "properties": {
+            "text": "1.0"
+          }
+        },
+        {
+          "type": "Text",
+          "reference": "p3",
+          "properties": {
+            "text": "2.5"
+          }
+        },
+        {
+          "type": "Text",
+          "reference": "p4",
+          "properties": {
+            "text": "2.0"
+          }
+        },
+        {
+          "type": "Text",
+          "reference": "p5",
+          "properties": {
+            "text": "0.0"
+          }
+        },
+        {
+          "type": "Text",
+          "reference": "p6",
+          "properties": {
+            "text": "-0.0"
+          }
+        },
+        {
+          "type": "Text",
+          "reference": "p7",
+          "properties": {
+            "text": "0.0"
+          }
+        },
+        {
+          "type": "Text",
+          "reference": "p8",
+          "properties": {
+            "text": "nan"
+          }
+        },
+        {
+          "type": "Text",
+          "reference": "p9",
+          "properties": {
+            "text": "nan"
+          }
+        },
+        {
+          "type": "Text",
+          "reference": "p10",
+          "properties": {
+            "text": "5.0"
+          }
+        },
+        {
+          "type": "Text",
+          "reference": "p11",
+          "properties": {
+            "text": "9223372036854775807"
+          }
+        }
+      ]
+    },
+    "occurrences": []
+  }
+}

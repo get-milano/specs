@@ -1,0 +1,47 @@
+{
+  "name": "function-call-in-property",
+  "description": "A declared host function is called like a built-in; the handler's answer, validated against the declared return, is the call's value",
+  "document": {
+    "version": "2.1.0",
+    "state": {
+      "cents": "int"
+    },
+    "root": {
+      "type": "Text",
+      "id": "t",
+      "properties": {
+        "text": {
+          "$expr": "$concat('Total: ', formatMoney(state.cents, 'EUR'))"
+        }
+      }
+    }
+  },
+  "state": {
+    "cents": 1250
+  },
+  "config": {
+    "functions": {
+      "results": {
+        "formatMoney": [
+          {
+            "arguments": [
+              1250,
+              "EUR"
+            ],
+            "returns": "12.50 EUR"
+          }
+        ]
+      }
+    }
+  },
+  "expect": {
+    "view": {
+      "type": "Text",
+      "reference": "t",
+      "properties": {
+        "text": "Total: 12.50 EUR"
+      }
+    },
+    "occurrences": []
+  }
+}

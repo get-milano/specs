@@ -1,6 +1,6 @@
 {
   "name": "gen-typing-call-reject-010",
-  "description": "Generated (exhaustive): str(null) in a string position is rejected at the gate",
+  "description": "Generated (exhaustive): $str(null) in a string position is rejected at the gate",
   "document": {
     "version": "1.0.0",
     "root": {
@@ -12,7 +12,7 @@
           "id": "p",
           "properties": {
             "s": {
-              "$expr": "str(null)"
+              "$expr": "$str(null)"
             }
           }
         }

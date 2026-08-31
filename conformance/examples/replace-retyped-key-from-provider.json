@@ -1,0 +1,90 @@
+{
+  "name": "replace-retyped-key-from-provider",
+  "description": "A key declared with a different type does not carry over: the provider supplies it",
+  "document": {
+    "version": "2.1.0",
+    "state": {
+      "n": "int"
+    },
+    "root": {
+      "type": "Column",
+      "id": "c",
+      "children": [
+        {
+          "type": "Text",
+          "id": "r",
+          "properties": {
+            "text": {
+              "$expr": "$str(state.n)"
+            }
+          }
+        },
+        {
+          "type": "Button",
+          "id": "go",
+          "properties": {
+            "label": "Go",
+            "enabled": true
+          },
+          "on": {
+            "tap": [
+              {
+                "action": "$set",
+                "key": "n",
+                "value": {
+                  "$expr": "state.n + 5"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    }
+  },
+  "state": {
+    "n": 0
+  },
+  "steps": [
+    {
+      "event": {
+        "node": "go",
+        "name": "tap"
+      }
+    },
+    {
+      "replace": {
+        "document": {
+          "version": "2.1.0",
+          "state": {
+            "n": "string"
+          },
+          "root": {
+            "type": "Text",
+            "id": "r",
+            "properties": {
+              "text": {
+                "$expr": "state.n"
+              }
+            }
+          }
+        },
+        "state": {
+          "n": "seven"
+        }
+      }
+    }
+  ],
+  "expect": {
+    "state": {
+      "n": "seven"
+    },
+    "view": {
+      "type": "Text",
+      "reference": "r",
+      "properties": {
+        "text": "seven"
+      }
+    },
+    "occurrences": []
+  }
+}
